@@ -50,71 +50,103 @@ var Card = Class.extend({
     },
 
     // Place card in slot
-    place: function(slot, face) {
+    place: function(opt) {
         var that = this;
 
-        // Update card face
-        that.face = face;
-
         // Display card
-        var pos = slot.settings.el.offset();
-        that.flip(face);
+        var pos = opt.slot.settings.el.offset();
+        if (opt.face != undefined) { that.flip(opt.face, 0); }
         that.el.css({
             position: 'absolute',
             left: pos.left + 2,
             top: pos.top + 2
         });
 
+        // Callback
+        if (opt.callback) opt.callback();
+
         // Return card
         return that;
     },
 
     // Move card to another slot
-    move: function(slot, face, count) {
+    move: function(opt) {
         var that = this;
 
         // Set timeout
-        var timeout = count * 25;
+        var fast1 = opt.count * opt.basespeed;
+        var fast2 = opt.slot.cards.length * opt.basespeed;
+        var timeout = fast1 + fast2;
+        var speed = 500;
 
-        if (slot.settings.cascade == true) {
-            var adjust_top = slot.cards.length * 20;
-            var z_index = timeout;
+        if (opt.slot.settings.cascade == true) {
+            var adjust_top = opt.slot.cards.length * 20;
         } else {
             var adjust_top = 0;
-            var z_index = 0;
         }
 
         // Animate card
-        var pos = slot.settings.el.offset();
+        var pos = opt.slot.settings.el.offset();
         setTimeout(function() {
-            that.flip(face);
             that.el.css({
-                zIndex: z_index
+                zIndex: timeout
             });
             that.el.animate({
                 position: 'absolute',
                 left: pos.left,
                 top: pos.top + adjust_top
-            }, 'fast');
-        }, timeout + 250);
+            }, speed, function() {
+                setTimeout(function() {
+                    if (opt.face != undefined) { that.flip(opt.face, 100); }
+                }, 1000 - speed);
+
+                // Callback
+                if (opt.callback) opt.callback(opt.count);
+            });
+        }, timeout);
 
         // Return card
         return that;
     },
 
     // Flip card
-    flip: function(face) {
+    flip: function(face, speed) {
         var that = this;
+        var width = that.el.width();
         that.face = face;
 
         if (face == 'facedown') {
-            that.el.attr('src', 'cards/facedown.png');
-            that.el.removeClass('faceup');
-            that.el.addClass('facedown');
+            that.el.animate({
+                width: 10,
+                height: 96,
+                marginLeft: width / 2
+            }, speed, function() {
+                that.el.animate({
+                    width: 71,
+                    height: 96,
+                    marginLeft: 0
+                }, speed, function() {
+                    that.el.attr('src', 'cards/facedown.png');
+                    that.el.removeClass('faceup');
+                    that.el.addClass('facedown');
+                });
+            });
         } else {
-            that.el.attr('src', 'cards/' + that.slug + '.png');
-            that.el.removeClass('facedown');
-            that.el.addClass('faceup');
+            that.el.animate({
+                width: 10,
+                height: 96,
+                marginLeft: width / 2
+            }, speed, function() {
+                that.el.animate({
+                    width: 71,
+                    height: 96,
+                    marginLeft: 0
+                }, speed, function() {
+                    that.el.attr('src', 'cards/' + that.slug + '.png');
+                    that.el.removeClass('facedown');
+                    that.el.addClass('faceup');
+                });
+            });
         }
 
         // Return card

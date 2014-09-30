@@ -23,7 +23,17 @@
 
         <!-- Main content -->
         <div id="wrapper">
-            <div id="cols">
+            <div id="deck" class="slot"></div>
+            <div id="controls" class="block">
+                <div id="stack" class="col slot"></div>
+                <div class="col slot"></div>
+                <div class="col slot"></div>
+                <div id="aces0" class="col slot aces"><span></span></div>
+                <div id="aces1" class="col slot aces"><span></span></div>
+                <div id="aces2" class="col slot aces"><span></span></div>
+                <div id="aces3" class="col slot aces"><span></span></div>
+            </div>
+            <div id="columns" class="block">
                 <div id="col0" class="col slot"></div>
                 <div id="col1" class="col slot"></div>
                 <div id="col2" class="col slot"></div>
@@ -32,26 +42,13 @@
                 <div id="col5" class="col slot"></div>
                 <div id="col6" class="col slot"></div>
             </div>
-            <div id="offtable" class="slot"></div>
-            <div id="deck" class="slot"></div>
         </div>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
+        <script src="js/vendor/jquery-1.10.2.min.js"></script>
         <script src="js/plugins.js"></script>
         <script src="js/slot.js"></script>
         <script src="js/card.js"></script>
         <script src="js/jqsolitaire.js"></script>
         <script src="js/main.js"></script>
-
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
-            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
-            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
-            e.src='//www.google-analytics.com/analytics.js';
-            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
-            ga('create','UA-XXXXX-X');ga('send','pageview');
-        </script>
     </body>
 </html>

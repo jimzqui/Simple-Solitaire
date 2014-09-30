@@ -101,12 +101,26 @@ body {
     background: #00b574;
 }
 
-#cols {
+#deck {
+    bottom: 50px;
+    left: 50%;
+    margin: 0 0 0 -35px;
+    position: absolute;
+}
+
+#columns {
+    top: 185px;
+}
+
+#controls {
+    top: 50px;
+}
+
+.block {
     display: block;
     left: 50%;
     margin-left: -352px;
     position: absolute;
-    top: 50px;
     width: 740px;
 }
 
@@ -121,17 +135,17 @@ body {
     width: 71px;
 }
 
-#offtable {
-    position: absolute;
-    left: -100px;
-    bottom: -100px;
+.card {
+    border-radius: 5px;
 }
 
-#deck {
-    margin-left: -35px;
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
+.aces span{
+    border: 2px solid #555;
+    border-radius: 5px;
+    float: left;
+    height: 92px;
+    width: 67px;
+    display: none;
 }
 
 
