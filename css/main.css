@@ -94,23 +94,45 @@ textarea {
 }
 
 /* ==========================================================================
-   Author's custom styles
+   Application main styles
    ========================================================================== */
 
+body {
+    background: #00b574;
+}
 
+#cols {
+    display: block;
+    left: 50%;
+    margin-left: -352px;
+    position: absolute;
+    top: 50px;
+    width: 740px;
+}
 
+.col {
+    float: left;
+}
 
+.slot {
+    border-radius: 5px;
+    height: 96px;
+    margin: 0 15px;
+    width: 71px;
+}
 
+#offtable {
+    position: absolute;
+    left: -100px;
+    bottom: -100px;
+}
 
-
-
-
-
-
-
-
-
-
+#deck {
+    margin-left: -35px;
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+}
 
 
 /* ==========================================================================
