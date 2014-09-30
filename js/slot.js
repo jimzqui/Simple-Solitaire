@@ -59,5 +59,29 @@ var Slot = Class.extend({
 
         // Return card
         return that;
+    },
+
+    // Shuffle cards
+    shuffle: function() {
+        var that = this;
+        var currentIndex = that.cards.length, temporaryValue, randomIndex ;
+
+        // While there remain elements to shuffle
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = that.cards[currentIndex];
+            that.cards[currentIndex] = that.cards[randomIndex];
+            that.cards[randomIndex] = temporaryValue;
+
+            // Update zindex
+            that.cards[currentIndex].el.css({
+                zIndex: currentIndex * -1
+            });
+        }
     }
 });
