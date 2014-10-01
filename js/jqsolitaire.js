@@ -23,7 +23,8 @@ var JQsolitaire = Class.extend({
 
         // Create new deck
         that.deck = new Slot({
-            el: $('#deck')
+            el: $('#deck'),
+            animate: false
         });
 
         // Create new stack
@@ -31,12 +32,18 @@ var JQsolitaire = Class.extend({
             el: $('#stack')
         });
 
+        // Create new browse
+        that.browse = new Slot({
+            el: $('#browse')
+        });
+
         // Create new columns
         that.columns = [];
         for (var i = 0; i < 7; i++) {
             that.columns.push(new Slot({
                 el: $('#col' + i),
-                cascade: true
+                cascade: true,
+                zindex: i + 1
             }))
         };
 
@@ -56,7 +63,9 @@ var JQsolitaire = Class.extend({
     // Populate all cards
     populate: function() {
         var that = this;
-        var count = 0;
+
+        // Create container
+        var deck_cards = [];
 
         // Contruct cards
         for (var i = 1; i <= 13; i++) {
@@ -68,107 +77,106 @@ var JQsolitaire = Class.extend({
                     suit: j
                 });
 
-                // Place to deck
-                card.place({
-                    slot: that.deck, 
-                    face: 'facedown'
-                });
-
-                // Add card to deck
-                that.deck.add(card);
+                // Add card to container
+                deck_cards.push(card);
             };
         };
 
-        // Randomize deck
-        that.deck.shuffle();
+        // Place cards to deck
+        that.deck.addCards(deck_cards, function() {
 
-        // Stack cards
-        that.stackCards(count);
+            // Shuffle deck
+            that.deck.shuffle();
+
+            // Stack cards
+            that.placeStackCards();
+        });
     },
 
     // Place cards to stack
-    stackCards: function(count) {
+    placeStackCards: function() {
         var that = this;
 
-        // Place cards to stack
-        for (var h = 1; h <= 24; h++) {
-            var card = that.deck.cards[count];
+        // Create container
+        var stack_cards = [];
 
-            // Move cards with callback
-            if (h == 24) {
-                card.move({
-                    slot: that.stack, 
-                    count: count,
-                    callback: function(count) {
-                        that.columnCards(count + 1);
-                        that.displayAces();
-                    }
-                });
-            }
+        // Pick cards
+        for (var i = 1; i <= 24; i++) {
 
-            // Move cards
-            else {
-                card.move({
-                    slot: that.stack, 
-                    count: count,
-                    basespeed: 25
-                });
-            }
+            // Get random card from deck
+            var card = that.deck.pickCard();
 
-            // Add card to stack
-            that.stack.add(card);
-
-            // Increase count
-            count++;
+            // Add card to container
+            stack_cards.push(card);
         };
+
+        // Place cards to stack
+        that.stack.addCards(stack_cards, function() {
+
+            // Column Cards
+            that.placeColumnCards(1);
+        });
     },
 
     // Place cards to columns
-    columnCards: function(count) {
+    placeColumnCards: function(index) {
         var that = this;
 
-        // Place cards to columns
-        for (var k = 1; k <= 7; k++) {
-            for (var l = 1; l <= k; l++) {
-                var col = that.columns[k - 1];
-                var card = that.deck.cards[count];
+        // Create container
+        var slot_cards = [];
 
-                // Move and flip last card
-                if (l == k) { 
-                    card.move({
-                        slot: col, 
-                        count: count, 
-                        face: 'faceup',
-                        basespeed: 25
-                    });
-                } 
+        // Pick cards
+        for (var j = 1; j <= index; j++) {
+            var column = that.columns[index - 1];
+            var card = that.deck.pickCard();
 
-                // Move card
-                else { 
-                    card.move({
-                        slot: col, 
-                        count: count,
-                        basespeed: 25
-                    });
-                }
-
-                // Add card to slot
-                col.add(card);
-
-                // Increase count
-                count++;
-            }
+            // Add card to container
+            slot_cards.push(card);
         }
+
+        // Place cards to column
+        column.addCards(slot_cards, function() {
+            if (index == 7) {
+                that.displayAcesBlock();
+                that.flipLastCards();
+            } else {
+                that.placeColumnCards(index + 1);
+            }
+        });
+    },
+
+    // Flip last cards
+    flipLastCards: function() {
+        var that = this;
+
+        // Iterate each column
+        for (var i = 0; i < that.columns.length; i++) {
+            var column = that.columns[i];
+            var card = column.cards[column.cards.length - 1];
+            var timeout = i * column.anim_interval;
+
+            (function(timeout, card) {
+                setTimeout(function() {
+                    card.flip('faceup');
+                }, timeout);
+            })(timeout, card);
+        };
     },
 
     // Display aces
-    displayAces: function() {
+    displayAcesBlock: function() {
         var that = this;
 
         // Iterate each aces slot
         for (var i = 0; i < that.aces.length; i++) {
             var ace = that.aces[i];
-            ace.settings.el.find('span').fadeIn();
+            var timeout = i * ace.anim_interval;
+
+            (function(timeout, ace) {
+                setTimeout(function() {
+                    ace.el.find('span').fadeIn();
+                }, timeout);
+            })(timeout, ace);
         };
     }
 });

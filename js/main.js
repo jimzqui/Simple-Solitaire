@@ -3,11 +3,11 @@
  * main.js
  * (c) 2010, Jimbo Quijano
  */
-
+var game;
 $(document).ready(function() {
 
     // Create new game
-    var game = new JQsolitaire();
+    game = new JQsolitaire();
 
     // Start game
     game.start();
