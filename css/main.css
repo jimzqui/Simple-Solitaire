@@ -101,51 +101,43 @@ body {
     background: #00b574;
 }
 
-#deck {
-    bottom: 50px;
-    left: 50%;
-    margin: 0 0 0 -35px;
+#solitaire {
+    width: 677px;
+    height: 550px;
     position: absolute;
-}
-
-#columns {
-    top: 185px;
-}
-
-#controls {
-    top: 50px;
-}
-
-.block {
-    display: block;
+    top: 50%;
     left: 50%;
-    margin-left: -352px;
-    position: absolute;
-    width: 740px;
-}
-
-.col {
-    float: left;
-}
-
-.slot {
-    border-radius: 5px;
-    height: 96px;
-    margin: 0 15px;
-    width: 71px;
+    margin: -275px 0 0 -335px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .card {
-    border-radius: 5px;
+    width: 71px;
+    height: 96px;
+    cursor: pointer;
 }
 
-.aces span{
-    border: 2px solid #555;
-    border-radius: 5px;
-    float: left;
-    height: 92px;
-    width: 67px;
-    display: none;
+.card span {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+.faceup {
+    cursor: grab;
+}
+
+.faceup.grabbed {
+    cursor: grabbing !important;
+    z-index: 999 !important;
 }
 
 

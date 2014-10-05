@@ -1,15 +1,17 @@
 /**
- * JQsolitaire - Main
+ * JQcards - Main
  * main.js
- * (c) 2010, Jimbo Quijano
+ * (c) 2014, Jimbo Quijano
  */
-var game;
-$(document).ready(function() {
 
-    // Create new game
-    game = new JQsolitaire();
+// Set configs
+require.config({
+	noGlobal: true
+});
 
-    // Start game
-    game.start();
+// Load game
+require(['game'], function(Game){
 
+	// Start game
+	Game.start();
 });

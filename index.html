@@ -14,7 +14,9 @@
 
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
-        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="js/vendor/modernizr.min.js"></script>
+        <script src="js/vendor/jquery.min.js"></script>
+        <script src="js/vendor/plugins.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -22,33 +24,8 @@
         <![endif]-->
 
         <!-- Main content -->
-        <div id="wrapper">
-            <div id="deck" class="slot"></div>
-            <div id="controls" class="block">
-                <div id="stack" class="col slot"></div>
-                <div id="browse" class="col slot"></div>
-                <div class="col slot"></div>
-                <div id="aces0" class="col slot aces"><span></span></div>
-                <div id="aces1" class="col slot aces"><span></span></div>
-                <div id="aces2" class="col slot aces"><span></span></div>
-                <div id="aces3" class="col slot aces"><span></span></div>
-            </div>
-            <div id="columns" class="block">
-                <div id="col0" class="col slot"></div>
-                <div id="col1" class="col slot"></div>
-                <div id="col2" class="col slot"></div>
-                <div id="col3" class="col slot"></div>
-                <div id="col4" class="col slot"></div>
-                <div id="col5" class="col slot"></div>
-                <div id="col6" class="col slot"></div>
-            </div>
-        </div>
+        <div id="solitaire"></div>
 
-        <script src="js/vendor/jquery-1.10.2.min.js"></script>
-        <script src="js/plugins.js"></script>
-        <script src="js/slot.js"></script>
-        <script src="js/card.js"></script>
-        <script src="js/jqsolitaire.js"></script>
-        <script src="js/main.js"></script>
+        <script data-main="js/main" src="js/vendor/require.js"></script>
     </body>
 </html>
