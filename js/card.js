@@ -201,7 +201,8 @@ define(['class'], function(Class) {
             that.canvas_el.mousemove(function(e) {
                 var offset = {
                     left: e.pageX - x,
-                    top: e.pageY - y
+                    top: e.pageY - y,
+                    zIndex: 999 - y
                 };
 
                 // Update offset
@@ -239,9 +240,6 @@ define(['class'], function(Class) {
             var last = collide.slot2.last;
             var cards = [];
 
-            console.log(last);
-            console.log(that);
-
             // If card is allowed to switch column
             if (last.num - 1 == that.num && last.color != that.color) {
                 var card = collide.slot1.pickCard(that.pos);
@@ -249,6 +247,9 @@ define(['class'], function(Class) {
 
                 // Place cards to slot
                 collide.slot2.addCards(cards);
+
+                // Update status
+                last.last = false;
 
                 // Callback afer switch
                 if (callback) callback();

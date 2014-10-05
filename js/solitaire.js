@@ -80,8 +80,8 @@ define(['card', 'class'], function(Card, Class) {
                     // Add card to container
                     that._cards.push(card);
 
-                    // Card events
-                    that.cardEvents(card);
+                    // Listen for car move
+                    that.listenCardMove(card);
                 };
             };
         },
@@ -194,14 +194,16 @@ define(['card', 'class'], function(Card, Class) {
         },
 
         // Compute slot positions
-        computeOffset: function(size_x, size_y) {
+        computeOffset: function(x, y) {
             var that = this;
-            var card = that.settings.card;
-            var slot = that.settings.slot;
 
             // Compute data
-            var pos_x = (size_x * card.width) + (size_x * slot.distance_x);
-            var pos_y = (size_y * card.height) + (size_y * slot.distance_y);
+            var size_x = x * that.settings.card.width;
+            var dist_x = x * that.settings.slot.distance_x;
+            var size_y = y * that.settings.card.height;
+            var dist_y = y * that.settings.slot.distance_y;
+            var pos_x = size_x + dist_x;
+            var pos_y = size_y + dist_y;
 
             return {
                 left: pos_x,
@@ -210,10 +212,11 @@ define(['card', 'class'], function(Card, Class) {
         },
 
         // Add events to card
-        cardEvents: function(card) {
+        listenCardMove: function(card) {
             var that = this;
 
             // Check if card is grabbed
+            card.el.unbind('mousedown');
             card.el.mousedown(function(e) { 
                 if (card.face == 'facedown') return;
 
@@ -223,27 +226,65 @@ define(['card', 'class'], function(Card, Class) {
 
                 // Grab card
                 card.grab(x, y, function(offset) {
-
-                    // Iterate each column and check collision
                     for (var i = 0; i < that.columns.length; i++) {
                         var column = that.columns[i];
                         column.collide = that.getCollision(column, card, offset);
                     };
                 });
-            })
-            .mouseup(function() { 
-                // Iterate each column and check collision
+
+                // Other cards
+                if (card.last != true) {
+                    var count = 1;
+                    var column_active = that.columns[card.col_num];
+                    for (var i = card.pos + 1; i < column_active.cards.length; i++) {
+                        var card_active = column_active.cards[i];
+
+                        // Grab card
+                        card_active.grab(x, y - (count * 20));
+                        count++;
+                    };
+                }
+            });
+
+            // Check if card is released
+            card.el.unbind('mouseup');
+            card.el.mouseup(function(e) { 
+                if (card.face == 'facedown') return;
+
+                // Implement current collisions
                 for (var i = 0; i < that.columns.length; i++) {
                     var column = that.columns[i];
                     if (column.collide != null) {
-                        return column.collide.card.switch(column.collide, function() {
+
+                        // Switch card to different column
+                        column.collide.card.switch(column.collide, function() {
                             column.collide = null;
                         });
+
+                        // Other cards
+                        if (card.last != true) {
+                            var count = 1;
+                            var column_active = that.columns[card.col_num];
+                            for (var i = card.pos + 1; i < column_active.cards.length; i++) {
+                                var card_active = column_active.cards[i];
+
+                                // Switch other cards to different column
+                                card_active.switch(column.collide);
+                            };
+                        }
+
+                        return;
                     }
                 };
 
-                // Return card
-                card.return();
+                // Return all cards
+                var column_active = that.columns[card.col_num];
+                for (var i = card.pos; i < column_active.cards.length; i++) {
+                    var card_active = column_active.cards[i];
+
+                    // Return card
+                    card_active.return();
+                };
             });
         },
 
@@ -261,12 +302,10 @@ define(['card', 'class'], function(Card, Class) {
                         slot2: slot,
                         card: card
                     };
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
+                } 
             }
+
+            return null;
         }
     });
 

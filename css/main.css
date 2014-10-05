@@ -116,7 +116,6 @@ body {
 
 .faceup.grabbed {
     cursor: grabbing !important;
-    z-index: 999 !important;
 }
 
 
