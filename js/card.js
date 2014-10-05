@@ -36,13 +36,13 @@ define(['class'], function(Class) {
                 case 13: that.value = 10; break;
             }
 
-            // Card value
+            // Card suit and color
             switch(that.suit) {
-                case 1: that.suit = 'Clubs'; break;
-                case 2: that.suit = 'Spades'; break;
-                case 3: that.suit = 'Diamonds'; break;
-                case 4: that.suit = 'Hearts'; break;
-                default: that.suit = 'Clubs';
+                case 1: that.suit = 'Clubs'; that.color = 'black'; break;
+                case 2: that.suit = 'Spades'; that.color = 'black'; break;
+                case 3: that.suit = 'Diamonds'; that.color = 'white'; break;
+                case 4: that.suit = 'Hearts'; that.color = 'white'; break;
+                default: that.suit = 'Clubs'; that.color = 'black';
             }
 
             // Card name
@@ -56,28 +56,53 @@ define(['class'], function(Class) {
             // Card slug
             that.slug = this.num + that.suit;
 
-            // Card img
-            that.img = '<div class="card"><img src="cards/' + that.slug + '.png"><span></span></div>';
+            return that;
+        },
 
-            // Setup container
-            that.container = $('#solitaire');
-            that.container.offset = that.container.offset();
+        // Create card element
+        create: function(canvas) {
+            var that = this;
+            that.canvas_el = canvas.el;
 
             // Create card
-            that.el = $(that.img).appendTo(that.container);
+            var html = '<div class="card"><img src="cards/' + that.slug + '.png"><span></span></div>';
+            that.el = $(html).appendTo(canvas.el);
+            that.img = that.el.find('img');
             that.flip('facedown', 0);
 
-            // Check if card is grabbed
-            that.el.mousedown(function(e) { 
-                if (that.face == 'facedown') return;
-                var x = e.pageX - that.offset.left;
-                var y = e.pageY - that.offset.top;
-                that.grab(x, y);
-            })
-            .mouseup(function() { 
-                if (that.face == 'facedown') return;
-                that.return();
+            // Style element
+            that.el.css({
+                position: 'absolute',
+                height: canvas.settings.card.height,
+                width: canvas.settings.card.width,
+                cursor: 'pointer'
             });
+
+            // Style card cover
+            that.el.find('span').css({
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                left: 0,
+                top: 0,
+                zIndex: 2
+            });
+
+            // Style card img
+            that.el.find('img').css({
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                left: 0,
+                top: 0,
+                zIndex: 1
+            });
+
+            // Setup dimension
+            that.width = that.el.width();
+            that.height = that.el.height();
+
+            return that;
         },
 
         // Move card to slot
@@ -86,21 +111,19 @@ define(['class'], function(Class) {
 
             // Compute anim data
             var anim = slot.computeAnim();
-            var cascade = slot.computeCascade();
-            that.offset = cascade;
+            that.offset = slot.computeCascade();
+            that.zindex = anim.zindex;
 
             // Time card animation
             if (slot.animate == true) {
-                that.el.css({
-                    zIndex: anim.zindex
-                });
-
                 setTimeout(function() {
-                    that.el.animate({
-                        position: 'absolute',
-                        left: cascade.left,
-                        top: cascade.top
-                    }, anim.speed);
+                    that.el.animate(that.offset, anim.speed);
+
+                    // Switch zindex on animate
+                    setTimeout(function() {
+                        that.el.css({ zIndex: anim.zindex });
+                    }, anim.zswitch);
+
                 }, anim.timeout);
 
                 // Callback
@@ -113,27 +136,21 @@ define(['class'], function(Class) {
 
             // Place card
             else {
-                that.el.css({
-                    position: 'absolute',
-                    zIndex: anim.zindex,
-                    left: cascade.left,
-                    top: cascade.top
-                });
+                that.el.css({ zIndex: anim.zindex });
+                that.el.css(that.offset);
 
                 // Callback
                 if (that.last == true) {
                     if(callback) callback(that);
                 }
             }
-
-            // Return card
-            return that;
         },
 
         // Flip card
         flip: function(face, speed) {
             var that = this;
-            var width = that.el.width();
+
+            // Update face
             that.face = face;
 
             // Default speed to 75
@@ -144,13 +161,13 @@ define(['class'], function(Class) {
             // Get flip image
             if (face == 'facedown') {
                 var callback = function() {
-                    that.el.find('img').attr('src', 'cards/facedown.png');
+                    that.img.attr('src', 'cards/facedown.png');
                     that.el.removeClass('faceup');
                     that.el.addClass('facedown');
                 };
             } else {
                 var callback = function() {
-                    that.el.find('img').attr('src', 'cards/' + that.slug + '.png');
+                    that.img.attr('src', 'cards/' + that.slug + '.png');
                     that.el.removeClass('facedown');
                     that.el.addClass('faceup');
                 };
@@ -158,25 +175,22 @@ define(['class'], function(Class) {
 
             // Flip animation
             that.el.animate({
-                width: 10,
-                height: 96,
-                marginLeft: width / 2
+                width: 0,
+                height: that.height,
+                marginLeft: that.width / 2
             }, speed,  function() {
                 that.el.animate({
-                    width: 71,
-                    height: 96,
+                    width: that.width,
+                    height: that.height,
                     marginLeft: 0
                 }, speed, function() {
                     if(callback) callback();
                 });
             });
-
-            // Return card
-            return that;
         },
 
         // Grab card
-        grab: function(x, y) {
+        grab: function(x, y, callback) {
             var that = this;
 
             // Add styling to card
@@ -184,11 +198,17 @@ define(['class'], function(Class) {
             that.el.removeClass('ungrabbed');
 
             // Move card according to mouse offset
-            that.el.mousemove(function(e) {
-                that.el.css({
+            that.canvas_el.mousemove(function(e) {
+                var offset = {
                     left: e.pageX - x,
                     top: e.pageY - y
-                });
+                };
+
+                // Update offset
+                that.el.css(offset);
+
+                // Callback afer grab
+                if (callback) callback(offset);
             });
         },
 
@@ -198,6 +218,8 @@ define(['class'], function(Class) {
 
             // Animate to offset
             that.el.animate(that.offset, 'fast', function() {
+
+                // Callback afer return
                 if (callback) callback();
 
                 // Add styling to card
@@ -206,22 +228,57 @@ define(['class'], function(Class) {
             });
 
             // Unbind grab
-            that.el.unbind('mousemove');
+            that.canvas_el.unbind('mousemove');
+        },
+
+        // Switch to different
+        switch: function(collide, callback) {
+            var that = this;
+
+            // Get last card
+            var last = collide.slot2.last;
+            var cards = [];
+
+            console.log(last);
+            console.log(that);
+
+            // If card is allowed to switch column
+            if (last.num - 1 == that.num && last.color != that.color) {
+                var card = collide.slot1.pickCard(that.pos);
+                cards.push(card);
+
+                // Place cards to slot
+                collide.slot2.addCards(cards);
+
+                // Callback afer switch
+                if (callback) callback();
+            } else {
+
+                // Back to position
+                that.return(callback);
+            }
+
+            // Unbind grab
+            that.canvas_el.unbind('mousemove');
         },
 
         // Check for collision
-        collision: function(target1, target2) {
+        isCollide: function(target, offset) {
             var that = this;
-            var x1 = target1.offset().left;
-            var y1 = target1.offset().top;
-            var h1 = target1.outerHeight(true);
-            var w1 = target1.outerWidth(true);
+
+            // Compute card data
+            var x1 = offset.left;
+            var y1 = offset.top;
+            var h1 = that.height;
+            var w1 = that.width;
             var b1 = y1 + h1;
             var r1 = x1 + w1;
-            var x2 = target2.offset().left;
-            var y2 = target2.offset().top;
-            var h2 = target2.outerHeight(true);
-            var w2 = target2.outerWidth(true);
+
+            // Get target data
+            var x2 = target.offset.left;
+            var y2 = target.offset.top;
+            var h2 = target.height;
+            var w2 = target.width;
             var b2 = y2 + h2;
             var r2 = x2 + w2;
 

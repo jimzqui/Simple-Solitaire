@@ -10,18 +10,42 @@ define(['slot'], function(Slot) {
     // Extend Column to Slot
     var Column = Slot.extend({
 
+        // Add card to slot
+        addCard: function(card) {
+            var that = this;
+
+            // Call parent method
+            that._super(card);
+            card.col_num = that.col_num;
+
+            // Update height
+            that.height = ((that.cards.length - 1) * 20) + that.height;
+        },
+
+        // Remove card from slot
+        removeCard: function(pos) {
+            var that = this;
+
+            // Call parent method
+            that._super(pos);
+
+            // Update height
+            that.height = ((that.cards.length - 1) * 20) + that.height;
+        },
+
         // Compute anim data
         computeAnim: function() {
             var that = this;
 
             // Compute data
-            var zindex = (that.zindex * 5) + that.cards.length;
+            var zindex = (that.col_num + 1) * (that.col_num + 1) + that.cards.length;
             var timeout = (that.cards.length * that.anim.ease) * 2;
             var interval = that.anim.interval;
             var speed = that.anim.speed;
 
             // Return data
             return {
+                zswitch: 0,
                 zindex: zindex,
                 interval: interval,
                 timeout: timeout,

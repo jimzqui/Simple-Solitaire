@@ -34,7 +34,6 @@ define(['class'], function(Class) {
                 last: null,
                 status: null,
                 animate: true,
-                zindex: 1,
                 cards: []
             };
 
@@ -44,15 +43,17 @@ define(['class'], function(Class) {
                 that[index] = value;
             });
 
-            // Create slot
-            that.create();
+            return that;
         },
 
         // Create slot element
-        create: function() {
+        create: function(canvas) {
             var that = this;
-            var html = '<div class="slot"><span></span></div>';
-            that.el = $(html).appendTo('#solitaire');
+
+            // Create slot
+            var html = '<div id="slot-' + that.name + '" class="slot"><span></span></div>';
+            that.el = $(html).appendTo(canvas.el);
+            that.inner = that.el.find('span');
 
             // Style element
             that.el.css({
@@ -60,18 +61,25 @@ define(['class'], function(Class) {
                 left: that.offset.left,
                 top: that.offset.top,
                 borderRadius: 5,
-                height: 96,
-                width: 71
+                height: canvas.settings.card.height,
+                width: canvas.settings.card.width
             });
 
-            that.el.find('span').css({
+            // Style inner
+            that.inner.css({
                 border: '2px solid #555',
                 display: 'none',
                 float: 'left',
                 borderRadius: 5,
-                height: 92,
-                width: 67
+                height: canvas.settings.card.height - 4,
+                width: canvas.settings.card.width - 4
             });
+
+            // Setup dimension
+            that.width = canvas.settings.card.width;
+            that.height = canvas.settings.card.height;
+
+            return that;
         },
 
         // Pick card from slot
@@ -128,9 +136,6 @@ define(['class'], function(Class) {
             // Push to slot
             that.cards.push(card);
             card.index = that.cards.length;
-
-            // Return card
-            return that;
         },
 
         // Add cards to slot
@@ -173,9 +178,6 @@ define(['class'], function(Class) {
                 last_card.last = true;
                 that.last = last_card;
             }
-
-            // Return card
-            return that;
         },
 
         // Shuffle cards
@@ -202,17 +204,6 @@ define(['class'], function(Class) {
             }
         },
 
-        // Show/Hide inner
-        inner: function(type) {
-            var that = this;
-
-            if (type == 'show') {
-                that.el.find('span').fadeIn();
-            } else {
-                that.el.find('span').fadeOut();
-            }
-        },
-
         // Compute anim data
         computeAnim: function() {
             var that = this;
@@ -225,6 +216,7 @@ define(['class'], function(Class) {
 
             // Return data
             return {
+                zswitch: 0,
                 zindex: zindex,
                 interval: interval,
                 timeout: timeout,

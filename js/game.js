@@ -14,55 +14,45 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
 	// Create new deck
     Game.deck = new Deck({
+        name: 'deck',
         animate: false,
-        offset: {
-        	top: 450,
-        	left: 303
-        }
-    });
+        offset: Game.computeOffset(3, 3)
+    }).create(Game);
 
     // Create new stack
     Game.stack = new Stack({
-        offset: {
-        	top: 0,
-        	left: 0
-        }
-    });
+        name: 'stack',
+        offset: Game.computeOffset(0, 0)
+    }).create(Game);
 
     // Create new browse
     Game.browse = new Browse({
+        offset: Game.computeOffset(1, 0),
         anim: {
         	interval: 150,
         	speed: 200,
         	ease: 15
-        },
-        offset: {
-        	top: 0,
-        	left: 101
         }
-    });
+    }).create(Game);
 
     // Create new columns
     Game.columns = [];
     for (var i = 0; i < 7; i++) {
         Game.columns.push(new Column({
-        	zindex: i + 1,
-            offset: {
-	        	top: 146,
-	        	left: (i * 71) + (i * 30)
-	        }
-        }))
+            name: 'col' + i,
+            col_num: i,
+            offset: Game.computeOffset(i, 1),
+        }).create(Game))
     };
 
     // Create new aces
     Game.aces = [];
     for (var i = 0; i < 4; i++) {
         Game.aces.push(new Aces({
-            offset: {
-	        	top: 0,
-	        	left: (i * 71) + (i * 30) + 303
-	        }
-        }))
+            name: 'ace' + i,
+        	ace_num: i,
+            offset: Game.computeOffset(3 + i, 0),
+        }).create(Game))
     };
 
 	// Return game

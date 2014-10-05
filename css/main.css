@@ -102,12 +102,6 @@ body {
 }
 
 #solitaire {
-    width: 677px;
-    height: 550px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: -275px 0 0 -335px;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -116,23 +110,8 @@ body {
     user-select: none;
 }
 
-.card {
-    width: 71px;
-    height: 96px;
-    cursor: pointer;
-}
-
-.card span {
-    position: absolute;
-    width: 71px;
-    height: 96px;
-    left: 0;
-    top: 0;
-    z-index: 1;
-}
-
 .faceup {
-    cursor: grab;
+    cursor: grab !important;
 }
 
 .faceup.grabbed {

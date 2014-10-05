@@ -14,37 +14,75 @@ define(['slot'], function(Slot) {
         browse: function(slot) {
             var that = this;
 
-            // Move last browsed to left
-            if (that.browsed != undefined) {
-                for (var i = 0; i < that.browsed.length; i++) {
-                    var card = that.browsed[i];
-                    card.el.animate({
-                        left: slot.offset.left
-                    });
-                };
-            }
+            // If still animating, return
+            if (that.browsing == true) return;
+            that.browsing = true;
 
-            // Clear browsed cards
-            that.browsed = [];
+            // Uncascade cards
+            slot.uncascade();
 
             // Retrieve last three cards from browse
             for (var i = 0; i < 3; i++) {
                 var card = that.pickCard(that.cards.length - 1);
                 
                 // Add card to container
-                that.browsed.push(card);
+                if (card != undefined) {
+                    slot.browsed.push(card);
+                }
             };
 
             // Place cards to browse
-            slot.addCards(that.browsed, function() {
+            slot.addCards(slot.browsed, function() {
 
                 // Flip browsed cards
-                for (var i = 0; i < that.browsed.length; i++) {
-                    var card = that.browsed[i];
+                for (var i = 0; i < slot.browsed.length; i++) {
+                    var card = slot.browsed[i];
                     card.flip('faceup');
                 };
                 
                 // Last stack cards
+                that.last.el.click(function() {
+                    that.browse(slot);
+                });
+
+                // If all cards are browsed
+                that.el.unbind('click');
+                that.el.click(function() {
+                    if (that.cards.length == 0) {
+                        that.reset(slot);
+                    }
+                });
+
+                // Update browsing status
+                that.browsing = false;
+            });
+        },
+
+        // Reset stack cards
+        reset: function(slot) {
+            var that = this;
+
+            // Uncascade cards
+            slot.uncascade(function() {
+
+                // Create container
+                var cards = [];
+
+                // Iterate all browsed cards
+                for (var i = slot.cards.length - 1; i >= 0; i--) {
+                    var card = slot.pickCard(i);
+                    card.flip('facedown', 0);
+                    cards.push(card);
+
+                    // Unbind events
+                    card.el.unbind('click');
+                };
+
+                // Place cards to stack
+                that.addCards(cards);
+
+                // Add even to last card
+                that.last.el.unbind('click');
                 that.last.el.click(function() {
                     that.browse(slot);
                 });
@@ -63,6 +101,7 @@ define(['slot'], function(Slot) {
 
             // Return data
             return {
+                zswitch: 0,
                 zindex: zindex,
                 interval: interval,
                 timeout: timeout,

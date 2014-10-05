@@ -22,6 +22,7 @@ define(['slot'], function(Slot) {
 
             // Return data
             return {
+                zswitch: 0,
                 zindex: zindex,
                 interval: interval,
                 timeout: timeout,
