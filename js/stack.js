@@ -20,6 +20,7 @@ define(['slot'], function(Slot) {
 
             // Uncascade cards
             slot.uncascade();
+            var browsed = [];
 
             // Retrieve last three cards from browse
             for (var i = 0; i < 3; i++) {
@@ -27,20 +28,22 @@ define(['slot'], function(Slot) {
                 
                 // Add card to container
                 if (card != undefined) {
-                    slot.browsed.push(card);
+                    card.el.unbind('click');
+                    browsed.push(card);
                 }
             };
 
             // Place cards to browse
-            slot.addCards(slot.browsed, function() {
+            slot.addCards(browsed, function() {
 
                 // Flip browsed cards
-                for (var i = 0; i < slot.browsed.length; i++) {
-                    var card = slot.browsed[i];
+                for (var i = 0; i < browsed.length; i++) {
+                    var card = browsed[i];
                     card.flip('faceup');
                 };
                 
                 // Last stack cards
+                that.last.el.unbind('click');
                 that.last.el.click(function() {
                     that.browse(slot);
                 });
@@ -81,7 +84,7 @@ define(['slot'], function(Slot) {
                 // Place cards to stack
                 that.addCards(cards);
 
-                // Add even to last card
+                // Add event to last card
                 that.last.el.unbind('click');
                 that.last.el.click(function() {
                     that.browse(slot);

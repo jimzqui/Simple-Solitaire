@@ -14,18 +14,20 @@ define(['slot'], function(Slot) {
         uncascade: function(callback) {
             var that = this;
 
+            // Compute browe size
+            var browse_size = that.cards.length % 3;
+            if (browse_size == 0) { browse_size = 3; }
+
             // Move last browsed to left
-            if (that.browsed != undefined) {
-                for (var i = 0; i < that.browsed.length; i++) {
-                    var card = that.browsed[i];
+            for (var i = that.cards.length - 1; i >= that.cards.length - (1 + browse_size); i--) {
+                var card = that.cards[i];
+                if (card != undefined) {
+                    card.browsed = false;
                     card.el.animate({
                         left: that.offset.left
                     });
-                };
-            }
-
-            // Reset browsed
-            that.browsed = [];
+                }
+            };
 
             // Follow-up uncascade
             if (callback) callback();
@@ -54,10 +56,25 @@ define(['slot'], function(Slot) {
         // Compute casecade data
         computeCascade: function() {
             var that = this;
-            var adjust = (that.cards.length % 3) * 20;
+
+            // Retrieve previous and current card
+            var curr_card = that.cards[that.cards.length - 1];
+            var prev_card = that.cards[that.cards.length - 2];
+            curr_card.browsed = true;
+
+            // Compute left offset
+            if (prev_card == undefined) {
+                var offset_left = that.offset.left;
+            } else {
+                if (prev_card.browsed == false) {
+                    var offset_left = that.offset.left;
+                } else {
+                    var offset_left = prev_card.offset.left + 20;
+                }
+            }
 
             return {
-                left: that.offset.left + adjust,
+                left: offset_left,
                 top: that.offset.top
             };
         }

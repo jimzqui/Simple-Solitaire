@@ -51,7 +51,7 @@ define(['class'], function(Class) {
             var that = this;
 
             // Create slot
-            var html = '<div id="slot-' + that.name + '" class="slot"><span></span></div>';
+            var html = '<div class="slot"><span></span></div>';
             that.el = $(html).appendTo(canvas.el);
             that.inner = that.el.find('span');
 
@@ -133,9 +133,21 @@ define(['class'], function(Class) {
         addCard: function(card) {
             var that = this;
 
+            // Add meta data
+            card.index = that.cards.length;
+            card.slotindex = that.slotindex;
+            card.slot = that;
+            card.last = true;
+            that.last = card;
+
+            // Update last card
+            var lastcard = that.cards[that.cards.length - 1];
+            if (lastcard != undefined) {
+                lastcard.last = false;
+            }
+
             // Push to slot
             that.cards.push(card);
-            card.index = that.cards.length;
         },
 
         // Add cards to slot
@@ -145,23 +157,19 @@ define(['class'], function(Class) {
             // Iterate each card
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
-                card.pos = i;
+
+                // Add card to slot
+                that.addCard(card);
 
                 // Move cards with callback
                 if (i == cards.length - 1) {
-                    that.last = card;
-                    card.last = true;
                     var cb = callback;
                 } else {
-                    card.last = false;
                     var cb = function(){};
                 }
 
                 // Move card
                 card.move(that, cb);
-
-                // Add card to slot
-                that.addCard(card);
             };
         },
 
@@ -228,6 +236,48 @@ define(['class'], function(Class) {
         computeCascade: function() {
             var that = this;
             return that.offset;
+        },
+
+        // Get any card collision
+        setCollision: function(card, offset) {
+            var that = this;
+
+            // Something collided with the card
+            if (card.isCollide(that.last, offset) == true) {
+
+                // Make sure not its own slot
+                if (that.slotindex != card.slotindex) {
+                    return that.collide = card.slot;
+                } 
+            }
+
+            that.collide = null;
+        },
+
+        // Check for any collision
+        checkCollision: function(card, callback) {
+            var that = this;
+
+            // Column collided
+            if (that.collide != null) {
+
+                // Card is allowed to switch
+                if (card.isAllowed(that.last) == true) {
+                    var cards_active = [];
+
+                    // Iterate each cards
+                    for (var i = that.collide.cards.length - 1; i >= card.index; i--) {
+                        cards_active.push(that.collide.pickCard(i));
+                    };
+
+                    // Callback after checking
+                    if (callback) callback(cards_active.reverse());
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     });
 

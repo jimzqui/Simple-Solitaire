@@ -16,10 +16,12 @@ define(['slot'], function(Slot) {
 
             // Call parent method
             that._super(card);
-            card.col_num = that.col_num;
 
             // Update height
             that.height = ((that.cards.length - 1) * 20) + that.height;
+
+            // Update card status
+            card.browsed = false;
         },
 
         // Remove card from slot
@@ -38,7 +40,7 @@ define(['slot'], function(Slot) {
             var that = this;
 
             // Compute data
-            var zindex = (that.col_num + 1) * (that.col_num + 1) + that.cards.length;
+            var zindex = (that.slotindex + 1) * (that.slotindex + 1) + that.cards.length;
             var timeout = (that.cards.length * that.anim.ease) * 2;
             var interval = that.anim.interval;
             var speed = that.anim.speed;
@@ -56,7 +58,7 @@ define(['slot'], function(Slot) {
         // Compute casecade data
         computeCascade: function() {
             var that = this;
-            var adjust = that.cards.length * 20;
+            var adjust = (that.cards.length - 1) * 20;
 
             return {
                 left: that.offset.left,

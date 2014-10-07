@@ -10,6 +10,19 @@ define(['slot'], function(Slot) {
     // Extend Stack to Slot
     var Aces = Slot.extend({
 
+        // Check if card is allowed
+        checkinCard: function(card) {
+            var that = this;
+
+            // If allowed, place card
+            if (card.num - 1 == that.cards.length) {
+                var card = card.slot.pickCard(card.index);
+                card.el.css({ zIndex: 999 });
+                that.addCard(card);
+                card.move(that);
+            }
+        },
+
         // Compute anim data
         computeAnim: function() {
             var that = this;

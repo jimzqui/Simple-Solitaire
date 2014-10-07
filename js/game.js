@@ -27,6 +27,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
     // Create new browse
     Game.browse = new Browse({
+        name: 'browse',
         offset: Game.computeOffset(1, 0),
         anim: {
         	interval: 150,
@@ -40,7 +41,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
     for (var i = 0; i < 7; i++) {
         Game.columns.push(new Column({
             name: 'col' + i,
-            col_num: i,
+            slotindex: i,
             offset: Game.computeOffset(i, 1),
         }).create(Game))
     };
@@ -50,7 +51,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
     for (var i = 0; i < 4; i++) {
         Game.aces.push(new Aces({
             name: 'ace' + i,
-        	ace_num: i,
+        	slotindex: i,
             offset: Game.computeOffset(3 + i, 0),
         }).create(Game))
     };

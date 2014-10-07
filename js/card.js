@@ -38,11 +38,11 @@ define(['class'], function(Class) {
 
             // Card suit and color
             switch(that.suit) {
-                case 1: that.suit = 'Clubs'; that.color = 'black'; break;
-                case 2: that.suit = 'Spades'; that.color = 'black'; break;
-                case 3: that.suit = 'Diamonds'; that.color = 'white'; break;
-                case 4: that.suit = 'Hearts'; that.color = 'white'; break;
-                default: that.suit = 'Clubs'; that.color = 'black';
+                case 1: that.suit = 'Spades'; that.color = 'black'; break;
+                case 2: that.suit = 'Hearts'; that.color = 'white'; break;
+                case 3: that.suit = 'Clubs'; that.color = 'black'; break;
+                case 4: that.suit = 'Diamonds'; that.color = 'white'; break;
+                default: that.suit = 'Spades'; that.color = 'black';
             }
 
             // Card name
@@ -62,7 +62,6 @@ define(['class'], function(Class) {
         // Create card element
         create: function(canvas) {
             var that = this;
-            that.canvas_el = canvas.el;
 
             // Create card
             var html = '<div class="card"><img src="cards/' + that.slug + '.png"><span></span></div>';
@@ -190,7 +189,7 @@ define(['class'], function(Class) {
         },
 
         // Grab card
-        grab: function(x, y, callback) {
+        grab: function(x, y, canvas_el, callback) {
             var that = this;
 
             // Add styling to card
@@ -198,7 +197,7 @@ define(['class'], function(Class) {
             that.el.removeClass('ungrabbed');
 
             // Move card according to mouse offset
-            that.canvas_el.mousemove(function(e) {
+            canvas_el.mousemove(function(e) {
                 var offset = {
                     left: e.pageX - x,
                     top: e.pageY - y,
@@ -218,53 +217,21 @@ define(['class'], function(Class) {
             var that = this;
 
             // Animate to offset
-            that.el.animate(that.offset, 'fast', function() {
-
-                // Callback afer return
+            that.el.animate({
+                left: that.offset.left,
+                top: that.offset.top,
+                zIndex: that.zindex
+            }, 'fast', function() {
                 if (callback) callback();
 
                 // Add styling to card
                 that.el.addClass('ungrabbed');
                 that.el.removeClass('grabbed');
             });
-
-            // Unbind grab
-            that.canvas_el.unbind('mousemove');
-        },
-
-        // Switch to different
-        switch: function(collide, callback) {
-            var that = this;
-
-            // Get last card
-            var last = collide.slot2.last;
-            var cards = [];
-
-            // If card is allowed to switch column
-            if (last.num - 1 == that.num && last.color != that.color) {
-                var card = collide.slot1.pickCard(that.pos);
-                cards.push(card);
-
-                // Place cards to slot
-                collide.slot2.addCards(cards);
-
-                // Update status
-                last.last = false;
-
-                // Callback afer switch
-                if (callback) callback();
-            } else {
-
-                // Back to position
-                that.return(callback);
-            }
-
-            // Unbind grab
-            that.canvas_el.unbind('mousemove');
         },
 
         // Check for collision
-        isCollide: function(target, offset) {
+        isCollide: function(card, offset) {
             var that = this;
 
             // Compute card data
@@ -275,16 +242,27 @@ define(['class'], function(Class) {
             var b1 = y1 + h1;
             var r1 = x1 + w1;
 
-            // Get target data
-            var x2 = target.offset.left;
-            var y2 = target.offset.top;
-            var h2 = target.height;
-            var w2 = target.width;
+            // Get target card data
+            var x2 = card.offset.left;
+            var y2 = card.offset.top;
+            var h2 = card.height;
+            var w2 = card.width;
             var b2 = y2 + h2;
             var r2 = x2 + w2;
 
             if (b1 < y2 || y1 > b2 || r1 < x2 || x1 > r2) return false;
             return true;
+        },
+
+        // If card is allowed to switch
+        isAllowed: function(card) {
+            var that = this;
+
+            if (card.num - 1 == that.num && card.color != that.color) {
+                return true;
+            } else {
+                return false;
+            }
         }
     });
 

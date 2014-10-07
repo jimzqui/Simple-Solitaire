@@ -110,14 +110,6 @@ body {
     user-select: none;
 }
 
-.faceup {
-    cursor: grab !important;
-}
-
-.faceup.grabbed {
-    cursor: grabbing !important;
-}
-
 
 /* ==========================================================================
    Helper classes

@@ -81,7 +81,7 @@ define(['card', 'class'], function(Card, Class) {
                     that._cards.push(card);
 
                     // Listen for car move
-                    that.listenCardMove(card);
+                    that.listenCard(card);
                 };
             };
         },
@@ -212,100 +212,84 @@ define(['card', 'class'], function(Card, Class) {
         },
 
         // Add events to card
-        listenCardMove: function(card) {
+        listenCard: function(card) {
             var that = this;
 
             // Check if card is grabbed
             card.el.unbind('mousedown');
             card.el.mousedown(function(e) { 
                 if (card.face == 'facedown') return;
+                if (card.slot.name == 'browse' && card.last == false) return;
 
                 // Get mouse offset
                 var x = e.pageX - card.offset.left;
                 var y = e.pageY - card.offset.top;
 
-                // Grab card
-                card.grab(x, y, function(offset) {
+                // Grab and get collision data for columns
+                card.grab(x, y, that.el, function(offset) {
                     for (var i = 0; i < that.columns.length; i++) {
                         var column = that.columns[i];
-                        column.collide = that.getCollision(column, card, offset);
+                        column.setCollision(card, offset);
                     };
                 });
 
                 // Other cards
-                if (card.last != true) {
-                    var count = 1;
-                    var column_active = that.columns[card.col_num];
-                    for (var i = card.pos + 1; i < column_active.cards.length; i++) {
-                        var card_active = column_active.cards[i];
-
-                        // Grab card
-                        card_active.grab(x, y - (count * 20));
-                        count++;
-                    };
-                }
+                var count = 1;
+                for (var i = card.index + 1; i < card.slot.cards.length; i++) {
+                    var card_active = card.slot.cards[i];
+                    card_active.grab(x, y - (count * 20), that.el);
+                    count++;
+                };
             });
 
             // Check if card is released
             card.el.unbind('mouseup');
             card.el.mouseup(function(e) { 
                 if (card.face == 'facedown') return;
+                that.el.unbind('mousemove');
 
-                // Implement current collisions
+                // Check any collision for columns
                 for (var i = 0; i < that.columns.length; i++) {
                     var column = that.columns[i];
-                    if (column.collide != null) {
-
-                        // Switch card to different column
-                        column.collide.card.switch(column.collide, function() {
+                    var collided = column.checkCollision(card, function(cards) {
+                        that.placeCards(column, cards, function() {
                             column.collide = null;
                         });
-
-                        // Other cards
-                        if (card.last != true) {
-                            var count = 1;
-                            var column_active = that.columns[card.col_num];
-                            for (var i = card.pos + 1; i < column_active.cards.length; i++) {
-                                var card_active = column_active.cards[i];
-
-                                // Switch other cards to different column
-                                card_active.switch(column.collide);
-                            };
-                        }
-
-                        return;
-                    }
+                    });
                 };
 
                 // Return all cards
-                var column_active = that.columns[card.col_num];
-                for (var i = card.pos; i < column_active.cards.length; i++) {
-                    var card_active = column_active.cards[i];
-
-                    // Return card
-                    card_active.return();
-                };
-            });
-        },
-
-        // Get any card collision
-        getCollision: function(slot, card, offset) {
-            var that = this;
-
-            // Something collided with the card
-            if (card.isCollide(slot.last, offset) == true) {
-
-                // Make sure not its own slot
-                if (slot.col_num != card.col_num) {
-                    return {
-                        slot1: that.columns[card.pos],
-                        slot2: slot,
-                        card: card
+                if (collided == false) {
+                    for (var i = card.index; i < card.slot.cards.length; i++) {
+                        var card_active = card.slot.cards[i];
+                        card_active.return();
                     };
-                } 
-            }
+                }
+            });
 
-            return null;
+            // Check if card is clicked
+            card.el.unbind('click');
+            card.el.click(function(e) { 
+                if (card.face == 'faceup') return;
+                if (card.slot.name == 'stack') return;
+
+                // Flip card
+                card.flip('faceup');
+            });
+
+            //Check if card is dbclicked
+            card.el.dblclick(function() {
+                if (card.face == 'facedown') return;
+                if (card.slot.name == 'browse' && card.last == false) return;
+
+                // Chekin card
+                switch(card.suit) {
+                    case 'Spades': that.aces[0].checkinCard(card); break;
+                    case 'Hearts': that.aces[1].checkinCard(card); break;
+                    case 'Clubs': that.aces[2].checkinCard(card); break;
+                    case 'Diamonds': that.aces[3].checkinCard(card); break;
+                }
+            });
         }
     });
 
