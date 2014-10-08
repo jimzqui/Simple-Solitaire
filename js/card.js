@@ -16,64 +16,55 @@ define(['class'], function(Class) {
 
             // Default settings
             var defaults = {
-                value: null,
-                suit: null
+                width: 71,
+                height: 96
             };
 
             // Construct settings
             var settings = $.extend({}, defaults, options);
+
+            // Map settings to root
             $.each(settings, function(index, value) {
                 that[index] = value;
             });
-
-            // Card num
-            that.num = that.value;
-
-            // Card value
-            switch(that.value) {
-                case 11: that.value = 10; break;
-                case 12: that.value = 10; break;
-                case 13: that.value = 10; break;
-            }
-
-            // Card suit and color
-            switch(that.suit) {
-                case 1: that.suit = 'Spades'; that.color = 'black'; break;
-                case 2: that.suit = 'Hearts'; that.color = 'white'; break;
-                case 3: that.suit = 'Clubs'; that.color = 'black'; break;
-                case 4: that.suit = 'Diamonds'; that.color = 'white'; break;
-                default: that.suit = 'Spades'; that.color = 'black';
-            }
-
-            // Card name
-            switch(that.value) {
-                case 1: that.name = 'Ace'; break;
-                case 11: that.name = 'Jack'; break;
-                case 12: that.name = 'Queen'; break;
-                case 13: that.name = 'King'; break;
-            }
-
-            // Card slug
-            that.slug = this.num + that.suit;
 
             return that;
         },
 
         // Create card element
-        create: function(canvas) {
+        create: function(value, suit) {
             var that = this;
 
+            // Set card info
+            that.setValue(value);
+            that.setSuit(suit);
+            that.setName(value);
+
+            // Card num and slug
+            that.num = value;
+            that.slug = this.num + that.suit;
+
             // Create card
-            var html = '<div class="card"><img src="cards/' + that.slug + '.png"><span></span></div>';
-            that.el = $(html).appendTo(canvas.el);
+            var html = '<div class="card"><img src="cards/' + 
+            that.slug + '.png"><span></span></div>';
+            that.el = $(html).appendTo('#solitaire');
             that.img = that.el.find('img');
             that.flip('facedown', 0);
+
+            // Style card
+            that.style();
+            return that;
+        },
+
+        // Add styling to card
+        style: function() {
+            var that = this;
 
             // Style element
             that.el.css({
                 position: 'absolute',
-                height: canvas.settings.card.height,
-                width: canvas.settings.card.width,
+                height: that.height,
+                width: that.width,
                 cursor: 'pointer'
             });
 
@@ -96,12 +87,44 @@ define(['class'], function(Class) {
                 top: 0,
                 zIndex: 1
             });
+        },
 
-            // Setup dimension
-            that.width = that.el.width();
-            that.height = that.el.height();
+        // Set card value
+        setValue: function(value) {
+            var that = this;
 
-            return that;
+            switch(value) {
+                case 11: that.value = 10; break;
+                case 12: that.value = 10; break;
+                case 13: that.value = 10; break;
+                default: that.value = value;
+            }
+        },
+
+        // Set card suit and color
+        setSuit: function(suit) {
+            var that = this;
+
+            switch(suit) {
+                case 1: that.suit = 'Spades'; that.color = 'black'; break;
+                case 2: that.suit = 'Hearts'; that.color = 'white'; break;
+                case 3: that.suit = 'Clubs'; that.color = 'black'; break;
+                case 4: that.suit = 'Diamonds'; that.color = 'white'; break;
+                default: that.suit = 'Spades'; that.color = 'black';
+            }
+        },
+
+        // Set card name
+        setName: function(value) {
+            var that = this;
+            
+            switch(value) {
+                case 1: that.name = 'Ace'; break;
+                case 11: that.name = 'Jack'; break;
+                case 12: that.name = 'Queen'; break;
+                case 13: that.name = 'King'; break;
+                default: that.name = value;
+            }
         },
 
         // Move card to slot

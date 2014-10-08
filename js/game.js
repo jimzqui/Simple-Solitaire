@@ -4,37 +4,26 @@
  * (c) 2014, Jimbo Quijano
  */
 
-var Game;
-
 // Load dependencies
 define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Solitaire, Deck, Stack, Browse, Column, Aces) {
 
 	// Craete new game
-	Game = new Solitaire;
+	var Game = new Solitaire;
 
 	// Create new deck
     Game.deck = new Deck({
-        name: 'deck',
-        animate: false,
-        offset: Game.computeOffset(3, 3)
-    }).create(Game);
+        name: 'deck'
+    }).create(3, 3);
 
     // Create new stack
     Game.stack = new Stack({
-        name: 'stack',
-        offset: Game.computeOffset(0, 0)
-    }).create(Game);
+        name: 'stack'
+    }).create(0, 0);
 
     // Create new browse
     Game.browse = new Browse({
-        name: 'browse',
-        offset: Game.computeOffset(1, 0),
-        anim: {
-        	interval: 150,
-        	speed: 200,
-        	ease: 15
-        }
-    }).create(Game);
+        name: 'browse'
+    }).create(1, 0);
 
     // Create new columns
     Game.columns = [];
@@ -42,8 +31,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
         Game.columns.push(new Column({
             name: 'col' + i,
             slotindex: i,
-            offset: Game.computeOffset(i, 1),
-        }).create(Game))
+        }).create(i, 1))
     };
 
     // Create new aces
@@ -52,13 +40,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
         Game.aces.push(new Aces({
             name: 'ace' + i,
         	slotindex: i,
-            offset: Game.computeOffset(3 + i, 0),
-            anim: {
-                interval: 150,
-                speed: 300,
-                ease: 15
-            }
-        }).create(Game))
+        }).create(3 + i, 0))
     };
 
 	// Return game

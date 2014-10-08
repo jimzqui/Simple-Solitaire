@@ -10,6 +10,40 @@ define(['slot'], function(Slot) {
     // Extend Browse to Slot
     var Browse = Slot.extend({
 
+        // Initialize
+        init: function(options) {
+            var that = this;
+
+            // Default settings
+            var defaults = {
+                cascade: {
+                    left: 20,
+                    top: 0
+                },
+                anim: {
+                    interval: 150,
+                    speed: 200,
+                    ease: 15
+                },
+                last: null,
+                status: null,
+                animate: true,
+                width: 71,
+                height: 96,
+                cards: []
+            };
+
+            // Construct settings
+            var settings = $.extend({}, defaults, options);
+
+            // Map settings to root
+            $.each(settings, function(index, value) {
+                that[index] = value;
+            });
+
+            return that;
+        },
+
         // Uncascade cards
         uncascade: function(callback) {
             var that = this;
@@ -53,7 +87,7 @@ define(['slot'], function(Slot) {
             }
         },
 
-        // Compute casecade data
+        // Compute cascade data
         computeCascade: function() {
             var that = this;
 
@@ -69,7 +103,7 @@ define(['slot'], function(Slot) {
                 if (prev_card.browsed == false) {
                     var offset_left = that.offset.left;
                 } else {
-                    var offset_left = prev_card.offset.left + 20;
+                    var offset_left = prev_card.offset.left + that.cascade.left;
                 }
             }
 

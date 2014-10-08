@@ -18,15 +18,7 @@ define(['card', 'class'], function(Card, Class) {
             var defaults = {
                 canvas: 'solitaire',
                 width: 677,
-                height: 550,
-                card: {
-                    width: 71,
-                    height: 96
-                },
-                slot: {
-                    distance_x: 30,
-                    distance_y: 50
-                }
+                height: 550
             };
 
             // Construct final settings
@@ -72,10 +64,8 @@ define(['card', 'class'], function(Card, Class) {
                 for (var j = 1; j <= 4; j++) {
 
                     // Create new card
-                    var card = new Card({
-                        value: i,
-                        suit: j
-                    }).create(that);
+                    var card = new Card();
+                    card.create(i, j);
 
                     // Add card to container
                     that._cards.push(card);

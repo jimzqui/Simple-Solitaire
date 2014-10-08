@@ -14,31 +14,29 @@ define(['class'], function(Class) {
         init: function(options) {
             var that = this;
 
-            // Offset settings
-            var offset = {
-                top: 0,
-                left: 0
-            };
-
-             // Anim settings
-            var anim = {
-                interval: 150,
-                speed: 500,
-                ease: 20
-            };
-
             // Default settings
             var defaults = {
-                offset: offset,
-                anim: anim,
+                cascade: {
+                    left: 0,
+                    top: 0
+                },
+                anim: {
+                    interval: 150,
+                    speed: 500,
+                    ease: 20
+                },
                 last: null,
                 status: null,
                 animate: true,
+                width: 71,
+                height: 96,
                 cards: []
             };
 
             // Construct settings
             var settings = $.extend({}, defaults, options);
+
+            // Map settings to root
             $.each(settings, function(index, value) {
                 that[index] = value;
             });
@@ -47,13 +45,25 @@ define(['class'], function(Class) {
         },
 
         // Create slot element
-        create: function(canvas) {
+        create: function(left, top) {
             var that = this;
 
             // Create slot
             var html = '<div class="slot"><span></span></div>';
-            that.el = $(html).appendTo(canvas.el);
+            that.el = $(html).appendTo('#solitaire');
             that.inner = that.el.find('span');
+
+            // Compute offset
+            that.offset = that.computeOffset(left, top);
+
+            // Style slot
+            that.style();
+            return that;
+        },
+
+        // Add styling to slot
+        style: function() {
+            var that = this;
 
             // Style element
             that.el.css({
@@ -61,8 +71,8 @@ define(['class'], function(Class) {
                 left: that.offset.left,
                 top: that.offset.top,
                 borderRadius: 5,
-                height: canvas.settings.card.height,
-                width: canvas.settings.card.width
+                height: that.height,
+                width: that.width
             });
 
             // Style inner
@@ -71,15 +81,9 @@ define(['class'], function(Class) {
                 display: 'none',
                 float: 'left',
                 borderRadius: 5,
-                height: canvas.settings.card.height - 4,
-                width: canvas.settings.card.width - 4
+                height: that.height - 4,
+                width: that.width - 4
             });
-
-            // Setup dimension
-            that.width = canvas.settings.card.width;
-            that.height = canvas.settings.card.height;
-
-            return that;
         },
 
         // Pick card from slot
@@ -232,10 +236,16 @@ define(['class'], function(Class) {
             }
         },
 
-        // Compute casecade data
+        // Compute cascade data
         computeCascade: function() {
             var that = this;
-            return that.offset;
+            var adjust_left = (that.cards.length - 1) * that.cascade.left;
+            var adjust_top = (that.cards.length - 1) * that.cascade.top;
+
+            return {
+                left: that.offset.left + adjust_left,
+                top: that.offset.top + adjust_top
+            };
         },
 
         // Get any card collision
@@ -281,6 +291,22 @@ define(['class'], function(Class) {
             }
 
             return false;
+        },
+
+        // Compute slot positions
+        computeOffset: function(left, top) {
+            var that = this;
+            var dist_left = 30;
+            var dist_top = 50;
+
+            // Compute data
+            var pos_left = (left * that.width) + (left * dist_left);
+            var pos_top = (top * that.height) + (top * dist_top);
+
+            return {
+                left: pos_left,
+                top: pos_top
+            }
         }
     });
 

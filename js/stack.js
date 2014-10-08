@@ -10,6 +10,40 @@ define(['slot'], function(Slot) {
     // Extend Stack to Slot
     var Stack = Slot.extend({
 
+        // Initialize
+        init: function(options) {
+            var that = this;
+
+            // Default settings
+            var defaults = {
+                cascade: {
+                    left: 0,
+                    top: 0
+                },
+                anim: {
+                    interval: 150,
+                    speed: 500,
+                    ease: 20
+                },
+                last: null,
+                status: null,
+                animate: true,
+                width: 71,
+                height: 96,
+                cards: []
+            };
+
+            // Construct settings
+            var settings = $.extend({}, defaults, options);
+
+            // Map settings to root
+            $.each(settings, function(index, value) {
+                that[index] = value;
+            });
+
+            return that;
+        },
+
         // Open last 3 cards
         browse: function(slot) {
             var that = this;
@@ -114,7 +148,7 @@ define(['slot'], function(Slot) {
             }
         },
 
-        // Compute casecade data
+        // Compute cascade data
         computeCascade: function() {
             var that = this;
             return that.offset;
