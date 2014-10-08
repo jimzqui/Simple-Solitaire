@@ -4,11 +4,13 @@
  * (c) 2014, Jimbo Quijano
  */
 
+ var Game;
+
 // Load dependencies
 define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Solitaire, Deck, Stack, Browse, Column, Aces) {
 
 	// Craete new game
-	var Game = new Solitaire;
+	Game = new Solitaire;
 
 	// Create new deck
     Game.deck = new Deck({

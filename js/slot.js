@@ -77,9 +77,13 @@ define(['class'], function(Class) {
 
             // Style inner
             that.inner.css({
+                background: 'url(img/' + that.name + '.png) no-repeat scroll',
+                backgroundPosition: 'center center',
+                backgroundSize: 50,
                 border: '2px solid #555',
                 display: 'none',
                 float: 'left',
+                opacity: '0.8',
                 borderRadius: 5,
                 height: that.height - 4,
                 width: that.width - 4

@@ -125,10 +125,10 @@ define(['slot'], function(Slot) {
                     var cards_active = [];
 
                     // Add only last card
-                    cards_active.push(that.collide.pickCard(that.collide.cards.last.index));
+                    cards_active.push(that.collide.pickCard(that.collide.cards.length - 1));
 
                     // Callback after checking
-                    if (callback) callback(cards_active.reverse());
+                    if (callback) callback(cards_active);
 
                     return true;
                 }

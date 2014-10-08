@@ -57,7 +57,7 @@ define(['card', 'class'], function(Card, Class) {
             var that = this;
 
             // Create container
-            that._cards = [];
+            that.cards = [];
 
             // Contruct cards
             for (var i = 1; i <= 13; i++) {
@@ -68,7 +68,7 @@ define(['card', 'class'], function(Card, Class) {
                     card.create(i, j);
 
                     // Add card to container
-                    that._cards.push(card);
+                    that.cards.push(card);
 
                     // Listen for car move
                     that.listenCard(card);
@@ -82,6 +82,76 @@ define(['card', 'class'], function(Card, Class) {
 
             // Deck cards
             that.populateDeck();
+        },
+
+        // Reset game
+        restart: function() {
+            var that = this;
+
+            // Create container
+            var cards = [];
+
+            // Put stack cards back to deck
+            for (var i = 0; i < that.stack.cards.length; i++) {
+                var card_stack = that.stack.cards[i];
+                if (card_stack != undefined) {
+                    that.removeEvent(card_stack);
+                    card_stack.flip('facedown', 0);
+                    cards.push(card_stack);
+                }
+            };
+            that.stack.cards = [];
+            that.removeEvent(that.stack);
+
+            // Put browse cards back to deck
+            for (var j = 0; j < that.browse.cards.length; j++) {
+                var card_deck = that.browse.cards[j];
+                if (card_deck != undefined) {
+                    that.removeEvent(card_deck);
+                    card_deck.flip('facedown', 0);
+                    cards.push(card_deck);
+                }
+            };
+            that.browse.cards = [];
+            that.removeEvent(that.browse);
+
+            // Put column cards back to deck
+            for (var k = 0; k < 7; k++) {
+                var column = that.columns[k];
+                for (var l = 0; l < column.cards.length; l++) {
+                    var card_col = column.cards[l];
+                    if (card_col != undefined) {
+                        that.removeEvent(card_col);
+                        card_col.flip('facedown', 0);
+                        cards.push(card_col);
+                    }
+                };
+                column.cards = [];
+                that.removeEvent(column);
+            };
+
+            // Put ace cards back to deck
+            for (var m = 0; m < 4; m++) {
+                var ace = that.aces[m];
+                for (var n = 0; n < ace.cards.length; n++) {
+                    var card_ace = ace.cards[n];
+                    if (card_ace != undefined) {
+                        that.removeEvent(card_ace);
+                        card_ace.flip('facedown', 0);
+                        cards.push(card_ace);
+                    }
+                };
+                ace.cards = [];
+                that.removeEvent(ace);
+            };
+
+            // Place cards to deck
+            that.deck.animate = true;
+            that.placeCards(that.deck, cards, function() {
+                that.deck.inner.hide();
+                that.deck.cards = [];
+                that.start();
+            });
         },
 
         // Place cards to slot
@@ -99,15 +169,11 @@ define(['card', 'class'], function(Card, Class) {
             var that = this;
 
             // Get cards
-            var cards = that._cards;
+            var cards = that.cards;
 
             // Place cards to deck
             that.placeCards(that.deck, cards, function() {
-
-                // Shuffle slot
                 that.deck.shuffle();
-
-                // Stack cards
                 that.populateStack();
             });
         },
@@ -178,9 +244,28 @@ define(['card', 'class'], function(Card, Class) {
                 })(timeout, ace);
             };
 
+            // Iterate each columns slot
+            for (var i = 0; i < that.columns.length; i++) {
+                var column = that.columns[i];
+                var timeout = i * column.anim.interval;
+
+                (function(timeout, column) {
+                    setTimeout(function() {
+                        column.inner.fadeIn();
+                    }, timeout);
+                })(timeout, column);
+            };
+
             // Fade in inner contents
             that.deck.inner.fadeIn();
             that.stack.inner.fadeIn();
+
+            // Check for deck click
+            that.deck.el.css({ cursor: 'pointer '});
+            that.deck.el.unbind('click');
+            that.deck.el.click(function() {
+                that.restart();
+            });
         },
 
         // Compute slot positions
@@ -267,7 +352,8 @@ define(['card', 'class'], function(Card, Class) {
                 card.flip('faceup');
             });
 
-            //Check if card is dbclicked
+            // Check if card is dbclicked
+            card.el.unbind('dblclick');
             card.el.dblclick(function() {
                 if (card.face == 'facedown') return;
                 if (card.slot.name == 'browse' && card.last == false) return;
@@ -280,6 +366,15 @@ define(['card', 'class'], function(Card, Class) {
                     case 'Diamonds': that.aces[3].checkinCard(card); break;
                 }
             });
+        },
+
+        // Remove events to cards and slot
+        removeEvent: function(target) {
+            var that = this;
+            target.el.unbind('click');
+            target.el.unbind('dbclick');
+            target.el.unbind('mousedown');
+            target.el.unbind('mouseup');
         }
     });
 
