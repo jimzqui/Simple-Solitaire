@@ -77,6 +77,30 @@ define(['slot'], function(Slot) {
                 left: offset_left,
                 top: that.offset.top
             };
+        },
+
+        // Check for any collision
+        checkCollision: function(card, callback) {
+            var that = this;
+
+            // Column collided
+            if (that.collide != null) {
+
+                // Card is allowed to switch
+                if (card.isAllowed(that.last) == true) {
+                    var cards_active = [];
+
+                    // Add only last card
+                    cards_active.push(that.collide.pickCard(that.collide.cards.last.index));
+
+                    // Callback after checking
+                    if (callback) callback(cards_active.reverse());
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     });
 

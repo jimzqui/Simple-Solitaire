@@ -243,7 +243,7 @@ define(['class'], function(Class) {
             var that = this;
 
             // Something collided with the card
-            if (card.isCollide(that.last, offset) == true) {
+            if (card.isCollide(that, offset) == true) {
 
                 // Make sure not its own slot
                 if (that.slotindex != card.slotindex) {
@@ -262,12 +262,15 @@ define(['class'], function(Class) {
             if (that.collide != null) {
 
                 // Card is allowed to switch
-                if (card.isAllowed(that.last) == true) {
+                if (card.isAllowed(that) == true) {
                     var cards_active = [];
 
                     // Iterate each cards
                     for (var i = that.collide.cards.length - 1; i >= card.index; i--) {
-                        cards_active.push(that.collide.pickCard(i));
+                        var card_active = that.collide.pickCard(i);
+                        if (card_active.face == 'faceup') {
+                            cards_active.push(card_active);
+                        }
                     };
 
                     // Callback after checking

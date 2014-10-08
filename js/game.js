@@ -53,6 +53,11 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
             name: 'ace' + i,
         	slotindex: i,
             offset: Game.computeOffset(3 + i, 0),
+            anim: {
+                interval: 150,
+                speed: 300,
+                ease: 15
+            }
         }).create(Game))
     };
 

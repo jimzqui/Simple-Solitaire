@@ -194,7 +194,6 @@ define(['class'], function(Class) {
 
             // Add styling to card
             that.el.addClass('grabbed');
-            that.el.removeClass('ungrabbed');
 
             // Move card according to mouse offset
             canvas_el.mousemove(function(e) {
@@ -225,14 +224,18 @@ define(['class'], function(Class) {
                 if (callback) callback();
 
                 // Add styling to card
-                that.el.addClass('ungrabbed');
                 that.el.removeClass('grabbed');
             });
         },
 
         // Check for collision
-        isCollide: function(card, offset) {
+        isCollide: function(slot, offset) {
             var that = this;
+
+            // If card is king and target of target is empty
+            if (that.num == 13 && slot.cards.length == 0) {
+                return true; 
+            }
 
             // Compute card data
             var x1 = offset.left;
@@ -242,11 +245,11 @@ define(['class'], function(Class) {
             var b1 = y1 + h1;
             var r1 = x1 + w1;
 
-            // Get target card data
-            var x2 = card.offset.left;
-            var y2 = card.offset.top;
-            var h2 = card.height;
-            var w2 = card.width;
+            // Get target's card data
+            var x2 = slot.last.offset.left;
+            var y2 = slot.last.offset.top;
+            var h2 = slot.last.height;
+            var w2 = slot.last.width;
             var b2 = y2 + h2;
             var r2 = x2 + w2;
 
@@ -255,10 +258,16 @@ define(['class'], function(Class) {
         },
 
         // If card is allowed to switch
-        isAllowed: function(card) {
+        isAllowed: function(slot) {
             var that = this;
 
-            if (card.num - 1 == that.num && card.color != that.color) {
+            // If card is king and target is empty
+            if (that.num == 13 && slot.cards.length == 0) {
+                return true; 
+            }
+
+            // Target's card has matching value but different color
+            if (slot.last.num - 1 == that.num && slot.last.color != that.color) {
                 return true;
             } else {
                 return false;

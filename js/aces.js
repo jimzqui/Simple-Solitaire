@@ -17,7 +17,7 @@ define(['slot'], function(Slot) {
             // If allowed, place card
             if (card.num - 1 == that.cards.length) {
                 var card = card.slot.pickCard(card.index);
-                card.el.css({ zIndex: 999 });
+                card.el.animate({ zIndex: 999 }, 0);
                 that.addCard(card);
                 card.move(that);
             }

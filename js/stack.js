@@ -28,7 +28,6 @@ define(['slot'], function(Slot) {
                 
                 // Add card to container
                 if (card != undefined) {
-                    card.el.unbind('click');
                     browsed.push(card);
                 }
             };
@@ -39,13 +38,16 @@ define(['slot'], function(Slot) {
                 // Flip browsed cards
                 for (var i = 0; i < browsed.length; i++) {
                     var card = browsed[i];
+                    card.el.unbind('click');
                     card.flip('faceup');
                 };
                 
                 // Last stack cards
                 that.last.el.unbind('click');
                 that.last.el.click(function() {
-                    that.browse(slot);
+                    if (that.cards.length != 0) {
+                        that.browse(slot);
+                    }
                 });
 
                 // If all cards are browsed
