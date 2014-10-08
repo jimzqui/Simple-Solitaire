@@ -86,6 +86,7 @@ define(['slot'], function(Slot) {
 
                 // If all cards are browsed
                 that.el.unbind('click');
+                that.el.css({ cursor: 'pointer' });
                 that.el.click(function() {
                     if (that.cards.length == 0) {
                         that.reset(slot);
