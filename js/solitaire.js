@@ -14,27 +14,40 @@ define(['card', 'class'], function(Card, Class) {
         init: function(options) {
             var that = this;
 
+            // Card suits
+            var card_suits = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
+
+            // Card names
+            var card_names = ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King'];
+
             // Default settings
             var defaults = {
-                canvas: 'solitaire',
+                el: 'solitaire',
                 width: 677,
-                height: 550
+                height: 550,
+                card_suits: card_suits,
+                card_names: card_names,
+                cards: []
             };
 
             // Construct final settings
-            that.settings = $.extend({}, defaults, options);
+            var settings = $.extend({}, defaults, options);
 
-            // Create canvas and cards
-            that.createCanvas();
-            that.createCards();
+            // Map settings to root
+            $.each(settings, function(index, value) {
+                that[index] = value;
+            });
+
+            // Create canvas
+            that.create();
         },
 
         // Create canvas
-        createCanvas: function() {
+        create: function() {
             var that = this;
 
             // Create canvas
-            var html = '<div id="' + that.settings.canvas + '"></div>';
+            var html = '<div id="' + that.el + '"></div>';
             that.el = $(html).appendTo('body');
 
             // Style canvas
@@ -42,36 +55,38 @@ define(['card', 'class'], function(Card, Class) {
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
-                width: that.settings.width,
-                height: that.settings.height,
-                marginLeft: (that.settings.width / 2) * -1,
-                marginTop: (that.settings.height / 2) * -1
+                width: that.width,
+                height: that.height,
+                marginLeft: (that.width / 2) * -1,
+                marginTop: (that.height / 2) * -1
             });
 
             // Canvas offset
             that.offset = that.el.offset();
+
+            // Populate cards
+            that.populate();
         },
 
         // Create cards
-        createCards: function() {
+        populate: function() {
             var that = this;
 
-            // Create container
+            // Empty cards
             that.cards = [];
 
             // Contruct cards
-            for (var i = 1; i <= 13; i++) {
-                for (var j = 1; j <= 4; j++) {
+            for (var i = 0; i < that.card_names.length; i++) {
+                for (var j = 0; j < that.card_suits.length; j++) {
 
                     // Create new card
-                    var card = new Card();
-                    card.create(i, j);
+                    var card = new Card({
+                        name: that.card_names[i],
+                        suit: that.card_suits[j]
+                    });
 
                     // Add card to container
                     that.cards.push(card);
-
-                    // Listen for car move
-                    that.listenCard(card);
                 };
             };
         },
@@ -88,80 +103,33 @@ define(['card', 'class'], function(Card, Class) {
         restart: function() {
             var that = this;
 
-            // Create container
-            var cards = [];
-
-            // Put stack cards back to deck
-            for (var i = 0; i < that.stack.cards.length; i++) {
-                var card_stack = that.stack.cards[i];
-                if (card_stack != undefined) {
-                    that.removeEvent(card_stack);
-                    card_stack.flip('facedown', 0);
-                    cards.push(card_stack);
-                }
-            };
-            that.stack.cards = [];
-            that.removeEvent(that.stack);
-
-            // Put browse cards back to deck
-            for (var j = 0; j < that.browse.cards.length; j++) {
-                var card_deck = that.browse.cards[j];
-                if (card_deck != undefined) {
-                    that.removeEvent(card_deck);
-                    card_deck.flip('facedown', 0);
-                    cards.push(card_deck);
-                }
-            };
-            that.browse.cards = [];
-            that.removeEvent(that.browse);
-
-            // Put column cards back to deck
-            for (var k = 0; k < 7; k++) {
-                var column = that.columns[k];
-                for (var l = 0; l < column.cards.length; l++) {
-                    var card_col = column.cards[l];
-                    if (card_col != undefined) {
-                        that.removeEvent(card_col);
-                        card_col.flip('facedown', 0);
-                        cards.push(card_col);
-                    }
-                };
-                column.cards = [];
-                that.removeEvent(column);
+            // Remove all card event
+            for (var i = 0; i < that.cards.length; i++) {
+                var card = that.cards[i];
+                card.flip('facedown', 0);
+                card.removeCollision();
+                card.removeEvents();
             };
 
-            // Put ace cards back to deck
-            for (var m = 0; m < 4; m++) {
-                var ace = that.aces[m];
-                for (var n = 0; n < ace.cards.length; n++) {
-                    var card_ace = ace.cards[n];
-                    if (card_ace != undefined) {
-                        that.removeEvent(card_ace);
-                        card_ace.flip('facedown', 0);
-                        cards.push(card_ace);
-                    }
-                };
-                ace.cards = [];
-                that.removeEvent(ace);
+            // Transfer cards to deck
+            that.stack.transfer(that.deck);
+            that.browse.transfer(that.deck);
+
+            // Transfer ace cards to deck
+            for (var j = 0; j < 4; j++) {
+                var ace = that.aces[j];
+                ace.transfer(that.deck);
             };
 
-            // Place cards to deck
-            that.deck.animate = true;
-            that.placeCards(that.deck, cards, function() {
-                that.deck.inner.hide();
-                that.deck.cards = [];
-                that.start();
-            });
-        },
+            // Transfer col cards to deck
+            for (var i = 0; i < 7; i++) {
+                var column = that.columns[i];
+                column.transfer(that.deck);
+            };
 
-        // Place cards to slot
-        placeCards: function(slot, cards, callback) {
-            var that = this;
-
-            // Place cards to slot
-            slot.addCards(cards, function() {
-                if (callback) callback();
-            });
+            // Repopulate other slots
+            that.deck.shuffle();
+            that.populateStack();
         },
 
         // Place cards to deck
@@ -172,7 +140,7 @@ define(['card', 'class'], function(Card, Class) {
             var cards = that.cards;
 
             // Place cards to deck
-            that.placeCards(that.deck, cards, function() {
+            that.deck.addCards(cards, function() {
                 that.deck.shuffle();
                 that.populateStack();
             });
@@ -186,8 +154,7 @@ define(['card', 'class'], function(Card, Class) {
             var cards = that.deck.pickCards(24);
 
             // Place cards to stack
-            that.placeCards(that.stack, cards, function() {
-                that.stack.reset(that.browse);
+            that.stack.addCards(cards, function() {
                 that.populateColumns(1);
             });
         },
@@ -219,6 +186,7 @@ define(['card', 'class'], function(Card, Class) {
                 var column = that.columns[i];
                 var card = column.cards[column.cards.length - 1];
                 var timeout = i * column.anim.interval;
+                column.status = 'placed';
 
                 (function(timeout, card) {
                     setTimeout(function() {
@@ -266,115 +234,16 @@ define(['card', 'class'], function(Card, Class) {
             that.deck.el.click(function() {
                 that.restart();
             });
-        },
 
-        // Compute slot positions
-        computeOffset: function(x, y) {
-            var that = this;
+            // Add events to each cards
+            for (var j = 0; j < that.cards.length; j++) {
+                var card = that.cards[j];
+                card.addCollision(that.columns);
+                card.addEvents(that.aces);
+            };
 
-            // Compute data
-            var size_x = x * that.settings.card.width;
-            var dist_x = x * that.settings.slot.distance_x;
-            var size_y = y * that.settings.card.height;
-            var dist_y = y * that.settings.slot.distance_y;
-            var pos_x = size_x + dist_x;
-            var pos_y = size_y + dist_y;
-
-            return {
-                left: pos_x,
-                top: pos_y
-            }
-        },
-
-        // Add events to card
-        listenCard: function(card) {
-            var that = this;
-
-            // Check if card is grabbed
-            card.el.unbind('mousedown');
-            card.el.mousedown(function(e) { 
-                if (card.face == 'facedown') return;
-                if (card.slot.name == 'browse' && card.last == false) return;
-
-                // Get mouse offset
-                var x = e.pageX - card.offset.left;
-                var y = e.pageY - card.offset.top;
-
-                // Grab and get collision data for columns
-                card.grab(x, y, that.el, function(offset) {
-                    for (var i = 0; i < that.columns.length; i++) {
-                        var column = that.columns[i];
-                        column.setCollision(card, offset);
-                    };
-                });
-
-                // Other cards
-                var count = 1;
-                for (var i = card.index + 1; i < card.slot.cards.length; i++) {
-                    var card_active = card.slot.cards[i];
-                    card_active.grab(x, y - (count * 20), that.el);
-                    count++;
-                };
-            });
-
-            // Check if card is released
-            card.el.unbind('mouseup');
-            card.el.mouseup(function(e) { 
-                if (card.face == 'facedown') return;
-                that.el.unbind('mousemove');
-
-                // Check any collision for columns
-                for (var i = 0; i < that.columns.length; i++) {
-                    var column = that.columns[i];
-                    var collided = column.checkCollision(card, function(cards) {
-                        that.placeCards(column, cards, function() {
-                            column.collide = null;
-                        });
-                    });
-                };
-
-                // Return all cards
-                if (collided == false) {
-                    for (var i = card.index; i < card.slot.cards.length; i++) {
-                        var card_active = card.slot.cards[i];
-                        card_active.return();
-                    };
-                }
-            });
-
-            // Check if card is clicked
-            card.el.unbind('click');
-            card.el.click(function(e) { 
-                if (card.face == 'faceup') return;
-                if (card.slot.name == 'stack') return;
-
-                // Flip card
-                card.flip('faceup');
-            });
-
-            // Check if card is dbclicked
-            card.el.unbind('dblclick');
-            card.el.dblclick(function() {
-                if (card.face == 'facedown') return;
-                if (card.slot.name == 'browse' && card.last == false) return;
-
-                // Chekin card
-                switch(card.suit) {
-                    case 'Spades': that.aces[0].checkinCard(card); break;
-                    case 'Hearts': that.aces[1].checkinCard(card); break;
-                    case 'Clubs': that.aces[2].checkinCard(card); break;
-                    case 'Diamonds': that.aces[3].checkinCard(card); break;
-                }
-            });
-        },
-
-        // Remove events to cards and slot
-        removeEvent: function(target) {
-            var that = this;
-            target.el.unbind('click');
-            target.el.unbind('dbclick');
-            target.el.unbind('mousedown');
-            target.el.unbind('mouseup');
+            // Reset stack cards
+            that.stack.reset(that.browse);
         }
     });
 

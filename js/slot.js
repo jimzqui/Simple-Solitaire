@@ -16,6 +16,10 @@ define(['class'], function(Class) {
 
             // Default settings
             var defaults = {
+                position: {
+                    left: 0,
+                    top: 0
+                },
                 cascade: {
                     left: 0,
                     top: 0
@@ -41,20 +45,22 @@ define(['class'], function(Class) {
                 that[index] = value;
             });
 
+            // Create slot
+            that.create();
             return that;
         },
 
         // Create slot element
-        create: function(left, top) {
+        create: function() {
             var that = this;
 
             // Create slot
             var html = '<div class="slot"><span></span></div>';
-            that.el = $(html).appendTo('#solitaire');
+            that.el = $(html).appendTo(that.canvas);
             that.inner = that.el.find('span');
 
             // Compute offset
-            that.offset = that.computeOffset(left, top);
+            that.offset = that.computeOffset();
 
             // Style slot
             that.style();
@@ -185,6 +191,14 @@ define(['class'], function(Class) {
         removeCard: function(pos) {
             var that = this;
 
+            // Update card indexes
+            for (var i = pos; i < that.cards.length; i++) {
+                var next_card = that.cards[i + 1];
+                if (next_card != undefined) {
+                    next_card.index -= 1;
+                }
+            };
+
             // Remove card from slot
             that.cards.splice(pos, 1);
 
@@ -194,6 +208,19 @@ define(['class'], function(Class) {
                 last_card.last = true;
                 that.last = last_card;
             }
+        },
+
+        // Transfer all cards to diff slot
+        transfer: function(slot, callback) {
+            var that = this;
+
+            // Retrieve all cards
+            var cards = that.pickCards(that.cards.length);
+
+            // Place cards to slot
+            slot.addCards(cards, function() {
+                if (callback) callback();
+            });
         },
 
         // Shuffle cards
@@ -298,14 +325,14 @@ define(['class'], function(Class) {
         },
 
         // Compute slot positions
-        computeOffset: function(left, top) {
+        computeOffset: function() {
             var that = this;
             var dist_left = 30;
             var dist_top = 50;
 
             // Compute data
-            var pos_left = (left * that.width) + (left * dist_left);
-            var pos_top = (top * that.height) + (top * dist_top);
+            var pos_left = (that.position.left * that.width) + (that.position.left * dist_left);
+            var pos_top = (that.position.top * that.height) + (that.position.top * dist_top);
 
             return {
                 left: pos_left,

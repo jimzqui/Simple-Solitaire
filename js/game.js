@@ -4,7 +4,7 @@
  * (c) 2014, Jimbo Quijano
  */
 
- var Game;
+var Game;
 
 // Load dependencies
 define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Solitaire, Deck, Stack, Browse, Column, Aces) {
@@ -14,35 +14,60 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
 	// Create new deck
     Game.deck = new Deck({
-        name: 'deck'
-    }).create(3, 3);
+        canvas: Game.el,
+        name: 'deck',
+        position: {
+            left: 3,
+            top: 3
+        }
+    });
 
     // Create new stack
     Game.stack = new Stack({
-        name: 'stack'
-    }).create(0, 0);
+        canvas: Game.el,
+        name: 'stack',
+        position: {
+            left: 0,
+            top: 0
+        }
+    });
 
     // Create new browse
     Game.browse = new Browse({
-        name: 'browse'
-    }).create(1, 0);
+        canvas: Game.el,
+        name: 'browse',
+        position: {
+            left: 1,
+            top: 0
+        }
+    });
 
     // Create new columns
     Game.columns = [];
     for (var i = 0; i < 7; i++) {
         Game.columns.push(new Column({
+            canvas: Game.el,
             name: 'col' + i,
             slotindex: i,
-        }).create(i, 1))
+            position: {
+                left: i,
+                top: 1
+            }
+        }));
     };
 
     // Create new aces
     Game.aces = [];
     for (var i = 0; i < 4; i++) {
         Game.aces.push(new Aces({
+            canvas: Game.el,
             name: 'ace' + i,
         	slotindex: i,
-        }).create(3 + i, 0))
+            position: {
+                left: 3 + i,
+                top: 0
+            }
+        }));
     };
 
 	// Return game

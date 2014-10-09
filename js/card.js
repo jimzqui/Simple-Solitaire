@@ -28,21 +28,34 @@ define(['class'], function(Class) {
                 that[index] = value;
             });
 
+            // Create card
+            that.create();
             return that;
         },
 
         // Create card element
-        create: function(value, suit) {
+        create: function() {
             var that = this;
 
             // Set card info
-            that.setValue(value);
-            that.setSuit(suit);
-            that.setName(value);
+            switch(that.name) {
+                case 'Ace': that.value = 1; that.num = 1; break;
+                case 'Jack': that.value = 10; that.num = 11; break;
+                case 'Queen': that.value = 10; that.num = 12; break;
+                case 'King': that.value = 10; that.num = 13; break;
+                default: that.value = that.name; that.num = that.name;
+            }
+
+            // Set card color
+            switch(that.suit) {
+                case 'Spades': that.color = 'black'; break;
+                case 'Hearts': that.color = 'white'; break;
+                case 'Clubs': that.color = 'black'; break;
+                case 'Diamonds': that.color = 'white'; break;
+            }
 
             // Card num and slug
-            that.num = value;
-            that.slug = this.num + that.suit;
+            that.slug = that.num + that.suit;
 
             // Create card
             var html = '<div class="card"><img src="cards/' + 
@@ -87,44 +100,6 @@ define(['class'], function(Class) {
                 top: 0,
                 zIndex: 1
             });
-        },
-
-        // Set card value
-        setValue: function(value) {
-            var that = this;
-
-            switch(value) {
-                case 11: that.value = 10; break;
-                case 12: that.value = 10; break;
-                case 13: that.value = 10; break;
-                default: that.value = value;
-            }
-        },
-
-        // Set card suit and color
-        setSuit: function(suit) {
-            var that = this;
-
-            switch(suit) {
-                case 1: that.suit = 'Spades'; that.color = 'black'; break;
-                case 2: that.suit = 'Hearts'; that.color = 'white'; break;
-                case 3: that.suit = 'Clubs'; that.color = 'black'; break;
-                case 4: that.suit = 'Diamonds'; that.color = 'white'; break;
-                default: that.suit = 'Spades'; that.color = 'black';
-            }
-        },
-
-        // Set card name
-        setName: function(value) {
-            var that = this;
-            
-            switch(value) {
-                case 1: that.name = 'Ace'; break;
-                case 11: that.name = 'Jack'; break;
-                case 12: that.name = 'Queen'; break;
-                case 13: that.name = 'King'; break;
-                default: that.name = value;
-            }
         },
 
         // Move card to slot
@@ -255,9 +230,11 @@ define(['class'], function(Class) {
         isCollide: function(slot, offset) {
             var that = this;
 
-            // If card is king and target of target is empty
-            if (that.num == 13 && slot.cards.length == 0) {
-                return true; 
+            // If empty slot, slot is target
+            if (slot.cards.length == 0) {
+                var target = slot; 
+            } else {
+                var target = slot.last;
             }
 
             // Compute card data
@@ -268,11 +245,11 @@ define(['class'], function(Class) {
             var b1 = y1 + h1;
             var r1 = x1 + w1;
 
-            // Get target's card data
-            var x2 = slot.last.offset.left;
-            var y2 = slot.last.offset.top;
-            var h2 = slot.last.height;
-            var w2 = slot.last.width;
+            // Get target data
+            var x2 = target.offset.left;
+            var y2 = target.offset.top;
+            var h2 = target.height;
+            var w2 = target.width;
             var b2 = y2 + h2;
             var r2 = x2 + w2;
 
@@ -284,17 +261,118 @@ define(['class'], function(Class) {
         isAllowed: function(slot) {
             var that = this;
 
-            // If card is king and target is empty
+            // If card is king and slot is empty
             if (that.num == 13 && slot.cards.length == 0) {
                 return true; 
             }
 
-            // Target's card has matching value but different color
+            // Slot's card has matching value but different color
             if (slot.last.num - 1 == that.num && slot.last.color != that.color) {
                 return true;
             } else {
                 return false;
             }
+        },
+
+        // Add collision to card
+        addCollision: function(slots) {
+            var that = this;
+
+            // Check if card is grabbed
+            that.el.unbind('mousedown');
+            that.el.mousedown(function(e) { 
+                if (that.face == 'facedown') return;
+                if (that.slot.name == 'browse' && that.last == false) return;
+
+                // Get mouse offset
+                var x = e.pageX - that.offset.left;
+                var y = e.pageY - that.offset.top;
+
+                // Grab and get collision data for slots
+                that.grab(x, y, slots[0].canvas, function(offset) {
+                    for (var i = 0; i < slots.length; i++) {
+                        var column = slots[i];
+                        column.setCollision(that, offset);
+                    };
+                });
+
+                // Other cards
+                var count = 1;
+                for (var i = that.index + 1; i < that.slot.cards.length; i++) {
+                    var card_active = that.slot.cards[i];
+                    card_active.grab(x, y - (count * 20), slots[0].canvas);
+                    count++;
+                };
+            });
+
+            // Check if card is released
+            that.el.unbind('mouseup');
+            that.el.mouseup(function(e) { 
+                if (that.face == 'facedown') return;
+                slots[0].canvas.unbind('mousemove');
+
+                // Check any collision for slots
+                for (var i = 0; i < slots.length; i++) {
+                    var column = slots[i];
+                    var collided = column.checkCollision(that, function(cards) {
+                        column.addCards(cards, function() {
+                            column.collide = null;
+                        });
+                    });
+                };
+
+                // Return all cards
+                if (collided == false) {
+                    for (var i = that.index; i < that.slot.cards.length; i++) {
+                        var card_active = that.slot.cards[i];
+                        card_active.return();
+                    };
+                }
+            });
+        },
+
+        addEvents: function(slots) {
+            var that = this;
+
+            // Check if card is clicked
+            that.el.unbind('click');
+            that.el.click(function(e) { 
+                if (that.face == 'faceup') return;
+                if (that.slot.name == 'stack') return;
+
+                // Flip card
+                that.flip('faceup');
+            });
+
+            // Check if card is dbclicked
+            that.el.unbind('dblclick');
+            that.el.dblclick(function() {
+                if (that.face == 'facedown') return;
+                if (that.slot.name == 'browse' 
+                && that.last == false) return;
+
+                // Chekin card
+                switch(that.suit) {
+                    case 'Spades': slots[0].checkinCard(that); break;
+                    case 'Hearts': slots[1].checkinCard(that); break;
+                    case 'Clubs': slots[2].checkinCard(that); break;
+                    case 'Diamonds': slots[3].checkinCard(that); break;
+                }
+            });
+        },
+
+        // Remove collision
+        remoevCollision: function() {
+            var that = this;
+            that.el.unbind('mousedown');
+            that.el.unbind('mouseup');
+        },
+
+        // Remove events
+        removeEvents: function() {
+            var that = this;
+            that.el.unbind('click');
+            that.el.unbind('dbclick');
         }
     });
 

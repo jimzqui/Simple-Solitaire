@@ -41,6 +41,8 @@ define(['slot'], function(Slot) {
                 that[index] = value;
             });
 
+            // Create slot
+            that.create();
             return that;
         },
 
@@ -75,9 +77,16 @@ define(['slot'], function(Slot) {
 
             // Compute data
             var zindex = (that.slotindex + 1) * (that.slotindex + 1) + that.cards.length;
-            var timeout = (that.cards.length * that.anim.ease) * 2;
             var interval = that.anim.interval;
             var speed = that.anim.speed;
+
+            if (that.status == null) {
+                var speed = that.anim.speed;
+                var timeout = (that.cards.length * that.anim.ease) * 2;
+            } else {
+                var speed = 0;
+                var timeout = 0;
+            }
 
             // Return data
             return {

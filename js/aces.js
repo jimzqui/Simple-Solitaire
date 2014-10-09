@@ -41,6 +41,8 @@ define(['slot'], function(Slot) {
                 that[index] = value;
             });
 
+            // Create slot
+            that.create();
             return that;
         },
 
