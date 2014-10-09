@@ -198,7 +198,7 @@ define(['class'], function(Class) {
                 var offset = {
                     left: e.pageX - x,
                     top: e.pageY - y,
-                    zIndex: 999 - y
+                    zIndex: 9999 - y
                 };
 
                 // Update offset
@@ -282,7 +282,8 @@ define(['class'], function(Class) {
             that.el.unbind('mousedown');
             that.el.mousedown(function(e) { 
                 if (that.face == 'facedown') return;
-                if (that.slot.name == 'browse' && that.last == false) return;
+                if (that.slot.name == 'browse' 
+                && that.last == false) return;
 
                 // Get mouse offset
                 var x = e.pageX - that.offset.left;

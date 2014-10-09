@@ -95,13 +95,23 @@ define(['card', 'class'], function(Card, Class) {
         start: function() {
             var that = this;
 
-            // Deck cards
-            that.populateDeck();
+            // Get cards
+            var cards = that.cards;
+
+            // Place cards to deck
+            that.deck.addCards(cards, function() {
+                that.deck.shuffle();
+                that.populateStack();
+            });
         },
 
         // Reset game
         restart: function() {
             var that = this;
+
+            // Hide restart button
+            that.deck.inner.hide();
+            that.deck.animate = true;
 
             // Remove all card event
             for (var i = 0; i < that.cards.length; i++) {
@@ -114,37 +124,32 @@ define(['card', 'class'], function(Card, Class) {
             // Transfer cards to deck
             that.stack.transfer(that.deck);
             that.browse.transfer(that.deck);
+            that.stack.status = null;
+            that.browse.status = null;
 
             // Transfer ace cards to deck
             for (var j = 0; j < 4; j++) {
                 var ace = that.aces[j];
                 ace.transfer(that.deck);
+                ace.status = null;
             };
 
             // Transfer col cards to deck
-            for (var i = 0; i < 7; i++) {
-                var column = that.columns[i];
-                column.transfer(that.deck);
+            for (var k = 0; k < 7; k++) {
+                var column = that.columns[k];
+                column.status = null;
+
+                if (k == 6) {
+                    column.transfer(that.deck, function() {
+                        setTimeout(function() {
+                            that.deck.shuffle();
+                            that.populateStack();
+                        }, 1000);
+                    });
+                } else {
+                    column.transfer(that.deck);
+                }
             };
-
-            // Repopulate other slots
-            that.deck.inner.hide();
-            that.deck.shuffle();
-            that.populateStack();
-        },
-
-        // Place cards to deck
-        populateDeck: function() {
-            var that = this;
-
-            // Get cards
-            var cards = that.cards;
-
-            // Place cards to deck
-            that.deck.addCards(cards, function() {
-                that.deck.shuffle();
-                that.populateStack();
-            });
         },
 
         // Place cards to stack

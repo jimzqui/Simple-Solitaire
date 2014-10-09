@@ -77,9 +77,15 @@ define(['slot'], function(Slot) {
 
             // Compute data
             var zindex = (that.slotindex + 1) * (that.slotindex + 1) + that.cards.length;
-            var timeout = (that.cards.length * that.anim.ease) * 2;
             var interval = that.anim.interval;
-            var speed = that.anim.speed;
+
+            if (that.status == 'placed') {
+                var timeout = 0;
+                var speed = 100;
+            } else {
+                var timeout = (that.cards.length * that.anim.ease) * 2;
+                var speed = that.anim.speed;
+            }
 
             // Return data
             return {

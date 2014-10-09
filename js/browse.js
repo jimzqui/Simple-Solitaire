@@ -59,6 +59,7 @@ define(['slot'], function(Slot) {
                 var card = that.cards[i];
                 if (card != undefined) {
                     card.browsed = false;
+                    card.offset.left = that.offset.left;
                     card.el.animate({
                         left: that.offset.left
                     });
