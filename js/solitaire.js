@@ -128,6 +128,7 @@ define(['card', 'class'], function(Card, Class) {
             };
 
             // Repopulate other slots
+            that.deck.inner.hide();
             that.deck.shuffle();
             that.populateStack();
         },

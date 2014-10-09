@@ -362,7 +362,7 @@ define(['class'], function(Class) {
         },
 
         // Remove collision
-        remoevCollision: function() {
+        removeCollision: function() {
             var that = this;
             that.el.unbind('mousedown');
             that.el.unbind('mouseup');
