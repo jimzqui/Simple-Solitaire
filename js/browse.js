@@ -51,23 +51,35 @@ define(['slot'], function(Slot) {
             var that = this;
 
             // Compute browe size
+            var count = 0;
             var browse_size = that.cards.length % 3;
             if (browse_size == 0) { browse_size = 3; }
 
             // Move last browsed to left
-            for (var i = that.cards.length - 1; i >= that.cards.length - (1 + browse_size); i--) {
+            for (var i = that.cards.length - 1; i >= that.cards.length - browse_size; i--) {
                 var card = that.cards[i];
                 if (card != undefined) {
                     card.browsed = false;
                     card.offset.left = that.offset.left;
+
+                    // Chek when to send callback
+                    if (i == that.cards.length - browse_size) {
+                        var cb = callback;
+                    } else {
+                        var cb = function(){};
+                    }
+
+                    // Animate to left
                     card.el.animate({
                         left: that.offset.left
-                    });
+                    }, 'fast', cb);
                 }
             };
 
-            // Follow-up uncascade
-            if (callback) callback();
+            // If browse is empty
+            if (that.cards.length == 0) {
+                if (callback) callback();
+            }
         },
 
         // Compute anim data

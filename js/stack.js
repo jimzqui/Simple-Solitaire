@@ -113,11 +113,9 @@ define(['slot'], function(Slot) {
                 // Iterate all browsed cards
                 for (var i = slot.cards.length - 1; i >= 0; i--) {
                     var card = slot.pickCard(i);
-                    card.flip('facedown', 0);
-                    cards.push(card);
-
-                    // Unbind events
                     card.el.unbind('click');
+                    card.flip('facedown');
+                    cards.push(card);
                 };
 
                 // Place cards to stack
