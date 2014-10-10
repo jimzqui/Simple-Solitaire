@@ -82,7 +82,8 @@ define(['card', 'class'], function(Card, Class) {
                     // Create new card
                     var card = new Card({
                         name: that.card_names[i],
-                        suit: that.card_suits[j]
+                        suit: that.card_suits[j],
+                        zindex: i + j,
                     });
 
                     // Add card to container
@@ -111,7 +112,7 @@ define(['card', 'class'], function(Card, Class) {
 
             // Hide restart button
             that.deck.inner.hide();
-            that.deck.animate = true;
+            that.deck.animate = false;
 
             // Remove all card event
             for (var i = 0; i < that.cards.length; i++) {
@@ -137,19 +138,13 @@ define(['card', 'class'], function(Card, Class) {
             // Transfer col cards to deck
             for (var k = 0; k < 7; k++) {
                 var column = that.columns[k];
+                column.transfer(that.deck);
                 column.status = null;
-
-                if (k == 6) {
-                    column.transfer(that.deck, function() {
-                        setTimeout(function() {
-                            that.deck.shuffle();
-                            that.populateStack();
-                        }, 1000);
-                    });
-                } else {
-                    column.transfer(that.deck);
-                }
             };
+
+            // Repopulate slots
+            that.deck.shuffle();
+            that.populateStack();
         },
 
         // Place cards to stack

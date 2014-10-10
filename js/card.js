@@ -213,10 +213,10 @@ define(['class'], function(Class) {
             var that = this;
 
             // Animate to offset
-            that.el.css({ zIndex: that.zindex });
             that.el.animate({
                 left: that.offset.left,
                 top: that.offset.top,
+                zIndex: that.zindex
             }, 'fast', function() {
                 if (callback) callback();
                 that.grabbed = false;
@@ -362,6 +362,7 @@ define(['class'], function(Class) {
         // Remove collision
         removeCollision: function() {
             var that = this;
+            that.grabbed = false;
             that.el.unbind('mousedown');
             that.el.unbind('mouseup');
         },
