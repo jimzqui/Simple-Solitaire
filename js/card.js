@@ -190,11 +190,10 @@ define(['class'], function(Class) {
         grab: function(x, y, canvas_el, callback) {
             var that = this;
 
-            // Add styling to card
-            that.el.addClass('grabbed');
-
             // Move card according to mouse offset
             canvas_el.mousemove(function(e) {
+                that.grabbed = true;
+
                 var offset = {
                     left: e.pageX - x,
                     top: e.pageY - y,
@@ -214,15 +213,13 @@ define(['class'], function(Class) {
             var that = this;
 
             // Animate to offset
+            that.el.css({ zIndex: that.zindex });
             that.el.animate({
                 left: that.offset.left,
                 top: that.offset.top,
-                zIndex: that.zindex
             }, 'fast', function() {
                 if (callback) callback();
-
-                // Add styling to card
-                that.el.removeClass('grabbed');
+                that.grabbed = false;
             });
         },
 
@@ -309,8 +306,8 @@ define(['class'], function(Class) {
             // Check if card is released
             that.el.unbind('mouseup');
             that.el.mouseup(function(e) { 
-                if (that.face == 'facedown') return;
                 slots[0].canvas.unbind('mousemove');
+                if (that.grabbed != true) return;
 
                 // Check any collision for slots
                 for (var i = 0; i < slots.length; i++) {
