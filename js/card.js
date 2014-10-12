@@ -45,13 +45,8 @@ define(['class'], function(Class) {
             // Time card animation
             if (slot.animate == true) {
                 setTimeout(function() {
+                    that.el.css({ zIndex: anim.zindex });
                     that.el.animate(that.offset, anim.speed);
-
-                    // Switch zindex on animate
-                    setTimeout(function() {
-                        that.el.css({ zIndex: anim.zindex });
-                    }, anim.speed / 2);
-
                 }, anim.timeout);
 
                 // Callback

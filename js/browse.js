@@ -116,8 +116,8 @@ define(['slot'], function(Slot) {
         // Compute cascade data
         _computeCascade: function() {
             var that = this;
-            var curr_card = that.cards[that.cards.length - 1];
-            var adjust_left = curr_card.count * that.cascade.left;
+            var card = that.cards[that.cards.length - 1];
+            var adjust_left = card.count * that.cascade.left;
             var adjust_top = (that.cards.length - 1) * that.cascade.top;
 
             return {

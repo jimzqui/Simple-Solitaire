@@ -163,13 +163,8 @@ define(['card', 'class'], function(Card, Class) {
             // Time card animation
             if (that.animate == true) {
                 setTimeout(function() {
+                    card.el.css({ zIndex: anim.zindex });
                     card.el.animate(card.offset, anim.speed);
-
-                    // Switch zindex on animate
-                    setTimeout(function() {
-                        card.el.css({ zIndex: anim.zindex });
-                    }, anim.speed / 2);
-
                 }, anim.timeout);
 
                 // Callback
@@ -323,8 +318,9 @@ define(['card', 'class'], function(Card, Class) {
             var that = this;
 
             // Compute data
+            var card = that.cards[that.cards.length - 1];
             var zindex = that.offset.left + that.cards.length + that.zindex;
-            var timeout = (that.cards.length * that.anim.ease) * 2;
+            var timeout = (card.count * that.anim.ease) * 2;
             var interval = that.anim.interval;
             var speed = that.anim.speed;
 
