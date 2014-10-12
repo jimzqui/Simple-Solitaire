@@ -5,7 +5,7 @@
  */
 
 // Load dependencies
-define(['card', 'class'], function(Card, Class) {
+define(['class'], function(Class) {
 
     // Create new Solitaire Class
     var Solitaire = Class.extend({
@@ -14,20 +14,13 @@ define(['card', 'class'], function(Card, Class) {
         init: function(options) {
             var that = this;
 
-            // Card suits
-            var card_suits = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
-
-            // Card names
-            var card_names = ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King'];
-
             // Default settings
             var defaults = {
                 el: 'solitaire',
                 width: 677,
                 height: 550,
-                card_suits: card_suits,
-                card_names: card_names,
-                cards: []
+                suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
+                names: ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King']
             };
 
             // Construct final settings
@@ -39,71 +32,18 @@ define(['card', 'class'], function(Card, Class) {
             });
 
             // Create canvas
-            that.create();
-        },
-
-        // Create canvas
-        create: function() {
-            var that = this;
-
-            // Create canvas
-            var html = '<div id="' + that.el + '"></div>';
-            that.el = $(html).appendTo('body');
-
-            // Style canvas
-            that.el.css({
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: that.width,
-                height: that.height,
-                marginLeft: (that.width / 2) * -1,
-                marginTop: (that.height / 2) * -1
-            });
-
-            // Canvas offset
-            that.offset = that.el.offset();
-
-            // Populate cards
-            that.populate();
-        },
-
-        // Create cards
-        populate: function() {
-            var that = this;
-
-            // Empty cards
-            that.cards = [];
-
-            // Contruct cards
-            for (var i = 0; i < that.card_names.length; i++) {
-                for (var j = 0; j < that.card_suits.length; j++) {
-
-                    // Create new card
-                    var card = new Card({
-                        name: that.card_names[i],
-                        suit: that.card_suits[j],
-                        zindex: i + j,
-                    });
-
-                    // Add card to container
-                    that.cards.push(card);
-                };
-            };
+            that._create();
+            return;
         },
 
         // Start game
         start: function() {
             var that = this;
 
-            // Get cards
-            var cards = that.cards;
-
-            // Place cards to deck
-            that.deck.addCards(cards, function() {
-                that.deck.shuffle();
-                that.populateStack();
-            });
+            // Place cards to slots
+            that.deck.shuffle();
+            that.deck.facedown();
+            that.populateStack();
         },
 
         // Reset game
@@ -113,14 +53,6 @@ define(['card', 'class'], function(Card, Class) {
             // Hide restart button
             that.deck.inner.hide();
             that.deck.animate = false;
-
-            // Remove all card event
-            for (var i = 0; i < that.cards.length; i++) {
-                var card = that.cards[i];
-                card.flip('facedown', 0);
-                card.removeCollision();
-                card.removeEvents();
-            };
 
             // Transfer cards to deck
             that.stack.transfer(that.deck);
@@ -142,9 +74,8 @@ define(['card', 'class'], function(Card, Class) {
                 column.status = null;
             };
 
-            // Repopulate slots
-            that.deck.shuffle();
-            that.populateStack();
+            // Run start
+            that.start();
         },
 
         // Place cards to stack
@@ -191,7 +122,7 @@ define(['card', 'class'], function(Card, Class) {
 
                 (function(timeout, card) {
                     setTimeout(function() {
-                        card.flip('faceup');
+                        card.flip();
                     }, timeout);
                 })(timeout, card);
             };
@@ -228,23 +159,29 @@ define(['card', 'class'], function(Card, Class) {
             // Fade in inner contents
             that.deck.inner.fadeIn();
             that.stack.inner.fadeIn();
+        },
 
-            // Check for deck click
-            that.deck.el.css({ cursor: 'pointer '});
-            that.deck.el.unbind('click');
-            that.deck.el.click(function() {
-                that.restart();
+        // Create canvas
+        _create: function() {
+            var that = this;
+
+            // Create canvas
+            var html = '<div id="' + that.el + '"></div>';
+            that.el = $(html).appendTo('body');
+
+            // Style canvas
+            that.el.css({
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: that.width,
+                height: that.height,
+                marginLeft: (that.width / 2) * -1,
+                marginTop: (that.height / 2) * -1
             });
 
-            // Add events to each cards
-            for (var j = 0; j < that.cards.length; j++) {
-                var card = that.cards[j];
-                card.addCollision(that.columns);
-                card.addEvents(that.aces);
-            };
-
-            // Reset stack cards
-            that.stack.reset(that.browse);
+            // Canvas offset
+            that.offset = that.el.offset();
         }
     });
 

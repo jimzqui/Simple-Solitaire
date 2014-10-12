@@ -30,6 +30,7 @@ define(['slot'], function(Slot) {
                 animate: true,
                 width: 71,
                 height: 96,
+                zindex: 111,
                 cards: []
             };
 
@@ -42,71 +43,16 @@ define(['slot'], function(Slot) {
             });
 
             // Create slot
-            that.create();
+            that._create();
             return that;
         },
 
-        // Add card to slot
-        addCard: function(card) {
-            var that = this;
-
-            // Call parent method
-            that._super(card);
-
-            // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
-
-            // Update card status
-            card.browsed = false;
-        },
-
-        // Remove card from slot
-        removeCard: function(pos) {
-            var that = this;
-
-            // Call parent method
-            that._super(pos);
-
-            // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
-        },
-
-        // Compute anim data
-        computeAnim: function() {
-            var that = this;
-
-            // Compute data
-            var zindex = (that.slotindex + 1) * (that.slotindex + 1) + that.cards.length;
-            var interval = that.anim.interval;
-
-            if (that.status == 'placed') {
-                var timeout = 0;
-                var speed = 100;
-            } else {
-                var timeout = (that.cards.length * that.anim.ease) * 2;
-                var speed = that.anim.speed;
-            }
-
-            // Return data
-            return {
-                zswitch: 0,
-                zindex: zindex,
-                interval: interval,
-                timeout: timeout,
-                speed: speed
-            }
-        },
-
-        // Compute cascade data
-        computeCascade: function() {
-            var that = this;
-            var adjust_left = (that.cards.length - 1) * that.cascade.left;
-            var adjust_top = (that.cards.length - 1) * that.cascade.top;
-
-            return {
-                left: that.offset.left + adjust_left,
-                top: that.offset.top + adjust_top
-            };
+        // Events
+        events: {
+            'click card face:facedown': 'card.flip',
+            'dblclick card face:faceup': 'card.checkin',
+            'mousedown card face:faceup': 'card.grab',
+            'mouseup card face:faceup': 'card.return'
         }
     });
 

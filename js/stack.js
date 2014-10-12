@@ -30,6 +30,7 @@ define(['slot'], function(Slot) {
                 animate: true,
                 width: 71,
                 height: 96,
+                zindex: 222,
                 cards: []
             };
 
@@ -42,12 +43,18 @@ define(['slot'], function(Slot) {
             });
 
             // Create slot
-            that.create();
+            that._create();
             return that;
         },
 
+        // Events
+        events: {
+            'click card last:true': 'browse',
+            'click this': 'reset'
+        },
+
         // Open last 3 cards
-        browse: function(slot) {
+        browse: function(e) {
             var that = this;
 
             // If still animating, return
@@ -55,7 +62,7 @@ define(['slot'], function(Slot) {
             that.browsing = true;
 
             // Uncascade cards
-            slot.uncascade();
+            that.canvas.browse.uncascade();
             var browsed = [];
 
             // Retrieve last three cards from browse
@@ -69,31 +76,13 @@ define(['slot'], function(Slot) {
             };
 
             // Place cards to browse
-            slot.addCards(browsed, function() {
+            that.canvas.browse.addCards(browsed, function() {
 
                 // Flip browsed cards
                 for (var i = 0; i < browsed.length; i++) {
                     var card = browsed[i];
-                    card.el.unbind('click');
-                    card.flip('faceup');
+                    card.flip();
                 };
-                
-                // Last stack cards
-                that.last.el.unbind('click');
-                that.last.el.click(function() {
-                    if (that.cards.length != 0) {
-                        that.browse(slot);
-                    }
-                });
-
-                // If all cards are browsed
-                that.el.unbind('click');
-                that.el.css({ cursor: 'pointer' });
-                that.el.click(function() {
-                    if (that.cards.length == 0) {
-                        that.reset(slot);
-                    }
-                });
 
                 // Update browsing status
                 that.browsing = false;
@@ -101,58 +90,25 @@ define(['slot'], function(Slot) {
         },
 
         // Reset stack cards
-        reset: function(slot) {
+        reset: function(e) {
             var that = this;
 
             // Uncascade cards
-            slot.uncascade(function() {
+            that.canvas.browse.uncascade(function() {
 
                 // Create container
                 var cards = [];
 
                 // Iterate all browsed cards
-                for (var i = slot.cards.length - 1; i >= 0; i--) {
-                    var card = slot.pickCard(i);
-                    card.el.unbind('click');
-                    card.flip('facedown');
+                for (var i = that.canvas.browse.cards.length - 1; i >= 0; i--) {
+                    var card = that.canvas.browse.pickCard(i);
                     cards.push(card);
+                    card.flip();
                 };
 
                 // Place cards to stack
                 that.addCards(cards);
-
-                // Add event to last card
-                that.last.el.unbind('click');
-                that.last.el.click(function() {
-                    that.browse(slot);
-                });
             });
-        },
-
-        // Compute anim data
-        computeAnim: function() {
-            var that = this;
-
-            // Compute data
-            var zindex = that.cards.length;
-            var timeout = (that.cards.length * that.anim.ease) * 2;
-            var interval = that.anim.interval;
-            var speed = that.anim.speed;
-
-            // Return data
-            return {
-                zswitch: 0,
-                zindex: zindex,
-                interval: interval,
-                timeout: timeout,
-                speed: speed
-            }
-        },
-
-        // Compute cascade data
-        computeCascade: function() {
-            var that = this;
-            return that.offset;
         }
     });
 

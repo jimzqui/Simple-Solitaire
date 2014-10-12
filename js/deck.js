@@ -30,6 +30,7 @@ define(['slot'], function(Slot) {
                 animate: false,
                 width: 71,
                 height: 96,
+                zindex: 222,
                 cards: []
             };
 
@@ -42,40 +43,19 @@ define(['slot'], function(Slot) {
             });
 
             // Create slot
-            that.create();
+            that._create();
             return that;
         },
 
-        // Compute anim data
-        computeAnim: function() {
-            var that = this;
-
-            // Compute data
-            var zindex = that.cards.length;
-            var timeout = (that.cards.length * that.anim.ease) * 2;
-            var interval = that.anim.interval;
-            var speed = that.anim.speed;
-
-            // Return data
-            return {
-                zswitch: 0,
-                zindex: zindex,
-                interval: interval,
-                timeout: timeout,
-                speed: speed
-            }
+        // Events
+        events: {
+            'click this': 'restart'
         },
 
-        // Compute cascade data
-        computeCascade: function() {
+        // Restart game
+        restart: function() {
             var that = this;
-            var adjust_left = (that.cards.length - 1) * that.cascade.left;
-            var adjust_top = (that.cards.length - 1) * that.cascade.top;
-
-            return {
-                left: that.offset.left + adjust_left,
-                top: that.offset.top + adjust_top
-            };
+            that.canvas.restart();
         }
     });
 

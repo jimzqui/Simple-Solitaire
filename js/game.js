@@ -14,7 +14,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
 	// Create new deck
     Game.deck = new Deck({
-        canvas: Game.el,
+        canvas: Game,
         name: 'deck',
         position: {
             left: 3,
@@ -24,7 +24,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
     // Create new stack
     Game.stack = new Stack({
-        canvas: Game.el,
+        canvas: Game,
         name: 'stack',
         position: {
             left: 0,
@@ -34,7 +34,7 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
 
     // Create new browse
     Game.browse = new Browse({
-        canvas: Game.el,
+        canvas: Game,
         name: 'browse',
         position: {
             left: 1,
@@ -46,9 +46,8 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
     Game.columns = [];
     for (var i = 0; i < 7; i++) {
         Game.columns.push(new Column({
-            canvas: Game.el,
+            canvas: Game,
             name: 'col' + i,
-            slotindex: i,
             position: {
                 left: i,
                 top: 1
@@ -60,15 +59,17 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
     Game.aces = [];
     for (var i = 0; i < 4; i++) {
         Game.aces.push(new Aces({
-            canvas: Game.el,
+            canvas: Game,
             name: 'ace' + i,
-        	slotindex: i,
             position: {
                 left: 3 + i,
                 top: 0
             }
         }));
     };
+
+    // Populate cards to deck
+    Game.deck.populate(Game.suits, Game.names);
 
 	// Return game
 	return Game;
