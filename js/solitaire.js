@@ -5,10 +5,10 @@
  */
 
 // Load dependencies
-define(['class'], function(Class) {
+define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces'], function(Canvas, Deck, Stack, Browse, Column, Aces) {
 
     // Create new Solitaire Class
-    var Solitaire = Class.extend({
+    var Solitaire = Canvas.extend({
 
         // Initialize
         init: function(options) {
@@ -19,8 +19,8 @@ define(['class'], function(Class) {
                 el: 'solitaire',
                 width: 677,
                 height: 550,
-                collisions: [],
                 checkins: [],
+                collisions: [],
                 suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
                 names: ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King']
             };
@@ -43,9 +43,9 @@ define(['class'], function(Class) {
             var that = this;
 
             // Place cards to slots
-            that.deck.shuffle();
-            that.deck.facedown();
-            that.populateStack();
+            that.createSlots();
+            that.setDefaults();
+            that.populateCards();
         },
 
         // Reset game
@@ -69,89 +69,53 @@ define(['class'], function(Class) {
             // Transfer col cards to deck
             for (var k = 0; k < 7; k++) {
                 var column = that.columns[k];
-                column.transfer(that.deck);
+                column.collide = null;
                 column.anim.speed = 500;
                 column.anim.interval = 150;
                 column.anim.ease = 20;
+                column.transfer(that.deck);
             };
 
-            // Run start
-            that.start();
+            // Repopulate cards
+            that.deck.facedown();
+            that.populateCards();
         },
 
-        // Place cards to stack
-        populateStack: function() {
+        // Populate cards to slots
+        populateCards: function() {
             var that = this;
 
-            // Get cards
-            var cards = that.deck.pickCards(24);
+            // Create slots
+            var slots = [];
+            
+            // Push stack to list
+            that.stack.pickcount = 24;
+            slots.push(that.stack);
 
-            // Place cards to stack
-            that.stack.addCards(cards, function() {
-                that.populateColumns(1);
+            // Push columns to list
+            for (var i = 0; i < that.columns.length; i++) {
+                var column = that.columns[i];
+                column.pickcount = i + 1;
+                slots.push(column);
+            };
+
+            // Populate cards
+            that.render(slots, function() {
+                that.flipLast();
             });
         },
 
-        // Place cards to columns
-        populateColumns: function(i) {
-            var that = this;
-
-            // Get cards
-            var cards = that.deck.pickCards(i);
-
-            // Place cards to column
-            that.columns[i - 1].addCards(cards, function() {
-                if (i == 7) {
-                    that.flipLast();
-                    that.showInner();
-                } else {
-                    that.populateColumns(i + 1);
-                }
-            });
-        },
-
-        // Flip cards in column
+        // Flip last cards
         flipLast: function() {
             var that = this;
 
-            // Iterate each column
-            for (var i = 0; i < that.columns.length; i++) {
-                var column = that.columns[i];
-                var card = column.cards[column.cards.length - 1];
-                var timeout = i * column.anim.interval;
-
-                (function(timeout, card) {
-                    setTimeout(function() {
-                        card.flip();
-                    }, timeout);
-                })(timeout, card);
-            };
-        },
-
-        // Display inner contents
-        showInner: function() {
-            var that = this;
-
-            // Iterate each aces slot
-            for (var i = 0; i < that.aces.length; i++) {
-                var ace = that.aces[i];
-                var timeout = i * ace.anim.interval;
-
-                (function(timeout, ace) {
-                    setTimeout(function() {
-                        ace.inner.fadeIn();
-                    }, timeout);
-                })(timeout, ace);
-            };
-
-            // Iterate each columns slot
+            // Flip every last cards in column slots
             for (var i = 0; i < that.columns.length; i++) {
                 var column = that.columns[i];
                 var timeout = i * column.anim.interval;
-
                 (function(timeout, column) {
                     setTimeout(function() {
-                        column.inner.fadeIn();
+                        column.flipLast();
                         column.anim.speed = 'fast';
                         column.anim.interval = 0;
                         column.anim.ease = 0;
@@ -159,32 +123,83 @@ define(['class'], function(Class) {
                 })(timeout, column);
             };
 
-            // Fade in inner contents
+            // Fade in deck
             that.deck.inner.fadeIn();
-            that.stack.inner.fadeIn();
         },
 
-        // Create canvas
-        _create: function() {
+        // Create slots
+        createSlots: function() {
             var that = this;
 
-            // Create canvas
-            var html = '<div id="' + that.el + '"></div>';
-            that.el = $(html).appendTo('body');
-
-            // Style canvas
-            that.el.css({
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: that.width,
-                height: that.height,
-                marginLeft: (that.width / 2) * -1,
-                marginTop: (that.height / 2) * -1
+            // Create new deck
+            that.deck = new Deck({
+                canvas: that,
+                name: 'deck',
+                position: {
+                    left: 3,
+                    top: 3
+                }
             });
 
-            // Canvas offset
-            that.offset = that.el.offset();
+            // Create new stack
+            that.stack = new Stack({
+                canvas: that,
+                name: 'stack',
+                position: {
+                    left: 0,
+                    top: 0
+                }
+            });
+
+            // Create new browse
+            that.browse = new Browse({
+                canvas: that,
+                name: 'browse',
+                position: {
+                    left: 1,
+                    top: 0
+                }
+            });
+
+            // Create new columns
+            that.columns = [];
+            for (var i = 0; i < 7; i++) {
+                that.columns.push(new Column({
+                    canvas: that,
+                    name: 'col' + i,
+                    position: {
+                        left: i,
+                        top: 1
+                    }
+                }));
+            };
+
+            // Create new aces
+            that.aces = [];
+            for (var i = 0; i < 4; i++) {
+                that.aces.push(new Aces({
+                    canvas: that,
+                    name: 'ace' + i,
+                    position: {
+                        left: 3 + i,
+                        top: 0
+                    }
+                }));
+            };
+        },
+
+        // Set defaults
+        setDefaults: function() {
+            var that = this;
+
+            // Populate cards to deck
+            that.deck.populate(that.suits, that.names);
+            that.deck.inner.hide();
+            that.deck.shuffle();
+
+            // Set collisions & checkins
+            that.collisions = that.columns;
+            that.checkins = that.aces;
         }
     });
 

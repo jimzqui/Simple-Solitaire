@@ -9,8 +9,13 @@ require.config({
 	noGlobal: true
 });
 
-// Load game
-require(['game'], function(Game){
+var Game;
+
+// Load dependencies
+require(['solitaire'], function(Solitaire) {
+
+	// Create new game
+	Game = new Solitaire();
 
 	// Start game
 	Game.start();

@@ -43,14 +43,14 @@ define(['class'], function(Class) {
             that.zindex = anim.zindex;
 
             // Make sure card is on top while moving
-            that.el.css({ zIndex: anim.zindex + 999 });
+            that.el.animate({ zIndex: anim.zindex + 999 }, 0);
             that.zindex = anim.zindex + 999;
 
             // Time card animation
             if (slot.animate == true) {
                 setTimeout(function() {
                     that.el.animate(that.offset, anim.speed, function() {
-                        that.el.css({ zIndex: anim.zindex });
+                        that.el.animate({ zIndex: anim.zindex }, 0);
                         that.zindex = anim.zindex;
                     });
                 }, anim.timeout);
@@ -119,7 +119,7 @@ define(['class'], function(Class) {
             // If allowed, place card
             if (slot.validateCheckin(that) == true) {
                 var card = that.slot.pickCard(that.index);
-                card.el.css({ zIndex: 999 });
+                card.el.animate({ zIndex: 999 }, 0);
                 slot.addCard(card);
             }
 
@@ -256,6 +256,7 @@ define(['class'], function(Class) {
                 } 
             }
 
+            // Uncollide
             that.collide = null;
         },
 

@@ -53,20 +53,6 @@ define(['card', 'class'], function(Card, Class) {
         // Events
         events: {},
 
-        // Unbind all events
-        unbind: function() {
-            var that = this;
-
-            // Unbind slot
-            that.el.off();
-
-            // Iterate each cards and unbind event
-            for (var i = 0; i < that.cards.length; i++) {
-                var card = that.cards[i];
-                card.el.off();
-            };
-        },
-
         // Create cards to slot
         populate: function(suits, names) {
             var that = this;
@@ -133,6 +119,9 @@ define(['card', 'class'], function(Card, Class) {
         addCard: function(card, callback) {
             var that = this;
 
+            // Unbind all
+            card.el.off();
+
             // Add meta data
             card.index = that.cards.length;
             card.slot = that;
@@ -148,9 +137,6 @@ define(['card', 'class'], function(Card, Class) {
             // Push to slot
             that.cards.push(card);
 
-            // Render events
-            that._cardEvents(card);
-
             // Update height
             that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
 
@@ -159,14 +145,14 @@ define(['card', 'class'], function(Card, Class) {
             card.offset = that._computeCascade();
 
             // Make sure card is on top while moving
-            card.el.css({ zIndex: anim.zindex + 999 });
+            card.el.animate({ zIndex: anim.zindex + 999 }, 0);
             card.zindex = anim.zindex + 999;
 
             // Time card animation
             if (that.animate == true) {
                 setTimeout(function() {
                     card.el.animate(card.offset, anim.speed, function() {
-                        card.el.css({ zIndex: anim.zindex });
+                        card.el.animate({ zIndex: anim.zindex }, 0);
                         card.zindex = anim.zindex;
                     });
                 }, anim.timeout);
@@ -174,6 +160,7 @@ define(['card', 'class'], function(Card, Class) {
                 // Callback
                 setTimeout(function() {
                     if(callback) callback(card);
+                    that._cardEvents(card);
                 }, anim.timeout + anim.interval);
             }
 
@@ -183,6 +170,7 @@ define(['card', 'class'], function(Card, Class) {
                 card.zindex = anim.zindex;
                 card.el.css(card.offset);
                 if(callback) callback(card);
+                that._cardEvents(card);
             }
         },
 
@@ -308,6 +296,13 @@ define(['card', 'class'], function(Card, Class) {
             if (callback) callback();
         },
 
+        // Flip last card
+        flipLast: function(callback) {
+            var that = this;
+            that.last.flip();
+            if (callback) callback();
+        },
+
         // Check if card is allowed
         validateCollide: function(card) {
             var that = this;
@@ -335,6 +330,20 @@ define(['card', 'class'], function(Card, Class) {
             } else {
                 return false;
             }
+        },
+
+        // Unbind all events
+        unbind: function() {
+            var that = this;
+
+            // Unbind slot
+            that.el.off();
+
+            // Iterate each cards and unbind event
+            for (var i = 0; i < that.cards.length; i++) {
+                var card = that.cards[i];
+                card.el.off();
+            };
         },
 
         // Compute slot positions
@@ -482,9 +491,8 @@ define(['card', 'class'], function(Card, Class) {
             that.inner.css({
                 background: 'url(img/' + that.name + '.png) no-repeat scroll',
                 backgroundPosition: 'center center',
-                backgroundSize: 50,
                 border: '2px solid #555',
-                display: 'none',
+                backgroundSize: 50,
                 float: 'left',
                 opacity: '0.8',
                 borderRadius: 5,
