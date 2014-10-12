@@ -118,7 +118,6 @@ define(['class'], function(Class) {
                 var column = that.columns[i];
                 var card = column.cards[column.cards.length - 1];
                 var timeout = i * column.anim.interval;
-                column.status = 'placed';
 
                 (function(timeout, card) {
                     setTimeout(function() {
