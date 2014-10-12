@@ -30,7 +30,6 @@ define(['slot'], function(Slot) {
                 animate: true,
                 width: 71,
                 height: 96,
-                zindex: 222,
                 cards: []
             };
 

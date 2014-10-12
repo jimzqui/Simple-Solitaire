@@ -42,11 +42,17 @@ define(['class'], function(Class) {
             that.offset = slot._computeCascade();
             that.zindex = anim.zindex;
 
+            // Make sure card is on top while moving
+            that.el.css({ zIndex: anim.zindex + 999 });
+            that.zindex = anim.zindex + 999;
+
             // Time card animation
             if (slot.animate == true) {
                 setTimeout(function() {
-                    that.el.css({ zIndex: anim.zindex });
-                    that.el.animate(that.offset, anim.speed);
+                    that.el.animate(that.offset, anim.speed, function() {
+                        that.el.css({ zIndex: anim.zindex });
+                        that.zindex = anim.zindex;
+                    });
                 }, anim.timeout);
 
                 // Callback
@@ -58,6 +64,7 @@ define(['class'], function(Class) {
             // Place card
             else {
                 that.el.css({ zIndex: anim.zindex });
+                that.zindex = anim.zindex;
                 that.el.css(that.offset);
                 if(callback) callback(that);
             }

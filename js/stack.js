@@ -30,7 +30,6 @@ define(['slot'], function(Slot) {
                 animate: true,
                 width: 71,
                 height: 96,
-                zindex: 222,
                 cards: []
             };
 
@@ -93,21 +92,32 @@ define(['slot'], function(Slot) {
         reset: function(e) {
             var that = this;
 
-            // Uncascade cards
-            that.canvas.browse.uncascade(function() {
+            // Change anim
+            that.anim = {
+                interval: 0,
+                speed: 200,
+                ease: 0
+            };
 
-                // Create container
-                var cards = [];
+            // Create container
+            var cards = [];
 
-                // Iterate all browsed cards
-                for (var i = that.canvas.browse.cards.length - 1; i >= 0; i--) {
-                    var card = that.canvas.browse.pickCard(i);
-                    cards.push(card);
-                    card.flip();
+            // Iterate all browsed cards
+            for (var i = that.canvas.browse.cards.length - 1; i >= 0; i--) {
+                var card = that.canvas.browse.pickCard(i);
+                cards.push(card);
+                card.flip(25);
+            };
+
+            // Place cards to stack
+            that.addCards(cards, function() {
+
+                // Put back anim
+                that.anim = {
+                    interval: 150,
+                    speed: 500,
+                    ease: 20
                 };
-
-                // Place cards to stack
-                that.addCards(cards);
             });
         }
     });

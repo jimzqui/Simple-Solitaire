@@ -30,7 +30,6 @@ define(['slot'], function(Slot) {
                 animate: true,
                 width: 71,
                 height: 96,
-                zindex: 222,
                 cards: []
             };
 
@@ -111,19 +110,6 @@ define(['slot'], function(Slot) {
             }
 
             return false;
-        },
-
-        // Compute cascade data
-        _computeCascade: function() {
-            var that = this;
-            var card = that.cards[that.cards.length - 1];
-            var adjust_left = card.count * that.cascade.left;
-            var adjust_top = (that.cards.length - 1) * that.cascade.top;
-
-            return {
-                left: that.offset.left + adjust_left,
-                top: that.offset.top + adjust_top
-            };
         }
     });
 

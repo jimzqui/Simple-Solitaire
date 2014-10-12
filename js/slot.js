@@ -34,7 +34,6 @@ define(['card', 'class'], function(Card, Class) {
                 animate: true,
                 width: 71,
                 height: 96,
-                zindex: 0,
                 cards: []
             };
 
@@ -158,13 +157,18 @@ define(['card', 'class'], function(Card, Class) {
             // Compute anim data
             var anim = that._computeAnim();
             card.offset = that._computeCascade();
-            card.zindex = anim.zindex;
+
+            // Make sure card is on top while moving
+            card.el.css({ zIndex: anim.zindex + 999 });
+            card.zindex = anim.zindex + 999;
 
             // Time card animation
             if (that.animate == true) {
                 setTimeout(function() {
-                    card.el.css({ zIndex: anim.zindex });
-                    card.el.animate(card.offset, anim.speed);
+                    card.el.animate(card.offset, anim.speed, function() {
+                        card.el.css({ zIndex: anim.zindex });
+                        card.zindex = anim.zindex;
+                    });
                 }, anim.timeout);
 
                 // Callback
@@ -176,6 +180,7 @@ define(['card', 'class'], function(Card, Class) {
             // Place card
             else {
                 card.el.css({ zIndex: anim.zindex });
+                card.zindex = anim.zindex;
                 card.el.css(card.offset);
                 if(callback) callback(card);
             }
@@ -319,7 +324,7 @@ define(['card', 'class'], function(Card, Class) {
 
             // Compute data
             var card = that.cards[that.cards.length - 1];
-            var zindex = that.offset.left + that.cards.length + that.zindex;
+            var zindex = that.offset.left + that.cards.length;
             var timeout = (card.count * that.anim.ease) * 2;
             var interval = that.anim.interval;
             var speed = that.anim.speed;
@@ -336,9 +341,11 @@ define(['card', 'class'], function(Card, Class) {
         // Compute cascade data
         _computeCascade: function() {
             var that = this;
-            var adjust_left = (that.cards.length - 1) * that.cascade.left;
+            var card = that.cards[that.cards.length - 1];
+            var adjust_left = card.count * that.cascade.left;
             var adjust_top = (that.cards.length - 1) * that.cascade.top;
-
+            if (!adjust_left) adjust_left = 0;
+            
             return {
                 left: that.offset.left + adjust_left,
                 top: that.offset.top + adjust_top
