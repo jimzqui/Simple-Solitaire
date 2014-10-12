@@ -210,6 +210,12 @@ define(['card', 'class'], function(Card, Class) {
         removeCard: function(pos) {
             var that = this;
 
+            // Unbind events of this card
+            var card = that.cards[pos];
+            if (card != undefined) {
+                card.el.off();
+            }
+
             // Update card indexes
             for (var i = pos; i < that.cards.length; i++) {
                 var next_card = that.cards[i + 1];
@@ -462,7 +468,7 @@ define(['card', 'class'], function(Card, Class) {
                         if (that[operand_a].toString() != operand_b) return;
                     }
 
-                    that[action](e);
+                    that[action]();
                 });
             });
         },

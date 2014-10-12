@@ -49,7 +49,7 @@ define(['slot'], function(Slot) {
         // Events
         events: {
             'click card face:facedown': 'card.flip',
-            'dblclick card face:faceup': 'card.checkin',
+            'dblclick card last:true': 'card.checkin',
             'mousedown card face:faceup': 'card.grab',
             'mouseup card face:faceup': 'card.return'
         }

@@ -53,7 +53,7 @@ define(['slot'], function(Slot) {
         },
 
         // Open last 3 cards
-        browse: function(e) {
+        browse: function() {
             var that = this;
 
             // If still animating, return
@@ -89,7 +89,7 @@ define(['slot'], function(Slot) {
         },
 
         // Reset stack cards
-        reset: function(e) {
+        reset: function() {
             var that = this;
 
             // Change anim
@@ -105,8 +105,11 @@ define(['slot'], function(Slot) {
             // Iterate all browsed cards
             for (var i = that.canvas.browse.cards.length - 1; i >= 0; i--) {
                 var card = that.canvas.browse.pickCard(i);
-                cards.push(card);
-                card.flip(25);
+                (function(card) {
+                    card.el.css({ left: that.canvas.browse.offset.left });
+                    cards.push(card);
+                    card.flip(0);
+                })(card);
             };
 
             // Place cards to stack

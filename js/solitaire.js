@@ -72,6 +72,13 @@ define(['class'], function(Class) {
                 var column = that.columns[k];
                 column.transfer(that.deck);
                 column.status = null;
+
+                // Change col anim
+                column.anim = {
+                    interval: 150,
+                    speed: 500,
+                    ease: 20
+                };
             };
 
             // Run start
@@ -147,6 +154,13 @@ define(['class'], function(Class) {
             for (var i = 0; i < that.columns.length; i++) {
                 var column = that.columns[i];
                 var timeout = i * column.anim.interval;
+
+                // Change col anim
+                column.anim = {
+                    interval: 0,
+                    speed: 200,
+                    ease: 0
+                };
 
                 (function(timeout, column) {
                     setTimeout(function() {
