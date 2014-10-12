@@ -68,6 +68,10 @@ define(['solitaire', 'deck', 'stack', 'browse', 'column', 'aces'], function(Soli
         }));
     };
 
+    // Set collisions and checkins
+    Game.collisions = Game.columns;
+    Game.checkins = Game.aces;
+
     // Populate cards to deck
     Game.deck.populate(Game.suits, Game.names);
 

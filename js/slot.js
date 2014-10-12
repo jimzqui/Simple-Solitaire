@@ -308,6 +308,35 @@ define(['card', 'class'], function(Card, Class) {
             if (callback) callback();
         },
 
+        // Check if card is allowed
+        validateCollide: function(card) {
+            var that = this;
+
+            // If card is king and slot is empty
+            if (card.num == 13 && that.cards.length == 0) {
+                return true; 
+            }
+
+            // Slot's card has matching value but different color
+            if (that.last.num - 1 == card.num && that.last.color != card.color) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+
+        // Check if card is allowed
+        validateCheckin: function(card) {
+            var that = this;
+
+            // If card num - 1, is equals to cards total
+            if (card.num - 1 == that.cards.length) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+
         // Compute slot positions
         _computeOffset: function() {
             var that = this;
@@ -356,51 +385,6 @@ define(['card', 'class'], function(Card, Class) {
                 left: that.offset.left + adjust_left,
                 top: that.offset.top + adjust_top
             };
-        },
-
-        // Get any card collision
-        _setCollision: function(card, offset) {
-            var that = this;
-
-            // Something collided with the card
-            if (card._isCollide(that, offset) == true) {
-
-                // Make sure not its own slot
-                if (that.name != card.slot.name) {
-                    return that.collide = card.slot;
-                } 
-            }
-
-            that.collide = null;
-        },
-
-        // Check for any collision
-        _checkCollision: function(card, callback) {
-            var that = this;
-
-            // Column collided
-            if (that.collide != null) {
-
-                // Card is allowed to switch
-                if (card._isAllowed(that) == true) {
-                    var cards_active = [];
-
-                    // Iterate each cards
-                    for (var i = that.collide.cards.length - 1; i >= card.index; i--) {
-                        var card_active = that.collide.pickCard(i);
-                        if (card_active.face == 'faceup') {
-                            cards_active.push(card_active);
-                        }
-                    };
-
-                    // Callback after checking
-                    if (callback) callback(cards_active.reverse());
-
-                    return true;
-                }
-            }
-
-            return false;
         },
 
         // Render card events

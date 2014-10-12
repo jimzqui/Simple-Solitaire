@@ -93,11 +93,9 @@ define(['slot'], function(Slot) {
             var that = this;
 
             // Change anim
-            that.anim = {
-                interval: 0,
-                speed: 200,
-                ease: 0
-            };
+            that.anim.speed = 200;
+            that.anim.interval = 0;
+            that.anim.ease = 0;
 
             // Create container
             var cards = [];
@@ -114,13 +112,9 @@ define(['slot'], function(Slot) {
 
             // Place cards to stack
             that.addCards(cards, function() {
-
-                // Put back anim
-                that.anim = {
-                    interval: 150,
-                    speed: 500,
-                    ease: 20
-                };
+                that.anim.speed = 500;
+                that.anim.interval = 150;
+                that.anim.ease = 20;
             });
         }
     });

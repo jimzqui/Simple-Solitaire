@@ -86,30 +86,6 @@ define(['slot'], function(Slot) {
             if (that.cards.length == 0) {
                 if (callback) callback();
             }
-        },
-
-        // Check for any collision
-        _checkCollision: function(card, callback) {
-            var that = this;
-
-            // Column collided
-            if (that.collide != null) {
-
-                // Card is allowed to switch
-                if (card._isAllowed(that.last) == true) {
-                    var cards_active = [];
-
-                    // Add only last card
-                    cards_active.push(that.collide.pickCard(that.collide.cards.length - 1));
-
-                    // Callback after checking
-                    if (callback) callback(cards_active);
-
-                    return true;
-                }
-            }
-
-            return false;
         }
     });
 

@@ -114,11 +114,12 @@ define(['class'], function(Class) {
 
             // Get the correct ace slot to checkin
             var index = that.canvas.suits.indexOf(that.suit);
-            var slot = that.canvas.aces[index];
+            var slot = that.canvas.checkins[index];
 
             // If allowed, place card
-            if (that.num - 1 == slot.cards.length) {
+            if (slot.validateCheckin(that) == true) {
                 var card = that.slot.pickCard(that.index);
+                card.el.css({ zIndex: 999 });
                 slot.addCard(card);
             }
 
@@ -136,9 +137,9 @@ define(['class'], function(Class) {
 
             // Drag card and get collision data for slots
             that._drag(x, y, function(offset) {
-                for (var i = 0; i < that.canvas.columns.length; i++) {
-                    var column = that.canvas.columns[i];
-                    column._setCollision(that, offset);
+                for (var i = 0; i < that.canvas.collisions.length; i++) {
+                    var slot = that.canvas.collisions[i];
+                    that._setCollision(slot, offset);
                 };
             });
 
@@ -162,11 +163,11 @@ define(['class'], function(Class) {
             if (that.grabbed != true) return;
 
             // Check any collision for slots
-            for (var i = 0; i < that.canvas.columns.length; i++) {
-                var column = that.canvas.columns[i];
-                var collided = column._checkCollision(that, function(cards) {
-                    column.addCards(cards, function() {
-                        column.collide = null;
+            for (var i = 0; i < that.canvas.collisions.length; i++) {
+                var slot = that.canvas.collisions[i];
+                var collided = that._checkCollision(slot, function(cards) {
+                    slot.addCards(cards, function() {
+                        slot.collide = null;
                     });
                 });
             };
@@ -242,21 +243,49 @@ define(['class'], function(Class) {
             return true;
         },
 
-        // If card is allowed to switch
-        _isAllowed: function(slot) {
+        // Get any card collision
+        _setCollision: function(slot, offset) {
             var that = this;
 
-            // If card is king and slot is empty
-            if (that.num == 13 && slot.cards.length == 0) {
-                return true; 
+            // Something collided with the card
+            if (that._isCollide(slot, offset) == true) {
+
+                // Make sure not its own slot
+                if (slot.name != that.slot.name) {
+                    return slot.collide = that.slot;
+                } 
             }
 
-            // Slot's card has matching value but different color
-            if (slot.last.num - 1 == that.num && slot.last.color != that.color) {
-                return true;
-            } else {
-                return false;
+            that.collide = null;
+        },
+
+        // Check for any collision
+        _checkCollision: function(slot, callback) {
+            var that = this;
+
+            // Column collided
+            if (slot.collide != null) {
+
+                // Card is allowed to switch
+                if (slot.validateCollide(that) == true) {
+                    var cards_active = [];
+
+                    // Iterate each cards
+                    for (var i = slot.collide.cards.length - 1; i >= that.index; i--) {
+                        var card_active = slot.collide.pickCard(i);
+                        if (card_active.face == 'faceup') {
+                            cards_active.push(card_active);
+                        }
+                    };
+
+                    // Callback after checking
+                    if (callback) callback(cards_active.reverse());
+
+                    return true;
+                }
             }
+
+            return false;
         },
 
         // Create card element
@@ -304,7 +333,7 @@ define(['class'], function(Class) {
                 height: '100%',
                 left: 0,
                 top: 0,
-                zIndex: 2
+                zIndex: 1
             });
 
             // Style card img
@@ -313,8 +342,7 @@ define(['class'], function(Class) {
                 width: '100%',
                 height: '100%',
                 left: 0,
-                top: 0,
-                zIndex: 1
+                top: 0
             });
         }
     });

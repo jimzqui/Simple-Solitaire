@@ -19,6 +19,8 @@ define(['class'], function(Class) {
                 el: 'solitaire',
                 width: 677,
                 height: 550,
+                collisions: [],
+                checkins: [],
                 suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
                 names: ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King']
             };
@@ -57,28 +59,20 @@ define(['class'], function(Class) {
             // Transfer cards to deck
             that.stack.transfer(that.deck);
             that.browse.transfer(that.deck);
-            that.stack.status = null;
-            that.browse.status = null;
 
             // Transfer ace cards to deck
             for (var j = 0; j < 4; j++) {
                 var ace = that.aces[j];
                 ace.transfer(that.deck);
-                ace.status = null;
             };
 
             // Transfer col cards to deck
             for (var k = 0; k < 7; k++) {
                 var column = that.columns[k];
                 column.transfer(that.deck);
-                column.status = null;
-
-                // Change col anim
-                column.anim = {
-                    interval: 150,
-                    speed: 500,
-                    ease: 20
-                };
+                column.anim.speed = 500;
+                column.anim.interval = 150;
+                column.anim.ease = 20;
             };
 
             // Run start
@@ -155,16 +149,12 @@ define(['class'], function(Class) {
                 var column = that.columns[i];
                 var timeout = i * column.anim.interval;
 
-                // Change col anim
-                column.anim = {
-                    interval: 0,
-                    speed: 200,
-                    ease: 0
-                };
-
                 (function(timeout, column) {
                     setTimeout(function() {
                         column.inner.fadeIn();
+                        column.anim.speed = 'fast';
+                        column.anim.interval = 0;
+                        column.anim.ease = 0;
                     }, timeout);
                 })(timeout, column);
             };
