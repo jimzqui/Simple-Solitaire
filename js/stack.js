@@ -80,11 +80,15 @@ define(['slot'], function(Slot) {
                 // Flip browsed cards
                 for (var i = 0; i < browsed.length; i++) {
                     var card = browsed[i];
-                    card.flip();
-                };
 
-                // Update browsing status
-                that.browsing = false;
+                    if (i == browsed.length - 1) {
+                        card.flip(75, function() {
+                            that.browsing = false;
+                        });
+                    } else {
+                        card.flip();
+                    }
+                };
             });
         },
 
