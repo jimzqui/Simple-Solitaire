@@ -50,6 +50,22 @@ define(['slot'], function(Slot) {
         events: {
             'mousedown card face:faceup': 'card.grab',
             'mouseup card face:faceup': 'card.return'
+        },
+
+        // Check if card is allowed
+        validateDrop: function(card) {
+            var that = this;
+
+            // Get the indexes of card and slot
+            var index = that.canvas.suits.indexOf(card.suit);
+            var slot = that.canvas.checkins[index];
+
+            // If card num - 1, is equals to cards total
+            if (card.num - 1 == that.cards.length && slot.name == that.name) {
+                return true;
+            } else {
+                return false;
+            }
         }
     });
 

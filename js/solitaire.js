@@ -198,6 +198,7 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces'], function(Canvas,
 
             // Set collisions & checkins
             that.collisions = that.columns;
+            that.collisions = that.collisions.concat(that.aces);
             that.checkins = that.aces;
         }
     });

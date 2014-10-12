@@ -303,35 +303,6 @@ define(['card', 'class'], function(Card, Class) {
             if (callback) callback();
         },
 
-        // Check if card is allowed
-        validateCollide: function(card) {
-            var that = this;
-
-            // If card is king and slot is empty
-            if (card.num == 13 && that.cards.length == 0) {
-                return true; 
-            }
-
-            // Slot's card has matching value but different color
-            if (that.last.num - 1 == card.num && that.last.color != card.color) {
-                return true;
-            } else {
-                return false;
-            }
-        },
-
-        // Check if card is allowed
-        validateCheckin: function(card) {
-            var that = this;
-
-            // If card num - 1, is equals to cards total
-            if (card.num - 1 == that.cards.length) {
-                return true;
-            } else {
-                return false;
-            }
-        },
-
         // Unbind all events
         unbind: function() {
             var that = this;

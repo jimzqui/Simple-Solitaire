@@ -52,6 +52,23 @@ define(['slot'], function(Slot) {
             'dblclick card last:true': 'card.checkin',
             'mousedown card face:faceup': 'card.grab',
             'mouseup card face:faceup': 'card.return'
+        },
+
+        // Check if card is allowed
+        validateDrop: function(card) {
+            var that = this;
+
+            // If card is king and slot is empty
+            if (card.num == 13 && that.cards.length == 0) {
+                return true; 
+            }
+
+            // Slot's card has matching value but different color
+            if (that.last.num - 1 == card.num && that.last.color != card.color) {
+                return true;
+            } else {
+                return false;
+            }
         }
     });
 

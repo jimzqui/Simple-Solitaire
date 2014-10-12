@@ -117,7 +117,7 @@ define(['class'], function(Class) {
             var slot = that.canvas.checkins[index];
 
             // If allowed, place card
-            if (slot.validateCheckin(that) == true) {
+            if (slot.validateDrop(that) == true) {
                 var card = that.slot.pickCard(that.index);
                 card.el.animate({ zIndex: 999 }, 0);
                 slot.addCard(card);
@@ -259,11 +259,11 @@ define(['class'], function(Class) {
                 // Make sure not its own slot
                 if (slot.name != that.slot.name) {
                     return slot.collide = that.slot;
-                } 
+                }
             }
 
             // Uncollide
-            that.collide = null;
+            slot.collide = null;
         },
 
         // Check for any collision
@@ -274,7 +274,7 @@ define(['class'], function(Class) {
             if (slot.collide != null) {
 
                 // Card is allowed to switch
-                if (slot.validateCollide(that) == true) {
+                if (slot.validateDrop(that) == true) {
                     var cards_active = [];
 
                     // Iterate each cards
