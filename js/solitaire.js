@@ -69,7 +69,6 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces'], function(Canvas,
             // Transfer col cards to deck
             for (var k = 0; k < 7; k++) {
                 var column = that.columns[k];
-                column.collide = null;
                 column.anim.speed = 500;
                 column.anim.interval = 150;
                 column.anim.ease = 20;

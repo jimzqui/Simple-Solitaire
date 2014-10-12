@@ -145,8 +145,8 @@ define(['class'], function(Class) {
 
             // Other cards
             var count = 1;
-            for (var i = that.index + 1; i < that.slot.cards.length; i++) {
-                var card_active = that.slot.cards[i];
+            for (var j = that.index + 1; j < that.slot.cards.length; j++) {
+                var card_active = that.slot.cards[j];
                 card_active._drag(x, y - (count * 20));
                 count++;
             };
@@ -174,8 +174,8 @@ define(['class'], function(Class) {
 
             // Return all cards
             if (collided == false) {
-                for (var i = that.index; i < that.slot.cards.length; i++) {
-                    var card_active = that.slot.cards[i];
+                for (var j = that.index; j < that.slot.cards.length; j++) {
+                    var card_active = that.slot.cards[j];
 
                     // Animate back to offset
                     card_active.el.animate({
@@ -188,6 +188,12 @@ define(['class'], function(Class) {
                     });
                 };
             }
+
+            // Remove all collisions
+            for (var k = 0; k < that.canvas.collisions.length; k++) {
+                var slot = that.canvas.collisions[k];
+                slot.collide = null;
+            };
         },
 
         // Drag card following mouse
