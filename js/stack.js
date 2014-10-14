@@ -25,8 +25,6 @@ define(['slot'], function(Slot) {
                     speed: 500,
                     ease: 20
                 },
-                last: null,
-                status: null,
                 animate: true,
                 width: 71,
                 height: 96,
@@ -36,90 +34,15 @@ define(['slot'], function(Slot) {
             // Construct settings
             var settings = $.extend({}, defaults, options);
 
-            // Map settings to root
-            $.each(settings, function(index, value) {
-                that[index] = value;
-            });
-
-            // Create slot
-            that._create();
+            // Extend parent settings
+            that._super(settings);
             return that;
         },
 
         // Events
         events: {
-            'click card last:true': 'browse',
-            'click this': 'reset'
-        },
-
-        // Open last 3 cards
-        browse: function() {
-            var that = this;
-
-            // If still animating, return
-            if (that.browsing == true) return;
-            that.browsing = true;
-
-            // Uncascade cards
-            that.canvas.browse.uncascade();
-            var browsed = [];
-
-            // Retrieve last three cards from browse
-            for (var i = 0; i < 3; i++) {
-                var card = that.pickCard(that.cards.length - 1);
-                
-                // Add card to container
-                if (card != undefined) {
-                    browsed.push(card);
-                }
-            };
-
-            // Place cards to browse
-            that.canvas.browse.addCards(browsed, function() {
-
-                // Flip browsed cards
-                for (var i = 0; i < browsed.length; i++) {
-                    var card = browsed[i];
-
-                    if (i == browsed.length - 1) {
-                        card.flip(75, function() {
-                            that.browsing = false;
-                        });
-                    } else {
-                        card.flip();
-                    }
-                };
-            });
-        },
-
-        // Reset stack cards
-        reset: function() {
-            var that = this;
-
-            // Change anim
-            that.anim.speed = 200;
-            that.anim.interval = 0;
-            that.anim.ease = 0;
-
-            // Create container
-            var cards = [];
-
-            // Iterate all browsed cards
-            for (var i = that.canvas.browse.cards.length - 1; i >= 0; i--) {
-                var card = that.canvas.browse.pickCard(i);
-                (function(card) {
-                    card.el.css({ left: that.canvas.browse.offset.left });
-                    cards.push(card);
-                    card.flip(0);
-                })(card);
-            };
-
-            // Place cards to stack
-            that.addCards(cards, function() {
-                that.anim.speed = 500;
-                that.anim.interval = 150;
-                that.anim.ease = 20;
-            });
+            'click card[last=true]': 'browseCards',
+            'click this': 'resetBrowsed'
         }
     });
 

@@ -25,8 +25,6 @@ define(['slot'], function(Slot) {
                     speed: 300,
                     ease: 15
                 },
-                last: null,
-                status: null,
                 animate: true,
                 width: 71,
                 height: 96,
@@ -36,32 +34,35 @@ define(['slot'], function(Slot) {
             // Construct settings
             var settings = $.extend({}, defaults, options);
 
-            // Map settings to root
-            $.each(settings, function(index, value) {
-                that[index] = value;
-            });
-
-            // Create slot
-            that._create();
+            // Extend parent settings
+            that._super(settings);
             return that;
         },
 
         // Events
         events: {
-            'mousedown card face:faceup': 'card.grab',
-            'mouseup card face:faceup': 'card.return'
+            'mousedown card[face=faceup]': 'card.grab',
+            'mouseup card[face=faceup]': 'card.return'
         },
 
-        // Check if card is allowed
-        validateDrop: function(card) {
+        // Check if drop is allowed
+        dropAllowed: function(card) {
             var that = this;
 
-            // Get the indexes of card and slot
-            var index = that.canvas.suits.indexOf(card.suit);
-            var slot = that.canvas.checkins[index];
+            // If card num - 1, is equals to cards total
+            if (card.num - 1 == that.cards.length && card.suit == that.checkin) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+
+        // Check if checkin is allowed
+        checkinAllowed: function(card) {
+            var that = this;
 
             // If card num - 1, is equals to cards total
-            if (card.num - 1 == that.cards.length && slot.name == that.name) {
+            if (card.num - 1 == that.cards.length && card.suit == that.checkin) {
                 return true;
             } else {
                 return false;

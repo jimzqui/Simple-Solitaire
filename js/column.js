@@ -25,8 +25,6 @@ define(['slot'], function(Slot) {
                     speed: 500,
                     ease: 20
                 },
-                last: null,
-                status: null,
                 animate: true,
                 width: 71,
                 height: 96,
@@ -36,26 +34,21 @@ define(['slot'], function(Slot) {
             // Construct settings
             var settings = $.extend({}, defaults, options);
 
-            // Map settings to root
-            $.each(settings, function(index, value) {
-                that[index] = value;
-            });
-
-            // Create slot
-            that._create();
+            // Extend parent settings
+            that._super(settings);
             return that;
         },
 
         // Events
         events: {
-            'click card face:facedown': 'card.flip',
-            'dblclick card last:true': 'card.checkin',
-            'mousedown card face:faceup': 'card.grab',
-            'mouseup card face:faceup': 'card.return'
+            'click card[face=facedown,last=true]': 'card.flip',
+            'dblclick card[last=true]': 'card.checkin',
+            'mousedown card[face=faceup]': 'card.grab',
+            'mouseup card[face=faceup]': 'card.return'
         },
 
-        // Check if card is allowed
-        validateDrop: function(card) {
+        // Check if drop is allowed
+        dropAllowed: function(card) {
             var that = this;
 
             // If card is king and slot is empty

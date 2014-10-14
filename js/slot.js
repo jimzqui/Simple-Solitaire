@@ -5,7 +5,7 @@
  */
 
 // Load dependencies
-define(['card', 'class'], function(Card, Class) {
+define(['class'], function(Class) {
 
     // Create new Slot Class
     var Slot = Class.extend({
@@ -29,8 +29,6 @@ define(['card', 'class'], function(Card, Class) {
                     speed: 500,
                     ease: 20
                 },
-                last: null,
-                status: null,
                 animate: true,
                 width: 71,
                 height: 96,
@@ -52,28 +50,6 @@ define(['card', 'class'], function(Card, Class) {
 
         // Events
         events: {},
-
-        // Create cards to slot
-        populate: function(suits, names) {
-            var that = this;
-
-            // Contruct cards
-            for (var i = 0; i < names.length; i++) {
-                for (var j = 0; j < suits.length; j++) {
-
-                    // Create new card
-                    var card = new Card({
-                        canvas: that.canvas,
-                        name: names[i],
-                        suit: suits[j],
-                        zindex: i + j,
-                    });
-
-                    // Add card to slot
-                    that.addCard(card);
-                };
-            };
-        },
 
         // Pick card from slot
         pickCard: function(pos, remove) {
@@ -226,17 +202,109 @@ define(['card', 'class'], function(Card, Class) {
             that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
         },
 
-        // Transfer all cards to diff slot
-        transfer: function(slot, callback) {
+        // Open or flip cards
+        browseCards: function() {
             var that = this;
 
-            // Retrieve all cards
-            var cards = that.pickCards(that.cards.length);
+            // If still animating, return
+            if (that.browsing == true) return;
+            that.browsing = true;
 
-            // Place cards to slot
-            slot.addCards(cards, function() {
-                if (callback) callback();
+            // Uncascade cards
+            that.browse.uncascadeBrowsed();
+            var browsed = [];
+
+            // Retrieve last three cards from browse
+            for (var i = 0; i < that.browse.browse_size; i++) {
+                var card = that.pickCard(that.cards.length - 1);
+                
+                // Add card to container
+                if (card != undefined) {
+                    browsed.push(card);
+                }
+            };
+
+            // Place cards to browse
+            that.browse.addCards(browsed, function() {
+
+                // Flip browsed cards
+                for (var i = 0; i < browsed.length; i++) {
+                    var card = browsed[i];
+
+                    if (i == browsed.length - 1) {
+                        card.flip(75, function() {
+                            that.browsing = false;
+                        });
+                    } else {
+                        card.flip();
+                    }
+                };
             });
+        },
+
+        // Reset browesed cards
+        resetBrowsed: function() {
+            var that = this;
+
+            // Change anim
+            that.anim.speed = 200;
+            that.anim.interval = 0;
+            that.anim.ease = 0;
+
+            // Create container
+            var cards = [];
+
+            // Iterate all browsed cards
+            for (var i = that.browse.cards.length - 1; i >= 0; i--) {
+                var card = that.browse.pickCard(i);
+                (function(card) {
+                    card.el.css({ left: that.browse.offset.left });
+                    cards.push(card);
+                    card.flip(0);
+                })(card);
+            };
+
+            // Place cards to stack
+            that.addCards(cards, function() {
+                that.anim.speed = 500;
+                that.anim.interval = 150;
+                that.anim.ease = 20;
+            });
+        },
+
+        // Uncascade browsed cards
+        uncascadeBrowsed: function(callback) {
+            var that = this;
+
+            // Compute browe size
+            var count = 0;
+            var browse_size = that.cards.length % that.browse_size;
+            if (browse_size == 0) { browse_size = that.browse_size; }
+
+            // Move last browsed to left
+            for (var i = that.cards.length - 1; i >= that.cards.length - (1 + browse_size); i--) {
+                var card = that.cards[i];
+                if (card != undefined) {
+                    card.offset.left = that.offset.left;
+
+                    // Chek when to send callback
+                    if (i == that.cards.length - (1 + browse_size)) {
+                        var cb = callback;
+                    } else {
+                        var cb = function(){};
+                    }
+
+                    // Animate to left
+                    card.el.animate({
+                        left: that.offset.left
+                    }, 'fast', cb);
+                }
+            };
+
+            // If browse is empty
+            if (that.cards.length == 0) {
+                if (callback) callback();
+            }
         },
 
         // Shuffle cards
@@ -293,13 +361,6 @@ define(['card', 'class'], function(Card, Class) {
             };
 
             // Callback after faceup
-            if (callback) callback();
-        },
-
-        // Flip last card
-        flipLast: function(callback) {
-            var that = this;
-            that.last.flip();
             if (callback) callback();
         },
 
@@ -377,8 +438,10 @@ define(['card', 'class'], function(Card, Class) {
             // Iterate each events
             $.each(that.events, function(index, value) {
                 var event = index.split(' ')[0];
-                var target = index.split(' ')[1];
-                var filter = index.split(' ')[2];
+                var elem = index.split(' ')[1];
+                var matches = (/\[(.*?)\]/).exec(elem);
+                if (matches) var filters = matches[1];
+                var target = elem.replace(/\[(.*?)\]/g, '');
                 var action = value;
 
                 // If event is not for card
@@ -386,10 +449,14 @@ define(['card', 'class'], function(Card, Class) {
 
                 // Bind event to card
                 card.el.on(event, function(e) {
-                    if (filter != undefined){
-                        var operand_a = filter.split(':')[0];
-                        var operand_b = filter.split(':')[1];
-                        if (card[operand_a].toString() != operand_b) return;
+                    if (filters != undefined) {
+                        var filters_arr = filters.split(',');
+                        for (var i = 0; i < filters_arr.length; i++) {
+                            var filter = filters_arr[i];
+                            var operand_a = filter.split('=')[0];
+                            var operand_b = filter.split('=')[1];
+                            if (card[operand_a].toString() != operand_b) return;
+                        };
                     }
 
                     var object = action.split('.')[0];
@@ -416,20 +483,25 @@ define(['card', 'class'], function(Card, Class) {
             // Iterate each events
             $.each(that.events, function(index, value) {
                 var event = index.split(' ')[0];
-                var target = index.split(' ')[1];
-                var filter = index.split(' ')[2];
+                var elem = index.split(' ')[1];
+                var matches = (/\[(.*?)\]/).exec(elem);
+                if (matches) var filters = matches[1];
+                var target = elem.replace(/\[(.*?)\]/g, '');
                 var action = value;
 
                 // If event is not for card
                 if (target != 'this') return;
 
-                // Bind event to card
-                that.el.css({ cursor: 'pointer' });
+                // Bind event to slot
                 that.el.on(event, function(e) {
-                    if (filter != undefined){
-                        var operand_a = filter.split(':')[0];
-                        var operand_b = filter.split(':')[1];
-                        if (that[operand_a].toString() != operand_b) return;
+                    if (filters != undefined) {
+                        var filters_arr = filters.split(',');
+                        for (var i = 0; i < filters_arr.length; i++) {
+                            var filter = filters_arr[i];
+                            var operand_a = filter.split('=')[0];
+                            var operand_b = filter.split('=')[1];
+                            if (that[operand_a].toString() != operand_b) return;
+                        };
                     }
 
                     that[action]();
@@ -455,7 +527,8 @@ define(['card', 'class'], function(Card, Class) {
                 left: that.offset.left,
                 top: that.offset.top,
                 height: that.height,
-                width: that.width
+                width: that.width,
+                cursor: 'pointer'
             });
 
             // Style inner

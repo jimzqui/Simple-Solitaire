@@ -25,8 +25,6 @@ define(['slot'], function(Slot) {
                     speed: 500,
                     ease: 20
                 },
-                last: null,
-                status: null,
                 animate: false,
                 width: 71,
                 height: 96,
@@ -36,13 +34,8 @@ define(['slot'], function(Slot) {
             // Construct settings
             var settings = $.extend({}, defaults, options);
 
-            // Map settings to root
-            $.each(settings, function(index, value) {
-                that[index] = value;
-            });
-
-            // Create slot
-            that._create();
+            // Extend parent settings
+            that._super(settings);
             return that;
         },
 

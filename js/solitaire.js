@@ -5,7 +5,7 @@
  */
 
 // Load dependencies
-define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces'], function(Canvas, Deck, Stack, Browse, Column, Aces) {
+define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function(Canvas, Deck, Stack, Browse, Column, Aces, Card) {
 
     // Create new Solitaire Class
     var Solitaire = Canvas.extend({
@@ -18,188 +18,59 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces'], function(Canvas,
             var defaults = {
                 el: 'solitaire',
                 width: 677,
-                height: 550,
-                checkins: [],
-                collisions: [],
-                suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
-                names: ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King']
+                height: 550
             };
 
             // Construct final settings
             var settings = $.extend({}, defaults, options);
 
-            // Map settings to root
-            $.each(settings, function(index, value) {
-                that[index] = value;
-            });
-
-            // Create canvas
-            that._create();
+            // Extend parent settings
+            that._super(settings);
             return;
         },
 
-        // Start game
-        start: function() {
-            var that = this;
-
-            // Place cards to slots
-            that.createSlots();
-            that.setDefaults();
-            that.populateCards();
-        },
-
-        // Reset game
-        restart: function() {
-            var that = this;
-
-            // Hide restart button
-            that.deck.inner.hide();
-            that.deck.animate = false;
-
-            // Transfer cards to deck
-            that.stack.transfer(that.deck);
-            that.browse.transfer(that.deck);
-
-            // Transfer ace cards to deck
-            for (var j = 0; j < 4; j++) {
-                var ace = that.aces[j];
-                ace.transfer(that.deck);
-            };
-
-            // Transfer col cards to deck
-            for (var k = 0; k < 7; k++) {
-                var column = that.columns[k];
-                column.anim.speed = 500;
-                column.anim.interval = 150;
-                column.anim.ease = 20;
-                column.transfer(that.deck);
-            };
-
-            // Repopulate cards
-            that.deck.facedown();
-            that.populateCards();
-        },
-
-        // Populate cards to slots
-        populateCards: function() {
+        // Render canvas
+        render: function() {
             var that = this;
 
             // Create slots
-            var slots = [];
-            
-            // Push stack to list
-            that.stack.pickcount = 24;
-            slots.push(that.stack);
+            that.renderSlots({
+                'Deck': { slot: Deck, tile: '3-3' },
+                'Stack': { slot: Stack, tile: '0-0' },
+                'Browse': { slot: Browse, tile: '1-0' },
+                'Aces': { slot: Aces, tile: ['3-0', '4-0', '5-0', '6-0'] },
+                'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
+            });
 
-            // Push columns to list
-            for (var i = 0; i < that.columns.length; i++) {
-                var column = that.columns[i];
-                column.pickcount = i + 1;
-                slots.push(column);
-            };
-
-            // Populate cards
-            that.render(slots, function() {
-                that.flipLast();
+            // Render cards
+            that.renderCards({
+                'Deck': { create: Card },
+                'Stack': { pick: 24, from: 'Deck' }, 
+                'Column': { pick: [1, 2, 3, 4, 5, 6, 7], from: 'Deck' }
             });
         },
 
-        // Flip last cards
-        flipLast: function() {
+        // After render of cards
+        afterRender: function() {
             var that = this;
 
-            // Flip every last cards in column slots
-            for (var i = 0; i < that.columns.length; i++) {
-                var column = that.columns[i];
-                var timeout = i * column.anim.interval;
-                (function(timeout, column) {
-                    setTimeout(function() {
-                        column.flipLast();
-                        column.anim.speed = 'fast';
-                        column.anim.interval = 0;
-                        column.anim.ease = 0;
-                    }, timeout);
-                })(timeout, column);
-            };
+            // Flip last cards in column
+            that.flipLast('Column');
 
-            // Fade in deck
-            that.deck.inner.fadeIn();
-        },
-
-        // Create slots
-        createSlots: function() {
-            var that = this;
-
-            // Create new deck
-            that.deck = new Deck({
-                canvas: that,
-                name: 'deck',
-                position: {
-                    left: 3,
-                    top: 3
-                }
+            // Setup browse slot
+            that.setBrowse({ 
+                from: 'Stack', 
+                to: 'Browse', 
+                size: 3 
             });
 
-            // Create new stack
-            that.stack = new Stack({
-                canvas: that,
-                name: 'stack',
-                position: {
-                    left: 0,
-                    top: 0
-                }
+            // Setup checkin slots
+            that.setCheckin({
+                'Spades': 'Aces0',
+                'Hearts': 'Aces1',
+                'Clubs': 'Aces2',
+                'Diamonds': 'Aces3'
             });
-
-            // Create new browse
-            that.browse = new Browse({
-                canvas: that,
-                name: 'browse',
-                position: {
-                    left: 1,
-                    top: 0
-                }
-            });
-
-            // Create new columns
-            that.columns = [];
-            for (var i = 0; i < 7; i++) {
-                that.columns.push(new Column({
-                    canvas: that,
-                    name: 'col' + i,
-                    position: {
-                        left: i,
-                        top: 1
-                    }
-                }));
-            };
-
-            // Create new aces
-            that.aces = [];
-            for (var i = 0; i < 4; i++) {
-                that.aces.push(new Aces({
-                    canvas: that,
-                    name: 'ace' + i,
-                    position: {
-                        left: 3 + i,
-                        top: 0
-                    }
-                }));
-            };
-        },
-
-        // Set defaults
-        setDefaults: function() {
-            var that = this;
-
-            // Populate cards to deck
-            that.deck.populate(that.suits, that.names);
-            that.deck.inner.hide();
-            that.deck.shuffle();
-
-            // Set collisions & checkins
-            that.collisions = that.columns;
-            that.collisions = that.collisions.concat(that.aces);
-            that.checkins = that.aces;
         }
     });
 

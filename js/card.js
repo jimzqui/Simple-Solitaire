@@ -112,16 +112,16 @@ define(['class'], function(Class) {
         checkin: function(callback) {
             var that = this;
 
-            // Get the correct ace slot to checkin
-            var index = that.canvas.suits.indexOf(that.suit);
-            var slot = that.canvas.checkins[index];
-
-            // If allowed, place card
-            if (slot.validateDrop(that) == true) {
-                var card = that.slot.pickCard(that.index);
-                card.el.animate({ zIndex: 999 }, 0);
-                slot.addCard(card);
-            }
+            // Get the correct slot to checkin
+            $.each(that.canvas.slots, function(name, slot) {
+                if ($.isFunction(slot.checkinAllowed)) {
+                    if (slot.checkinAllowed(that) == true) {
+                        var card = that.slot.pickCard(that.index);
+                        card.el.animate({ zIndex: 999 }, 0);
+                        slot.addCard(card);
+                    }
+                }
+            });
 
             // Callback afer checkin
             if (callback) callback(offset);
@@ -137,10 +137,9 @@ define(['class'], function(Class) {
 
             // Drag card and get collision data for slots
             that._drag(x, y, function(offset) {
-                for (var i = 0; i < that.canvas.collisions.length; i++) {
-                    var slot = that.canvas.collisions[i];
+                $.each(that.canvas.slots, function(name, slot) {
                     that._setCollision(slot, offset);
-                };
+                });
             });
 
             // Other cards
@@ -155,6 +154,7 @@ define(['class'], function(Class) {
         // Return card after grab
         return: function(callback) {
             var that = this;
+            var collided;
 
             // Unbind mousemove after return
             that.canvas.el.unbind('mousemove');
@@ -163,14 +163,13 @@ define(['class'], function(Class) {
             if (that.grabbed != true) return;
 
             // Check any collision for slots
-            for (var i = 0; i < that.canvas.collisions.length; i++) {
-                var slot = that.canvas.collisions[i];
-                var collided = that._checkCollision(slot, function(cards) {
+            $.each(that.canvas.slots, function(name, slot) {
+                collided = that._checkCollision(slot, function(cards) {
                     slot.addCards(cards, function() {
                         slot.collide = null;
                     });
                 });
-            };
+            });
 
             // Return all cards
             if (collided == false) {
@@ -188,12 +187,6 @@ define(['class'], function(Class) {
                     });
                 };
             }
-
-            // Remove all collisions
-            for (var k = 0; k < that.canvas.collisions.length; k++) {
-                var slot = that.canvas.collisions[k];
-                slot.collide = null;
-            };
         },
 
         // Drag card following mouse
@@ -274,21 +267,23 @@ define(['class'], function(Class) {
             if (slot.collide != null) {
 
                 // Card is allowed to switch
-                if (slot.validateDrop(that) == true) {
-                    var cards_active = [];
+                if ($.isFunction(slot.dropAllowed)) {
+                    if (slot.dropAllowed(that) == true) {
+                        var cards_active = [];
 
-                    // Iterate each cards
-                    for (var i = slot.collide.cards.length - 1; i >= that.index; i--) {
-                        var card_active = slot.collide.pickCard(i);
-                        if (card_active.face == 'faceup') {
-                            cards_active.push(card_active);
-                        }
-                    };
+                        // Iterate each cards
+                        for (var i = slot.collide.cards.length - 1; i >= that.index; i--) {
+                            var card_active = slot.collide.pickCard(i);
+                            if (card_active.face == 'faceup') {
+                                cards_active.push(card_active);
+                            }
+                        };
 
-                    // Callback after checking
-                    if (callback) callback(cards_active.reverse());
+                        // Callback after checking
+                        if (callback) callback(cards_active.reverse());
 
-                    return true;
+                        return true;
+                    }
                 }
             }
 
