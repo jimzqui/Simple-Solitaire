@@ -172,7 +172,7 @@ define(['class'], function(Class) {
             that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
 
             // If slot is browse
-            if (that.browse_from != undefined) {
+            if (that.browse_from != undefined && that.reset == undefined) {
                 that.cascadeBrowsed();
             }
         },
