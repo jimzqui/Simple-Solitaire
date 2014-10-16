@@ -25,6 +25,11 @@ define(['slot'], function(Slot) {
                     speed: 500,
                     ease: 20
                 },
+                altanim: {
+                    interval: 0,
+                    speed: 200,
+                    ease: 0
+                },
                 animate: true,
                 width: 71,
                 height: 96,
@@ -41,7 +46,7 @@ define(['slot'], function(Slot) {
 
         // Events
         events: {
-            'click card[face=facedown,last=true]': 'card.flip',
+            'click card[face=facedown,last=true]': 'card.open',
             'dblclick card[last=true]': 'card.checkin',
             'mousedown card[face=faceup]': 'card.grab',
             'mouseup card[face=faceup]': 'card.return'

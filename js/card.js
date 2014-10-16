@@ -40,7 +40,6 @@ define(['class'], function(Class) {
             // Compute anim data
             var anim = slot._computeAnim();
             that.offset = slot._computeCascade();
-            that.zindex = anim.zindex;
 
             // Make sure card is on top while moving
             that.el.animate({ zIndex: anim.zindex + 999 }, 0);
@@ -58,6 +57,7 @@ define(['class'], function(Class) {
                 // Callback
                 setTimeout(function() {
                     if(callback) callback(that);
+                    slot._cardEvents(that);
                 }, anim.timeout + anim.interval);
             }
 
@@ -67,7 +67,90 @@ define(['class'], function(Class) {
                 that.zindex = anim.zindex;
                 that.el.css(that.offset);
                 if(callback) callback(that);
+                slot._cardEvents(that);
             }
+        },
+
+        // Open card
+        open: function(speed, callback) {
+            var that = this;
+
+            // Default speed to 75
+            if (speed == undefined) {
+                speed = 75;
+            } else {
+                if ($.isFunction(speed)) {
+                    callback = speed;
+                    speed = 75;
+                }
+            }
+
+            // Get flip image
+            var src = 'cards/' + that.slug + '.png';
+
+            // Update card face
+            that.face = 'faceup';
+
+            // Flip animation
+            that.el.animate({
+                width: 0,
+                height: that.height,
+                marginLeft: that.width / 2
+            }, speed, function() {
+                that.el.animate({
+                    width: that.width,
+                    height: that.height,
+                    marginLeft: 0
+                }, speed, function() {
+                    that.img.attr('src', src);
+                    if(callback) callback();
+                });
+            });
+
+            // Register move
+            that.canvas.registerMove({
+                action: 'open',
+                type: 'card',
+                actor: that,
+                origin: that.slot
+            });
+        },
+
+        // Close card
+        close: function(speed, callback) {
+            var that = this;
+
+            // Default speed to 75
+            if (speed == undefined) {
+                speed = 75;
+            } else {
+                if ($.isFunction(speed)) {
+                    callback = speed;
+                    speed = 75;
+                }
+            }
+
+            // Get flip image
+            var src = 'cards/facedown.png';
+
+            // Update card face
+            that.face = 'facedown';
+
+            // Flip animation
+            that.el.animate({
+                width: 0,
+                height: that.height,
+                marginLeft: that.width / 2
+            }, speed, function() {
+                that.el.animate({
+                    width: that.width,
+                    height: that.height,
+                    marginLeft: 0
+                }, speed, function() {
+                    that.img.attr('src', src);
+                    if(callback) callback();
+                });
+            });
         },
 
         // Flip card
@@ -77,6 +160,11 @@ define(['class'], function(Class) {
             // Default speed to 75
             if (speed == undefined) {
                 speed = 75;
+            } else {
+                if ($.isFunction(speed)) {
+                    callback = speed;
+                    speed = 75;
+                }
             }
 
             // Get flip image
@@ -117,6 +205,16 @@ define(['class'], function(Class) {
                 if ($.isFunction(slot.checkinAllowed)) {
                     if (slot.checkinAllowed(that) == true) {
                         var card = that.slot.pickCard(that.index);
+
+                        // Register move
+                        that.canvas.registerMove({
+                            action: 'checkin',
+                            type: 'card',
+                            actor: card,
+                            origin: card.slot
+                        });
+
+                        // Transfer card
                         card.el.animate({ zIndex: 999 }, 0);
                         slot.addCard(card);
                     }
@@ -165,6 +263,16 @@ define(['class'], function(Class) {
             // Check any collision for slots
             $.each(that.canvas.slots, function(name, slot) {
                 collided = that._checkCollision(slot, function(cards) {
+
+                    // Register move
+                    that.canvas.registerMove({
+                        action: 'switchCards',
+                        type: 'cards',
+                        actor: cards,
+                        origin: cards[0].slot
+                    });
+
+                    // Transfer cards
                     slot.addCards(cards, function() {
                         slot.collide = null;
                     });

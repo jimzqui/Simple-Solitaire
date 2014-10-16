@@ -41,13 +41,13 @@ define(['slot'], function(Slot) {
 
         // Events
         events: {
-            'click this': 'restart'
+            'click this': 'reset'
         },
 
-        // Restart game
-        restart: function() {
+        // Reset cards
+        reset: function() {
             var that = this;
-            that.canvas.restart();
+            that.canvas.resetCards();
         }
     });
 

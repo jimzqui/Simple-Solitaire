@@ -19,6 +19,7 @@ define(['class'], function(Class) {
                 el: 'solitaire',
                 width: 677,
                 height: 550,
+                moves: [],
                 slots: {},
                 suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
                 names: ['Ace', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King']
@@ -44,6 +45,9 @@ define(['class'], function(Class) {
         renderSlots: function(obj) {
             var that = this;
 
+            // Save settings for laters
+            that.slotSettings = obj;
+
             // Create and draw slots in canvas
             $.each(obj, function(name, opt) {
                 var slot = opt.slot;
@@ -54,6 +58,7 @@ define(['class'], function(Class) {
                         that.slots[name + i] = new slot({
                             canvas: that,
                             name: name + i,
+                            group: name,
                             position: {
                                 left: tile[i].split('-')[0],
                                 top: tile[i].split('-')[1]
@@ -64,6 +69,7 @@ define(['class'], function(Class) {
                     that.slots[name] = new slot({
                         canvas: that,
                         name: name,
+                        group: name,
                         position: {
                             left: tile.split('-')[0],
                             top: tile.split('-')[1]
@@ -77,6 +83,9 @@ define(['class'], function(Class) {
         renderCards: function(obj, callback) {
             var that = this;
             var orders = {};
+
+            // Save settings for laters
+            that.cardSettings = obj;
 
             // Create/transfer cards in slots
             $.each(obj, function(to_name, opt) {
@@ -94,7 +103,6 @@ define(['class'], function(Class) {
                         for (var i = 0; i < opt.pick.length; i++) {
                             orders[opt.from].push({
                                 name: to_name + i,
-                                group: to_name,
                                 size: opt.pick[i]
                             });
                         };
@@ -114,6 +122,36 @@ define(['class'], function(Class) {
                     order: order
                 });
             });
+        },
+
+        // Reset cards
+        resetCards: function(callback) {
+            var that = this;
+
+            // Destroy all cards
+            that.destroyCards();
+
+            // Rerender cards
+            that.renderCards(that.cardSettings, callback);
+        },
+
+        // Destroy all cards
+        destroyCards: function() {
+            var that = this;
+            var cards = [];
+
+            // Empty all cards in slots
+            $.each(that.slots, function(name, slot) {
+                cards = cards.concat(slot.pickCards(slot.cards.length));
+            });
+
+            // Destroy all cards
+            for (var i = cards.length - 1; i >= 0; i--) {
+                var card = cards[i];
+                card.el.remove();
+            };
+
+            that.rendered = false;
         },
 
         // Create cards
@@ -157,6 +195,7 @@ define(['class'], function(Class) {
             // Place cards to slot
             slot.addCards(cards, function() {
                 if (i == obj.order.length - 1) {
+                    that.rendered = true;
                     that.afterRender();
                 } else {
                     that.transferCards(obj, i + 1);
@@ -179,28 +218,114 @@ define(['class'], function(Class) {
             });
         },
 
-        // Flip every last cards
+        // Flip every last cards of group
         flipLast: function(group, callback) {
             var that = this;
+            var count = 0;
 
-            // Iterate slots in group
-            for (var i = 0; i < 7; i++) {
-                var slot = that.slots[group + i];
-                var timeout = i * slot.anim.interval;
-                (function(timeout, slot, i) {
-                    setTimeout(function() {
-                        slot.anim.speed = 'fast';
-                        slot.anim.interval = 0;
-                        slot.anim.ease = 0;
+            // Iterate slots and find the group
+            $.each(that.slots, function(name, slot) {
+                if (slot.group == group) {
+                    var timeout = count * slot.anim.interval;
+                    (function(timeout, slot, count) {
+                        setTimeout(function() {
+                            if (count == 6) {
+                                slot.last.flip(callback);
+                            } else {
+                                slot.last.flip();
+                            }
+                        }, timeout);
+                    })(timeout, slot, count);
+                    count++;
+                }
+            });
+        },
 
-                        if (i == 6) {
-                            slot.last.flip(75, callback);
-                        } else {
-                            slot.last.flip();
-                        }
-                    }, timeout);
-                })(timeout, slot, i);
+        // Change anim settings of group
+        changeAnim: function(group, anim) {
+            var that = this;
+
+            // Iterate slots and find the group
+            $.each(that.slots, function(name, slot) {
+                if (slot.group == group) {
+                    slot.anim = anim;
+                }
+            });
+        },
+
+        // Register move
+        registerMove: function(move) {
+            var that = this;
+
+            // Check if allowed to register
+            if (that.rendered == true) {
+                that.moves.push(move);
+            }
+        },
+
+        // Undo last move
+        undoMove: function() {
+            var that = this;
+
+            // Get last move
+            var move = that.moves[that.moves.length - 1];
+
+            switch(move.action) {
+                case 'switchCards': that._undoSwitch(move); break;
+                case 'browseCards': that._undoBrowse(move); break;
+                case 'checkin': that._undoCheckin(move); break;
+                case 'open': that._undoOpen(move); break;
+            }
+
+            // Remove last move
+            that.moves.pop(); 
+        },
+
+        // Undo switch cards
+        _undoSwitch: function(move) {
+            var that = this;
+
+            // Create container
+            var cards = [];
+
+            // Retrieve cards back
+            for (var i = 0; i < move.actor.length; i++) {
+                var slot = move.actor[i].slot;
+                var card = slot.pickCard(slot.cards.length - 1);
+                cards.push(card);
             };
+
+            // Transfer cards to origin
+            move.origin.addCards(cards);
+        },
+
+        // Undo browse cards
+        _undoBrowse: function(move) {
+            var that = this;
+
+            // Move back browsed cards
+            move.origin.unbrowseCards();
+        },
+
+        // Undo card checkin
+        _undoCheckin: function(move) {
+            var that = this;
+
+            // Retrieve card back
+            var slot = move.actor.slot;
+            var card = slot.pickCard(slot.cards.length - 1);
+
+            // Transfer cards to origin
+            card.el.animate({ zIndex: 999 }, 0);
+            move.origin.addCard(card);
+        },
+
+        // Undo card open
+        _undoOpen: function(move) {
+            var that = this;
+
+            // Close back card
+            move.actor.close()
         },
 
         // Create canvas

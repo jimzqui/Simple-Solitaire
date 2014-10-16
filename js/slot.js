@@ -116,38 +116,8 @@ define(['class'], function(Class) {
             // Update height
             that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
 
-            // Compute anim data
-            var anim = that._computeAnim();
-            card.offset = that._computeCascade();
-
-            // Make sure card is on top while moving
-            card.el.animate({ zIndex: anim.zindex + 999 }, 0);
-            card.zindex = anim.zindex + 999;
-
-            // Time card animation
-            if (that.animate == true) {
-                setTimeout(function() {
-                    card.el.animate(card.offset, anim.speed, function() {
-                        card.el.animate({ zIndex: anim.zindex }, 0);
-                        card.zindex = anim.zindex;
-                    });
-                }, anim.timeout);
-
-                // Callback
-                setTimeout(function() {
-                    if(callback) callback(card);
-                    that._cardEvents(card);
-                }, anim.timeout + anim.interval);
-            }
-
-            // Place card
-            else {
-                card.el.css({ zIndex: anim.zindex });
-                card.zindex = anim.zindex;
-                card.el.css(card.offset);
-                if(callback) callback(card);
-                that._cardEvents(card);
-            }
+            // Move card to slot
+            card.move(that, callback);
         },
 
         // Add cards to slot
@@ -157,7 +127,7 @@ define(['class'], function(Class) {
             // Iterate each card
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
-                card.count = i;
+                card.batch_count = i;
 
                 // Move card to slot
                 (function(i, card, callback) {
@@ -214,7 +184,7 @@ define(['class'], function(Class) {
             that.browse.uncascadeBrowsed();
             var browsed = [];
 
-            // Retrieve last three cards from browse
+            // Pick cards based on browse size
             for (var i = 0; i < that.browse.browse_size; i++) {
                 var card = that.pickCard(that.cards.length - 1);
                 
@@ -224,6 +194,14 @@ define(['class'], function(Class) {
                 }
             };
 
+            // Register move
+            that.canvas.registerMove({
+                action: 'browseCards',
+                type: 'cards',
+                actor: browsed,
+                origin: browsed[0].slot
+            });
+
             // Place cards to browse
             that.browse.addCards(browsed, function() {
 
@@ -232,7 +210,7 @@ define(['class'], function(Class) {
                     var card = browsed[i];
 
                     if (i == browsed.length - 1) {
-                        card.flip(75, function() {
+                        card.flip(function() {
                             that.browsing = false;
                         });
                     } else {
@@ -240,6 +218,30 @@ define(['class'], function(Class) {
                     }
                 };
             });
+        },
+
+        // The reverse of browse
+        unbrowseCards: function() {
+            var that = this;
+
+            // Create container
+            var cards = [];
+
+            // Compute browe size
+            var browse_size = that.cards.length % that.browse_size;
+            if (browse_size == 0) { browse_size = that.browse_size; }
+
+            // Get last browse cards
+            for (var i = 0; i < that.browse.browse_size; i++) {
+                var card = that.browse.pickCard(that.browse.cards.length - 1);
+                if (card != undefined) {
+                    card.flip();
+                    cards.push(card);
+                }
+            }
+
+            // Place cards to stack
+            that.addCards(cards);
         },
 
         // Reset browesed cards
@@ -275,9 +277,9 @@ define(['class'], function(Class) {
         // Uncascade browsed cards
         uncascadeBrowsed: function(callback) {
             var that = this;
+            var count = 0;
 
             // Compute browe size
-            var count = 0;
             var browse_size = that.cards.length % that.browse_size;
             if (browse_size == 0) { browse_size = that.browse_size; }
 
@@ -398,12 +400,19 @@ define(['class'], function(Class) {
         _computeAnim: function() {
             var that = this;
 
+            // If alternate anim is present and slot is rendered
+            if (that.altanim != undefined && that.canvas.rendered == true) {
+                var anim = that.altanim;
+            } else {
+                var anim = that.anim;
+            }
+
             // Compute data
             var card = that.cards[that.cards.length - 1];
             var zindex = that.offset.left + that.cards.length;
-            var timeout = (card.count * that.anim.ease) * 2;
-            var interval = that.anim.interval;
-            var speed = that.anim.speed;
+            var timeout = (card.batch_count * anim.ease) * 2;
+            var interval = anim.interval;
+            var speed = anim.speed;
 
             // Return data
             return {
@@ -418,7 +427,7 @@ define(['class'], function(Class) {
         _computeCascade: function() {
             var that = this;
             var card = that.cards[that.cards.length - 1];
-            var adjust_left = card.count * that.cascade.left;
+            var adjust_left = card.batch_count * that.cascade.left;
             var adjust_top = (that.cards.length - 1) * that.cascade.top;
             if (!adjust_left) adjust_left = 0;
             
