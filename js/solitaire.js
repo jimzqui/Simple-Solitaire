@@ -18,7 +18,7 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
             var defaults = {
                 el: 'solitaire',
                 width: 677,
-                height: 550
+                height: 600
             };
 
             // Construct final settings
@@ -70,6 +70,14 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
                 'Hearts': 'Aces1',
                 'Clubs': 'Aces2',
                 'Diamonds': 'Aces3'
+            });
+
+            // Add undo button
+            that.addButton({
+                name: 'Undo',
+                event: function() {
+                    that.undoMove();
+                }
             });
         }
     });

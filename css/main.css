@@ -110,6 +110,15 @@ body {
     user-select: none;
 }
 
+#btn-Undo {
+    left: 50%;
+    margin-left: -34px;
+    margin-top: 255px;
+    position: absolute;
+    top: 50%;
+    width: 65px;
+}
+
 
 /* ==========================================================================
    Helper classes

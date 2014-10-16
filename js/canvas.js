@@ -18,7 +18,7 @@ define(['class'], function(Class) {
             var defaults = {
                 el: 'solitaire',
                 width: 677,
-                height: 550,
+                height: 600,
                 moves: [],
                 slots: {},
                 suits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
@@ -151,7 +151,9 @@ define(['class'], function(Class) {
                 card.el.remove();
             };
 
+            // Reset infos
             that.rendered = false;
+            that.moves = [];
         },
 
         // Create cards
@@ -267,6 +269,9 @@ define(['class'], function(Class) {
         undoMove: function() {
             var that = this;
 
+            // Return if no moves registered
+            if (that.moves.length == 0) return;
+
             // Get last move
             var move = that.moves[that.moves.length - 1];
 
@@ -279,6 +284,24 @@ define(['class'], function(Class) {
 
             // Remove last move
             that.moves.pop(); 
+        },
+
+        // Add button
+        addButton: function(obj) {
+            var that = this;
+
+            // Construct button html
+            var html = '<a id="btn-' + 
+            obj.name + '" class="btn btn-default">' + 
+            obj.name + '</a>';
+
+            // Append button
+            var button = $(html).appendTo('body');
+
+            // Add event to button
+            button.click(function() {
+                obj.event();
+            });
         },
 
         // Undo switch cards
@@ -296,7 +319,7 @@ define(['class'], function(Class) {
             };
 
             // Transfer cards to origin
-            move.origin.addCards(cards);
+            move.origin.addCards(cards.reverse());
         },
 
         // Undo browse cards
@@ -315,7 +338,7 @@ define(['class'], function(Class) {
             var slot = move.actor.slot;
             var card = slot.pickCard(slot.cards.length - 1);
 
-            // Transfer cards to origin
+            // Transfer card to origin
             card.el.animate({ zIndex: 999 }, 0);
             move.origin.addCard(card);
         },

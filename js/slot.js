@@ -224,6 +224,11 @@ define(['class'], function(Class) {
         unbrowseCards: function() {
             var that = this;
 
+            // Change anim
+            that.anim.speed = 200;
+            that.anim.interval = 0;
+            that.anim.ease = 0;
+
             // Create container
             var cards = [];
 
@@ -235,13 +240,18 @@ define(['class'], function(Class) {
             for (var i = 0; i < that.browse.browse_size; i++) {
                 var card = that.browse.pickCard(that.browse.cards.length - 1);
                 if (card != undefined) {
-                    card.flip();
+                    card.el.css({ left: that.browse.offset.left });
+                    card.flip(0);
                     cards.push(card);
                 }
             }
 
             // Place cards to stack
-            that.addCards(cards);
+            that.addCards(cards, function() {
+                that.anim.speed = 500;
+                that.anim.interval = 150;
+                that.anim.ease = 20;
+            });
         },
 
         // Reset browesed cards
