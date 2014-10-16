@@ -209,7 +209,8 @@ define(['class'], function(Class) {
         setBrowse: function(obj) {
             var that = this;
             that.slots[obj.to].browse_size = obj.size;
-            that.slots[obj.from].browse = that.slots[obj.to];
+            that.slots[obj.from].browse_to = that.slots[obj.to];
+            that.slots[obj.to].browse_from = that.slots[obj.from];
         },
 
         // Set checkin slots

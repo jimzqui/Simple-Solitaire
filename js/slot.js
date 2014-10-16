@@ -170,6 +170,11 @@ define(['class'], function(Class) {
 
             // Update height
             that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+
+            // If slot is browse
+            if (that.browse_from != undefined) {
+                that.cascadeBrowsed();
+            }
         },
 
         // Open or flip cards
@@ -181,11 +186,11 @@ define(['class'], function(Class) {
             that.browsing = true;
 
             // Uncascade cards
-            that.browse.uncascadeBrowsed();
+            that.browse_to.uncascadeBrowsed();
             var browsed = [];
 
             // Pick cards based on browse size
-            for (var i = 0; i < that.browse.browse_size; i++) {
+            for (var i = 0; i < that.browse_to.browse_size; i++) {
                 var card = that.pickCard(that.cards.length - 1);
                 
                 // Add card to container
@@ -203,7 +208,7 @@ define(['class'], function(Class) {
             });
 
             // Place cards to browse
-            that.browse.addCards(browsed, function() {
+            that.browse_to.addCards(browsed, function() {
 
                 // Flip browsed cards
                 for (var i = 0; i < browsed.length; i++) {
@@ -237,10 +242,10 @@ define(['class'], function(Class) {
             if (browse_size == 0) { browse_size = that.browse_size; }
 
             // Get last browse cards
-            for (var i = 0; i < that.browse.browse_size; i++) {
-                var card = that.browse.pickCard(that.browse.cards.length - 1);
+            for (var i = 0; i < that.browse_to.browse_size; i++) {
+                var card = that.browse_to.pickCard(that.browse_to.cards.length - 1);
                 if (card != undefined) {
-                    card.el.css({ left: that.browse.offset.left });
+                    card.el.css({ left: that.browse_to.offset.left });
                     card.flip(0);
                     cards.push(card);
                 }
@@ -265,12 +270,13 @@ define(['class'], function(Class) {
 
             // Create container
             var cards = [];
+            that.browse_to.reset = true;
 
             // Iterate all browsed cards
-            for (var i = that.browse.cards.length - 1; i >= 0; i--) {
-                var card = that.browse.pickCard(i);
+            for (var i = that.browse_to.cards.length - 1; i >= 0; i--) {
+                var card = that.browse_to.pickCard(i);
                 (function(card) {
-                    card.el.css({ left: that.browse.offset.left });
+                    card.el.css({ left: that.browse_to.offset.left });
                     cards.push(card);
                     card.flip(0);
                 })(card);
@@ -281,7 +287,42 @@ define(['class'], function(Class) {
                 that.anim.speed = 500;
                 that.anim.interval = 150;
                 that.anim.ease = 20;
+                delete that.browse_to.reset;
             });
+        },
+
+        // Cascade browsed cards
+        cascadeBrowsed: function(callback) {
+            var that = this;
+
+            // Return if reseting
+            if (that.reset == true) return;
+
+            // Get card length
+            if (that.cards.length > that.browse_size) {
+                var count = that.browse_size;
+                var length = that.browse_size;
+            } else {
+                var count = that.cards.length;
+                var length = that.cards.length;
+            }
+
+            // Recascade browse cards
+            for (var i = 0; i < length; i++) {
+                count--;
+                var card = that.cards[that.cards.length - 1 - i];
+                var adjust_left = count * that.cascade.left;
+
+                if (i == length - 1) {
+                    card.el.animate({
+                        left: that.offset.left + adjust_left
+                    }, 'fast', callback);
+                } else {
+                    card.el.animate({
+                        left: that.offset.left + adjust_left
+                    }, 'fast');
+                }
+            };
         },
 
         // Uncascade browsed cards
@@ -301,15 +342,14 @@ define(['class'], function(Class) {
 
                     // Chek when to send callback
                     if (i == that.cards.length - (1 + browse_size)) {
-                        var cb = callback;
+                        card.el.animate({
+                            left: that.offset.left
+                        }, 'fast', callback);
                     } else {
-                        var cb = function(){};
+                        card.el.animate({
+                            left: that.offset.left
+                        }, 'fast');
                     }
-
-                    // Animate to left
-                    card.el.animate({
-                        left: that.offset.left
-                    }, 'fast', cb);
                 }
             };
 
