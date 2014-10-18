@@ -16,9 +16,4 @@ require(['solitaire'], function(Solitaire) {
 
 	// Create new app
 	App = new Solitaire();
-
-	// Undo button
-	$('#undo').click(function() {
-		App.undoMove();
-	});
 });
