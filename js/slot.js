@@ -188,11 +188,10 @@ define(['class'], function(Class) {
                     var card = browsed[i];
 
                     if (i == browsed.length - 1) {
-                        card.flip(function() {
-                            that.browsing = false;
-                        });
+                        card.flip(0.15);
+                        that.browsing = false;
                     } else {
-                        card.flip();
+                        card.flip(0.15);
                     }
                 };
             });
@@ -213,7 +212,7 @@ define(['class'], function(Class) {
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
                 card.el.css({ left: that.browse_to.offset.left });
-                card.flip(0);
+                card.flip(0.15);
             };
 
             // Place cards to stack
@@ -231,7 +230,7 @@ define(['class'], function(Class) {
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
                 card.el.css({ left: that.browse_to.offset.left });
-                card.flip(0);
+                card.flip(0.15);
             };
 
             // Place cards to stack
@@ -262,36 +261,6 @@ define(['class'], function(Class) {
             }
 
             // Callback after shuffle
-            if (callback) callback();
-        },
-
-        // Flip all cards facedown
-        facedown: function(callback) {
-            var that = this;
-
-            // Iterate each card
-            for (var i = 0; i < that.cards.length; i++) {
-                var card = that.cards[i];
-                card.face = 'facedown';
-                card.img.attr('src', 'cards/facedown.png');
-            };
-
-            // Callback after facedown
-            if (callback) callback();
-        },
-
-        // Flip all cards facedown
-        faceup: function(callback) {
-            var that = this;
-
-            // Iterate each card
-            for (var i = 0; i < that.cards.length; i++) {
-                var card = that.cards[i];
-                card.face = 'faceup';
-                card.img.attr('src', 'cards/' + card.slug + '.png');
-            };
-
-            // Callback after faceup
             if (callback) callback();
         },
 

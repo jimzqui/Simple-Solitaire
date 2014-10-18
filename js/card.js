@@ -72,39 +72,20 @@ define(['class'], function(Class) {
         },
 
         // Open card
-        open: function(speed, callback) {
+        open: function(speed) {
             var that = this;
 
-            // Default speed to 75
+            // Default speed to 0.3
             if (speed == undefined) {
-                speed = 75;
-            } else {
-                if ($.isFunction(speed)) {
-                    callback = speed;
-                    speed = 75;
-                }
+                speed = 0.3;
             }
 
-            // Get flip image
-            var src = 'cards/' + that.slug + '.png';
-
-            // Update card face
+            // Flip card
             that.face = 'faceup';
-
-            // Flip animation
-            that.el.animate({
-                width: 0,
-                height: that.height,
-                marginLeft: that.width / 2
-            }, speed, function() {
-                that.el.animate({
-                    width: that.width,
-                    height: that.height,
-                    marginLeft: 0
-                }, speed, function() {
-                    that.img.attr('src', src);
-                    if(callback) callback();
-                });
+            that.el.find('.flipper').css({
+                transition: 'all ' + speed + 's ease 0s',
+                transformStyle: 'preserve-3d',
+                transform: 'rotateY(180deg)'
             });
 
             // Register move
@@ -117,83 +98,55 @@ define(['class'], function(Class) {
         },
 
         // Close card
-        close: function(speed, callback) {
+        close: function(speed) {
             var that = this;
 
-            // Default speed to 75
+            // Default speed to 0.3
             if (speed == undefined) {
-                speed = 75;
-            } else {
-                if ($.isFunction(speed)) {
-                    callback = speed;
-                    speed = 75;
-                }
+                speed = 0.3;
             }
 
-            // Get flip image
-            var src = 'cards/facedown.png';
-
-            // Update card face
+            // Flip card
             that.face = 'facedown';
-
-            // Flip animation
-            that.el.animate({
-                width: 0,
-                height: that.height,
-                marginLeft: that.width / 2
-            }, speed, function() {
-                that.el.animate({
-                    width: that.width,
-                    height: that.height,
-                    marginLeft: 0
-                }, speed, function() {
-                    that.img.attr('src', src);
-                    if(callback) callback();
-                });
+            that.el.find('.flipper').css({
+                transition: 'all ' + speed + 's ease 0s',
+                transformStyle: 'preserve-3d',
+                transform: 'rotateY(0deg)'
             });
         },
 
         // Flip card
-        flip: function(speed, callback) {
+        flip: function(speed) {
             var that = this;
 
-            // Default speed to 75
+            // Default speed to 0.3
             if (speed == undefined) {
-                speed = 75;
-            } else {
-                if ($.isFunction(speed)) {
-                    callback = speed;
-                    speed = 75;
-                }
+                speed = 0.3;
             }
 
-            // Get flip image
-            if (that.face == 'faceup') {
-                var new_face = 'facedown';
-                var src = 'cards/' + new_face + '.png';
-            } else {
-                var new_face = 'faceup';
-                var src = 'cards/' + that.slug + '.png';
-            }
-
-            // Update card face
-            that.face = new_face;
-
-            // Flip animation
-            that.el.animate({
-                width: 0,
-                height: that.height,
-                marginLeft: that.width / 2
-            }, speed, function() {
-                that.el.animate({
-                    width: that.width,
-                    height: that.height,
-                    marginLeft: 0
-                }, speed, function() {
-                    that.img.attr('src', src);
-                    if(callback) callback();
-                });
+            // Add transition
+            that.el.find('.flipper').css({
+                transition: 'all ' + speed + 's ease 0s',
+                transformStyle: 'preserve-3d',
+                transform: 'rotateY(180deg)'
             });
+
+            // Flip card
+            if (that.face == 'faceup') {
+                that.face = 'facedown';
+                that.el.find('.flipper').css({
+                    transition: 'all ' + speed + 's ease 0s',
+                    transformStyle: 'preserve-3d',
+                    transform: 'rotateY(0deg)'
+                });
+            } else {
+                that.face = 'faceup';
+                that.el.find('.flipper').css({
+                    transition: 'all ' + speed + 's ease 0s',
+                    transformStyle: 'preserve-3d',
+                    transform: 'rotateY(180deg)'
+                });
+            }
         },
 
         // Checkin card to ace pile
@@ -383,7 +336,7 @@ define(['class'], function(Class) {
                         var cards = slot.collide.getCards(slot.collide.cards.length - that.index, true);
 
                         // Callback after checking
-                        if (callback) callback(cards);
+                        if (callback) callback(cards.reverse());
 
                         return true;
                     }
@@ -418,9 +371,11 @@ define(['class'], function(Class) {
             that.slug = that.num + that.suit;
 
             // Create card
-            var html = '<div class="card"><img src="cards/facedown.png"><span></span></div>';
+            var html = '<div class="card"><div class="flipper">' +
+            '<div class="front"><img src="cards/facedown.png" /></div>' +
+            '<div class="back"><img src="cards/' + that.slug + '.png" /></div>' +
+            '</div><div class="cover"></div></div>';
             that.el = $(html).appendTo('#solitaire');
-            that.img = that.el.find('img');
             that.face = 'facedown';
 
             // Style element
@@ -428,26 +383,50 @@ define(['class'], function(Class) {
                 position: 'absolute',
                 height: that.height,
                 width: that.width,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                perspective: 1000
             });
 
-            // Style card cover
-            that.el.find('span').css({
+            // Style card flipper
+            that.el.find('.flipper').css({
+                position: 'relative'
+            });
+
+            // Style front and back
+            that.el.find('.front, .back').css({
+                width: that.width,
+                height: that.height,
                 position: 'absolute',
-                width: '100%',
-                height: '100%',
-                left: 0,
+                backfaceVisibility: 'hidden',
                 top: 0,
-                zIndex: 1
+                left: 0
+            });
+
+            // Style front
+            that.el.find('.front').css({
+                zIndex: 2,
+                transform: 'rotateY(0deg)'
+            });
+
+            // Style back
+            that.el.find('.back').css({
+                transform: 'rotateY(180deg)'
             });
 
             // Style card img
             that.el.find('img').css({
-                position: 'absolute',
+                width: '100%',
+                height: '100%'
+            });
+
+            // Style card img
+            that.el.find('.cover').css({
                 width: '100%',
                 height: '100%',
+                position: 'absolute',
                 left: 0,
-                top: 0
+                top: 0,
+                zIndex: 1
             });
         }
     });

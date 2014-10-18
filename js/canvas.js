@@ -233,7 +233,8 @@ define(['class'], function(Class) {
                     (function(timeout, slot, count) {
                         setTimeout(function() {
                             if (count == 6) {
-                                slot.last.flip(callback);
+                                slot.last.flip();
+                                if (callback) callback();
                             } else {
                                 slot.last.flip();
                             }
@@ -316,6 +317,7 @@ define(['class'], function(Class) {
             for (var i = 0; i < move.actor.length; i++) {
                 var slot = move.actor[i].slot;
                 var card = slot.cards[slot.cards.length - 1];
+                slot.removeCards(card);
                 cards.push(card);
             };
 
@@ -338,6 +340,7 @@ define(['class'], function(Class) {
             // Retrieve card back
             var slot = move.actor.slot;
             var card = slot.cards[slot.cards.length - 1];
+            slot.removeCards(card);
 
             // Transfer card to origin
             card.el.animate({ zIndex: 999 }, 0);
