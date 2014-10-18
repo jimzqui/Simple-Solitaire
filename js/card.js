@@ -124,13 +124,6 @@ define(['class'], function(Class) {
                 speed = 0.3;
             }
 
-            // Add transition
-            that.el.find('.flipper').css({
-                transition: 'all ' + speed + 's ease 0s',
-                transformStyle: 'preserve-3d',
-                transform: 'rotateY(180deg)'
-            });
-
             // Flip card
             if (that.face == 'faceup') {
                 that.face = 'facedown';

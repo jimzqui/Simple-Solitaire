@@ -206,7 +206,7 @@ define(['class'], function(Class) {
             if (browse_size == 0) { browse_size = that.browse_size; }
 
             // Pick cards from slot
-            var cards = that.getCards(that.browse_to.browse_size, true);
+            var cards = that.browse_to.getCards(that.browse_to.browse_size, true);
 
             // Flip cards and uncascade
             for (var i = 0; i < cards.length; i++) {
