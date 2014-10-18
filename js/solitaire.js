@@ -34,6 +34,14 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
             'click #btn-undo': 'undoMove',
         },
 
+        // Win condition
+        winCondition: {
+            'Aces': {
+                count: 13,
+                face: 'faceup'
+            }
+        },
+
         // Render canvas
         render: function() {
             var that = this;

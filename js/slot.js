@@ -444,8 +444,7 @@ define(['class'], function(Class) {
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            }
-                            if (that.last.num - 1 == card.num && card.suit == that.last.suit) {
+                            } else if (that.last.num - 1 == card.num && card.suit == that.last.suit) {
                                 result = true;
                             } else {
                                 result = false;
@@ -467,8 +466,7 @@ define(['class'], function(Class) {
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            }
-                            if (that.last.num - 1 == card.num && card.suit == that.checkin) {
+                            } else if (that.last.num - 1 == card.num && card.suit == that.checkin) {
                                 result = true;
                             } else {
                                 result = false;
@@ -490,8 +488,7 @@ define(['class'], function(Class) {
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            }
-                            if (that.last.num - 1 == card.num && that.last.color != card.color) {
+                            } else if (that.last.num - 1 == card.num && that.last.color != card.color) {
                                 result = true;
                             } else {
                                 result = false;
