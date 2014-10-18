@@ -204,7 +204,8 @@ define(['class'], function(Class) {
             $.each(that.canvas.slots, function(name, slot) {
                 if ($.isFunction(slot.checkinAllowed)) {
                     if (slot.checkinAllowed(that) == true) {
-                        var card = that.slot.pickCard(that.index);
+                        var card = that.slot.cards[that.index];
+                        that.slot.removeCards(card);
 
                         // Register move
                         that.canvas.registerMove({
@@ -216,7 +217,7 @@ define(['class'], function(Class) {
 
                         // Transfer card
                         card.el.animate({ zIndex: 999 }, 0);
-                        slot.addCard(card);
+                        slot.addCards(card);
                     }
                 }
             });
@@ -377,18 +378,12 @@ define(['class'], function(Class) {
                 // Card is allowed to switch
                 if ($.isFunction(slot.dropAllowed)) {
                     if (slot.dropAllowed(that) == true) {
-                        var cards_active = [];
 
-                        // Iterate each cards
-                        for (var i = slot.collide.cards.length - 1; i >= that.index; i--) {
-                            var card_active = slot.collide.pickCard(i);
-                            if (card_active.face == 'faceup') {
-                                cards_active.push(card_active);
-                            }
-                        };
+                        // Pick cards from slot
+                        var cards = slot.collide.getCards(slot.collide.cards.length - that.index, true);
 
                         // Callback after checking
-                        if (callback) callback(cards_active.reverse());
+                        if (callback) callback(cards);
 
                         return true;
                     }

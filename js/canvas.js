@@ -117,7 +117,7 @@ define(['class'], function(Class) {
 
             // Transfer cards
             $.each(orders, function(from_name, order) {
-                that.transferCards({
+                that.placeCards({
                     from: from_name, 
                     order: order
                 });
@@ -142,7 +142,7 @@ define(['class'], function(Class) {
 
             // Empty all cards in slots
             $.each(that.slots, function(name, slot) {
-                cards = cards.concat(slot.pickCards(slot.cards.length));
+                cards = cards.concat(slot.pickRandom(slot.cards.length));
             });
 
             // Destroy all cards
@@ -181,7 +181,7 @@ define(['class'], function(Class) {
         },
 
         // Transfer and place cards to slots
-        transferCards: function(obj, i) {
+        placeCards: function(obj, i) {
             var that = this;
 
             // Default i to 0
@@ -192,7 +192,7 @@ define(['class'], function(Class) {
             // Get cards
             var name = obj.order[i].name;
             var slot = that.slots[name];
-            var cards = that.slots[obj.from].pickCards(obj.order[i].size);
+            var cards = that.slots[obj.from].pickRandom(obj.order[i].size);
 
             // Place cards to slot
             slot.addCards(cards, function() {
@@ -200,7 +200,7 @@ define(['class'], function(Class) {
                     that.rendered = true;
                     that.afterRender();
                 } else {
-                    that.transferCards(obj, i + 1);
+                    that.placeCards(obj, i + 1);
                 }
             });
         },
@@ -315,7 +315,7 @@ define(['class'], function(Class) {
             // Retrieve cards back
             for (var i = 0; i < move.actor.length; i++) {
                 var slot = move.actor[i].slot;
-                var card = slot.pickCard(slot.cards.length - 1);
+                var card = slot.cards[slot.cards.length - 1];
                 cards.push(card);
             };
 
@@ -337,11 +337,11 @@ define(['class'], function(Class) {
 
             // Retrieve card back
             var slot = move.actor.slot;
-            var card = slot.pickCard(slot.cards.length - 1);
+            var card = slot.cards[slot.cards.length - 1];
 
             // Transfer card to origin
             card.el.animate({ zIndex: 999 }, 0);
-            move.origin.addCard(card);
+            move.origin.addCards(card);
         },
 
         // Undo card open

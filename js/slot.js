@@ -22,7 +22,8 @@ define(['class'], function(Class) {
                 },
                 cascade: {
                     left: 0,
-                    top: 0
+                    top: 0,
+                    max: 0
                 },
                 anim: {
                     interval: 150,
@@ -51,80 +52,42 @@ define(['class'], function(Class) {
         // Events
         events: {},
 
-        // Pick card from slot
-        pickCard: function(pos, remove) {
-            var that = this;
-
-            // Randomize
-            if (pos == undefined) {
-                var pos = Math.floor((Math.random() * that.cards.length));
-            }
-
-            // Get card from slot
-            var card = that.cards[pos];
-
-            // Remove card
-            that.removeCard(pos);
-
-            // Return card
-            return card;
-        },
-
-        // Pick cards from slot
-        pickCards: function(size) {
+        // Pick random cards from slot
+        pickRandom: function(size) {
             var that = this;
 
             // Create container
-            var slot_cards = [];
+            var cards = [];
 
             // Pick cards depending on size
             for (var i = 1; i <= size; i++) {
-
-                // Get random card from slot
-                var card = that.pickCard();
-
-                // Add card to container
-                slot_cards.push(card);
+                var card = that.cards[Math.floor((Math.random() * that.cards.length))];
+                that._removeCard(card);
+                cards.push(card);
             };
 
             // Return cards
-            return slot_cards;
-        },
-
-        // Add card to slot
-        addCard: function(card, callback) {
-            var that = this;
-
-            // Unbind all
-            card.el.off();
-
-            // Add meta data
-            card.index = that.cards.length;
-            card.slot = that;
-            card.last = true;
-            that.last = card;
-
-            // Update last card
-            var lastcard = that.cards[that.cards.length - 1];
-            if (lastcard != undefined) {
-                lastcard.last = false;
-            }
-
-            // Push to slot
-            that.cards.push(card);
-
-            // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
-
-            // Move card to slot
-            card.move(that, callback);
+            return cards;
         },
 
         // Add cards to slot
         addCards: function(cards, callback) {
             var that = this;
 
-            // Iterate each card
+            // Check if multiple cards
+            if (!(cards instanceof Array)) {
+                var card = cards;
+                var cards = [];
+                cards.push(card);
+            }
+
+            // Set batch cards
+            that.batch = cards;
+
+            // Uncascade cards
+            that._maxUncascade();
+
+            // Iterate each card and add
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
                 card.batch_count = i;
@@ -132,49 +95,70 @@ define(['class'], function(Class) {
                 // Move card to slot
                 (function(i, card, callback) {
                     if (i == cards.length - 1) {
-                        that.addCard(card, callback);
+                        that._addCard(card, function() {
+                            delete card.batch_count;
+                            delete that.batch;
+                            if (callback) callback();
+                        });
                     } else {
-                        that.addCard(card);
+                        that._addCard(card);
                     }
                 })(i, card, callback);
             };
         },
 
-        // Remove card from slot
-        removeCard: function(pos) {
+        // Remove cards from slot
+        removeCards: function(cards) {
             var that = this;
 
-            // Unbind events of this card
-            var card = that.cards[pos];
-            if (card != undefined) {
-                card.el.off();
+            // Check if multiple cards
+            if (!(cards instanceof Array)) {
+                var card = cards;
+                var cards = [];
+                cards.push(card);
             }
 
-            // Update card indexes
-            for (var i = pos; i < that.cards.length; i++) {
-                var next_card = that.cards[i + 1];
-                if (next_card != undefined) {
-                    next_card.index -= 1;
-                }
+            // Iterate each card and remove
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                that._removeCard(card);
             };
 
-            // Remove card from slot
-            that.cards.splice(pos, 1);
+            // Cascade cards
+            that._maxCascade();
+        },
 
-            // Update last pos
-            var last_card = that.cards[that.cards.length - 1];
-            if (last_card != undefined) {
-                last_card.last = true;
-                that.last = last_card;
+        // Get cards
+        getCards: function(size, reverse) {
+            var that = this;
+
+            // Default reverse to false
+            if (reverse == undefined) {
+                reverse = false;
             }
 
-            // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+            // Create container
+            var cards = [];
 
-            // If slot is browse
-            if (that.browse_from != undefined && that.reset == undefined) {
-                that.cascadeBrowsed();
+            // Pick cards based on size
+            if (reverse == true) {
+                var length = that.cards.length - 1;
+                for (var i = length; i > length - size; i--) {
+                    var card = that.cards[i]
+                    if (card != undefined) cards.push(card);
+                };
+            } else {
+                for (var i = 0; i < size; i++) {
+                    var card = that.cards[i]
+                    if (card != undefined) cards.push(card);
+                }
             }
+
+            // Remove cards from origin
+            that.removeCards(cards);
+
+            // Return cards
+            return cards;
         },
 
         // Open or flip cards
@@ -185,19 +169,8 @@ define(['class'], function(Class) {
             if (that.browsing == true) return;
             that.browsing = true;
 
-            // Uncascade cards
-            that.browse_to.uncascadeBrowsed();
-            var browsed = [];
-
-            // Pick cards based on browse size
-            for (var i = 0; i < that.browse_to.browse_size; i++) {
-                var card = that.pickCard(that.cards.length - 1);
-                
-                // Add card to container
-                if (card != undefined) {
-                    browsed.push(card);
-                }
-            };
+            // Pick cards from slot
+            var browsed = that.getCards(that.browse_to.browse_size, true);
 
             // Register move
             that.canvas.registerMove({
@@ -229,134 +202,40 @@ define(['class'], function(Class) {
         unbrowseCards: function() {
             var that = this;
 
-            // Change anim
-            that.anim.speed = 200;
-            that.anim.interval = 0;
-            that.anim.ease = 0;
-
-            // Create container
-            var cards = [];
-
             // Compute browe size
             var browse_size = that.cards.length % that.browse_size;
             if (browse_size == 0) { browse_size = that.browse_size; }
 
-            // Get last browse cards
-            for (var i = 0; i < that.browse_to.browse_size; i++) {
-                var card = that.browse_to.pickCard(that.browse_to.cards.length - 1);
-                if (card != undefined) {
-                    card.el.css({ left: that.browse_to.offset.left });
-                    card.flip(0);
-                    cards.push(card);
-                }
-            }
+            // Pick cards from slot
+            var cards = that.getCards(that.browse_to.browse_size, true);
+
+            // Flip cards and uncascade
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                card.el.css({ left: that.browse_to.offset.left });
+                card.flip(0);
+            };
 
             // Place cards to stack
-            that.addCards(cards, function() {
-                that.anim.speed = 500;
-                that.anim.interval = 150;
-                that.anim.ease = 20;
-            });
+            that.addCards(cards);
         },
 
         // Reset browesed cards
         resetBrowsed: function() {
             var that = this;
 
-            // Change anim
-            that.anim.speed = 200;
-            that.anim.interval = 0;
-            that.anim.ease = 0;
+            // Pick cards from slot
+            var cards = that.browse_to.getCards(that.browse_to.cards.length, true);
 
-            // Create container
-            var cards = [];
-            that.browse_to.reset = true;
-
-            // Iterate all browsed cards
-            for (var i = that.browse_to.cards.length - 1; i >= 0; i--) {
-                var card = that.browse_to.pickCard(i);
-                (function(card) {
-                    card.el.css({ left: that.browse_to.offset.left });
-                    cards.push(card);
-                    card.flip(0);
-                })(card);
+            // Flip cards and uncascade
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                card.el.css({ left: that.browse_to.offset.left });
+                card.flip(0);
             };
 
             // Place cards to stack
-            that.addCards(cards, function() {
-                that.anim.speed = 500;
-                that.anim.interval = 150;
-                that.anim.ease = 20;
-                delete that.browse_to.reset;
-            });
-        },
-
-        // Cascade browsed cards
-        cascadeBrowsed: function(callback) {
-            var that = this;
-
-            // Return if reseting
-            if (that.reset == true) return;
-
-            // Get card length
-            if (that.cards.length > that.browse_size) {
-                var count = that.browse_size;
-                var length = that.browse_size;
-            } else {
-                var count = that.cards.length;
-                var length = that.cards.length;
-            }
-
-            // Recascade browse cards
-            for (var i = 0; i < length; i++) {
-                count--;
-                var card = that.cards[that.cards.length - 1 - i];
-                var adjust_left = count * that.cascade.left;
-
-                if (i == length - 1) {
-                    card.el.animate({
-                        left: that.offset.left + adjust_left
-                    }, 'fast', callback);
-                } else {
-                    card.el.animate({
-                        left: that.offset.left + adjust_left
-                    }, 'fast');
-                }
-            };
-        },
-
-        // Uncascade browsed cards
-        uncascadeBrowsed: function(callback) {
-            var that = this;
-            var count = 0;
-
-            // Compute browe size
-            var browse_size = that.cards.length % that.browse_size;
-            if (browse_size == 0) { browse_size = that.browse_size; }
-
-            // Move last browsed to left
-            for (var i = that.cards.length - 1; i >= that.cards.length - (1 + browse_size); i--) {
-                var card = that.cards[i];
-                if (card != undefined) {
-                    card.offset.left = that.offset.left;
-
-                    // Chek when to send callback
-                    if (i == that.cards.length - (1 + browse_size)) {
-                        card.el.animate({
-                            left: that.offset.left
-                        }, 'fast', callback);
-                    } else {
-                        card.el.animate({
-                            left: that.offset.left
-                        }, 'fast');
-                    }
-                }
-            };
-
-            // If browse is empty
-            if (that.cards.length == 0) {
-                if (callback) callback();
-            }
+            that.addCards(cards);
         },
 
         // Shuffle cards
@@ -430,6 +309,140 @@ define(['class'], function(Class) {
             };
         },
 
+        // Add card to slot
+        _addCard: function(card, callback) {
+            var that = this;
+
+            // Unbind all
+            card.el.off();
+
+            // Update card info
+            card.index = that.cards.length;
+            card.slot = that;
+            card.last = true;
+            that.last = card;
+
+            // Update last card
+            var lastcard = that.cards[that.cards.length - 1];
+            if (lastcard != undefined) {
+                lastcard.last = false;
+            }
+
+            // Push to slot
+            that.cards.push(card);
+
+            // Update height
+            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+
+            // Move card to slot
+            card.move(that, callback);
+        },
+
+        // Remove card from slot
+        _removeCard: function(card) {
+            var that = this;
+
+            // Unbind events of this card
+            if (card != undefined) {
+                card.el.off();
+            }
+
+            // Update card indexes
+            for (var i = card.index; i < that.cards.length; i++) {
+                var next_card = that.cards[i + 1];
+                if (next_card != undefined) {
+                    next_card.index -= 1;
+                }
+            };
+
+            // Remove card from slot
+            that.cards.splice(card.index, 1);
+
+            // Update last position
+            var last_card = that.cards[that.cards.length - 1];
+            if (last_card != undefined) {
+                last_card.last = true;
+                that.last = last_card;
+            }
+
+            // Update height
+            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+        },
+
+        // Cascade cards to max
+        _maxCascade: function(callback) {
+            var that = this;
+
+            // Return if max cascade is not set
+            if (that.cascade.max == 0) return
+
+            // Get card length
+            if (that.cards.length > that.cascade.max) {
+                var count = that.cascade.max;
+                var length = that.cascade.max;
+            } else {
+                var count = that.cards.length;
+                var length = that.cards.length;
+            }
+
+            // Recascade browse cards
+            for (var i = 0; i < length; i++) {
+                count--;
+                var card = that.cards[that.cards.length - 1 - i];
+                var adjust_left = count * that.cascade.left;
+                var adjust_top = count * that.cascade.top;
+                card.offset.left = that.offset.left + adjust_left;
+                card.offset.top = that.offset.top + adjust_top;
+
+                if (i == length - 1) {
+                    card.el.animate({
+                        left: card.offset.left,
+                        top: card.offset.top
+                    }, 'fast', callback);
+                } else {
+                    card.el.animate({
+                        left: card.offset.left,
+                        top: card.offset.top
+                    }, 'fast');
+                }
+            };
+        },
+
+        // Uncascade cards to max
+        _maxUncascade: function(callback) {
+            var that = this;
+
+            // Return if max cascade is not set
+            if (that.cascade.max == 0) return
+
+            // Compute adjustment
+            var adjust_left = that.batch.length * that.cascade.left;
+            var adjust_top = that.batch.length * that.cascade.top;
+
+            // Uncascade other cards
+            for (var i = that.cards.length - 1; i >= 0; i--) {
+                var card = that.cards[i];
+                card.offset.left = card.offset.left - adjust_left;
+                card.offset.top = card.offset.top - adjust_top;
+
+                // Make sure cards dont go over the slot offset
+                if (card.offset.left < that.offset.left) card.offset.left = that.offset.left;
+                if (card.offset.top < that.offset.top) card.offset.top = that.offset.top;
+
+                if (i == length - 1) {
+                    card.el.animate({
+                        left: card.offset.left,
+                        top: card.offset.top
+                    }, 'fast', callback);
+                } else {
+                    card.el.animate({
+                        left: card.offset.left,
+                        top: card.offset.top
+                    }, 'fast');
+                }
+            };
+        },
+
         // Compute slot positions
         _computeOffset: function() {
             var that = this;
@@ -477,9 +490,22 @@ define(['class'], function(Class) {
         _computeCascade: function() {
             var that = this;
             var card = that.cards[that.cards.length - 1];
-            var adjust_left = card.batch_count * that.cascade.left;
+            var adjust_left = (that.cards.length - 1) * that.cascade.left;
             var adjust_top = (that.cards.length - 1) * that.cascade.top;
+
+            if (that.cascade.left && that.cascade.max > 0) {
+                var cut = that.batch.length - that.cascade.max;
+                adjust_left = (card.batch_count - cut) * that.cascade.left ;
+            }
+
+            if (that.cascade.top && that.cascade.max > 0) {
+                var cut = that.batch.length - that.cascade.max;
+                adjust_top = (card.batch_count - cut) * that.cascade.top ;
+            }
+
+            // If data is NaN
             if (!adjust_left) adjust_left = 0;
+            if (!adjust_top) adjust_top = 0;
             
             return {
                 left: that.offset.left + adjust_left,

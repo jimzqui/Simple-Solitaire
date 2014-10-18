@@ -18,7 +18,8 @@ define(['slot'], function(Slot) {
             var defaults = {
                 cascade: {
                     left: 20,
-                    top: 0
+                    top: 0,
+                    max: 3
                 },
                 anim: {
                     interval: 0,
