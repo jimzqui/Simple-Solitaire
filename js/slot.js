@@ -463,12 +463,12 @@ define(['class'], function(Class) {
             var adjust_left = (that.cards.length - 1) * that.cascade.left;
             var adjust_top = (that.cards.length - 1) * that.cascade.top;
 
-            if (that.cascade.left && that.cascade.max > 0) {
+            if (that.cascade.left && that.cascade.max > 0 && that.cards.length > 1) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_left = (card.batch_count - cut) * that.cascade.left ;
             }
 
-            if (that.cascade.top && that.cascade.max > 0) {
+            if (that.cascade.top && that.cascade.max > 0 && that.cards.length > 1) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_top = (card.batch_count - cut) * that.cascade.top ;
             }
