@@ -30,6 +30,7 @@ define(['class'], function(Class) {
                     speed: 500,
                     ease: 20
                 },
+                icon: false,
                 animate: true,
                 width: 71,
                 height: 96,
@@ -587,16 +588,22 @@ define(['class'], function(Class) {
 
             // Style inner
             that.inner.css({
-                background: 'url(img/' + that.name + '.png) no-repeat scroll',
-                backgroundPosition: 'center center',
                 border: '2px solid #555',
-                backgroundSize: 50,
                 float: 'left',
                 opacity: '0.8',
                 borderRadius: 5,
                 height: that.height - 4,
                 width: that.width - 4
             });
+
+            // Add icon
+            if (that.icon == true) {
+                that.inner.css({
+                    background: 'url(img/' + that.name + '.png) no-repeat scroll',
+                    backgroundPosition: 'center center',
+                    backgroundSize: 50,
+                });
+            }
 
             // Render slot events
             that._slotEvents();

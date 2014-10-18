@@ -110,7 +110,12 @@ body {
     user-select: none;
 }
 
-#btn-Undo {
+.btn-sys {
+    display: none;
+    z-index: 1;
+}
+
+#btn-undo {
     left: 50%;
     margin-left: -34px;
     margin-top: 255px;

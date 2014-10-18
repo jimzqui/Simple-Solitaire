@@ -29,6 +29,11 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
             return;
         },
 
+        // Events
+        events: {
+            'click #btn-undo': 'undoMove',
+        },
+
         // Render canvas
         render: function() {
             var that = this;
@@ -72,13 +77,8 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
                 'Diamonds': 'Aces3'
             });
 
-            // Add undo button
-            that.addButton({
-                name: 'Undo',
-                event: function() {
-                    that.undoMove();
-                }
-            });
+            // Display system buttons
+            $('.btn-sys').fadeIn();
         }
     });
 

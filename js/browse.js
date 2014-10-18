@@ -26,6 +26,7 @@ define(['slot'], function(Slot) {
                     speed: 200,
                     ease: 0
                 },
+                icon: false,
                 animate: true,
                 width: 71,
                 height: 96,

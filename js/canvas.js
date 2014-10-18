@@ -36,8 +36,11 @@ define(['class'], function(Class) {
             // Create canvas
             that._create();
 
-            // Run render
+            // Call render
             that.render();
+
+            // Setup events
+            that._events();
             return;
         },
 
@@ -288,24 +291,6 @@ define(['class'], function(Class) {
             that.moves.pop(); 
         },
 
-        // Add button
-        addButton: function(obj) {
-            var that = this;
-
-            // Construct button html
-            var html = '<a id="btn-' + 
-            obj.name + '" class="btn btn-default">' + 
-            obj.name + '</a>';
-
-            // Append button
-            var button = $(html).appendTo('body');
-
-            // Add event to button
-            button.click(function() {
-                obj.event();
-            });
-        },
-
         // Undo switch cards
         _undoSwitch: function(move) {
             var that = this;
@@ -376,6 +361,26 @@ define(['class'], function(Class) {
 
             // Canvas offset
             that.offset = that.el.offset();
+        },
+
+        // Render events
+        _events: function() {
+            var that = this;
+
+            // Unbind events
+            that.el.off();
+
+            // Iterate each events
+            $.each(that.events, function(index, value) {
+                var event = index.split(' ')[0];
+                var elem = index.split(' ')[1];
+                var action = value;
+
+                // Bind event to elem
+                $('body').on(event, elem, function(e) {
+                    that[action](e);
+                });
+            });
         }
     });
 
