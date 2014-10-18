@@ -47,28 +47,16 @@ define(['slot'], function(Slot) {
             'mouseup card[face=faceup]': 'card.return'
         },
 
-        // Check if drop is allowed
-        dropAllowed: function(card) {
-            var that = this;
-
-            // If card num - 1, is equals to cards total
-            if (card.num - 1 == that.cards.length && card.suit == that.checkin) {
-                return true;
-            } else {
-                return false;
-            }
+        // Checkin condition
+        checkinCondition: {
+            suit: 'checkin',
+            order: 'asc'
         },
 
-        // Check if checkin is allowed
-        checkinAllowed: function(card) {
-            var that = this;
-
-            // If card num - 1, is equals to cards total
-            if (card.num - 1 == that.cards.length && card.suit == that.checkin) {
-                return true;
-            } else {
-                return false;
-            }
+        // Drop condition
+        dropCondition: {
+            suit: 'checkin',
+            order: 'asc'
         }
     });
 

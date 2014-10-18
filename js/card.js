@@ -148,23 +148,23 @@ define(['class'], function(Class) {
 
             // Get the correct slot to checkin
             $.each(that.canvas.slots, function(name, slot) {
-                if ($.isFunction(slot.checkinAllowed)) {
-                    if (slot.checkinAllowed(that) == true) {
-                        var card = that.slot.cards[that.index];
-                        that.slot.removeCards(card);
 
-                        // Register move
-                        that.canvas.registerMove({
-                            action: 'checkin',
-                            type: 'card',
-                            actor: card,
-                            origin: card.slot
-                        });
+                // Check if card is allowed to switch
+                if (slot._applySwitch(that, slot.checkinCondition) == true) {
+                    var card = that.slot.cards[that.index];
+                    that.slot.removeCards(card);
 
-                        // Transfer card
-                        card.el.animate({ zIndex: 999 }, 0);
-                        slot.addCards(card);
-                    }
+                    // Register move
+                    that.canvas.registerMove({
+                        action: 'checkin',
+                        type: 'card',
+                        actor: card,
+                        origin: card.slot
+                    });
+
+                    // Transfer card
+                    card.el.animate({ zIndex: 999 }, 0);
+                    slot.addCards(card);
                 }
             });
 
@@ -189,7 +189,7 @@ define(['class'], function(Class) {
 
             // Other cards
             var count = 1;
-            for (var j = that.index + 1; j < that.slot.cards.length; j++) {
+            for (var j = that.index + 1; j < that.slot.cardCount(); j++) {
                 var card_active = that.slot.cards[j];
                 card_active._drag(x, y - (count * 20));
                 count++;
@@ -228,7 +228,7 @@ define(['class'], function(Class) {
 
             // Return all cards
             if (collided == false) {
-                for (var j = that.index; j < that.slot.cards.length; j++) {
+                for (var j = that.index; j < that.slot.cardCount(); j++) {
                     var card_active = that.slot.cards[j];
 
                     // Animate back to offset
@@ -271,7 +271,7 @@ define(['class'], function(Class) {
             var that = this;
 
             // If empty slot, slot is target
-            if (slot.cards.length == 0) {
+            if (slot.cardCount() == 0) {
                 var target = slot; 
             } else {
                 var target = slot.last;
@@ -322,17 +322,15 @@ define(['class'], function(Class) {
             if (slot.collide != null) {
 
                 // Card is allowed to switch
-                if ($.isFunction(slot.dropAllowed)) {
-                    if (slot.dropAllowed(that) == true) {
+                if (slot._applySwitch(that, slot.dropCondition) == true) {
 
-                        // Pick cards from slot
-                        var cards = slot.collide.getCards(slot.collide.cards.length - that.index, true);
+                    // Pick cards from slot
+                    var cards = slot.collide.getCards(slot.collide.cardCount() - that.index, true);
 
-                        // Callback after checking
-                        if (callback) callback(cards.reverse());
+                    // Callback after checking
+                    if (callback) callback(cards.reverse());
 
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -365,8 +363,8 @@ define(['class'], function(Class) {
 
             // Create card
             var html = '<div class="card"><div class="flipper">' +
-            '<div class="front"><img src="cards/facedown.png" /></div>' +
-            '<div class="back"><img src="cards/' + that.slug + '.png" /></div>' +
+            '<div class="faceup"><img src="cards/facedown.png" /></div>' +
+            '<div class="facedown"><img src="cards/' + that.slug + '.png" /></div>' +
             '</div><div class="cover"></div></div>';
             that.el = $(html).appendTo('#solitaire');
             that.face = 'facedown';
@@ -385,8 +383,8 @@ define(['class'], function(Class) {
                 position: 'relative'
             });
 
-            // Style front and back
-            that.el.find('.front, .back').css({
+            // Style faceup and facedown
+            that.el.find('.faceup, .facedown').css({
                 width: that.width,
                 height: that.height,
                 position: 'absolute',
@@ -395,14 +393,14 @@ define(['class'], function(Class) {
                 left: 0
             });
 
-            // Style front
-            that.el.find('.front').css({
+            // Style faceup
+            that.el.find('.faceup').css({
                 zIndex: 2,
                 transform: 'rotateY(0deg)'
             });
 
-            // Style back
-            that.el.find('.back').css({
+            // Style facedown
+            that.el.find('.facedown').css({
                 transform: 'rotateY(180deg)'
             });
 

@@ -145,7 +145,7 @@ define(['class'], function(Class) {
 
             // Empty all cards in slots
             $.each(that.slots, function(name, slot) {
-                cards = cards.concat(slot.pickRandom(slot.cards.length));
+                cards = cards.concat(slot.pickRandom(slot.cardCount()));
             });
 
             // Destroy all cards
@@ -301,7 +301,7 @@ define(['class'], function(Class) {
             // Retrieve cards back
             for (var i = 0; i < move.actor.length; i++) {
                 var slot = move.actor[i].slot;
-                var card = slot.cards[slot.cards.length - 1];
+                var card = slot.cards[slot.cardCount() - 1];
                 slot.removeCards(card);
                 cards.push(card);
             };
@@ -324,7 +324,7 @@ define(['class'], function(Class) {
 
             // Retrieve card back
             var slot = move.actor.slot;
-            var card = slot.cards[slot.cards.length - 1];
+            var card = slot.cards[slot.cardCount() - 1];
             slot.removeCards(card);
 
             // Transfer card to origin

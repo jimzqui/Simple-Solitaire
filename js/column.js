@@ -54,21 +54,10 @@ define(['slot'], function(Slot) {
             'mouseup card[face=faceup]': 'card.return'
         },
 
-        // Check if drop is allowed
-        dropAllowed: function(card) {
-            var that = this;
-
-            // If card is king and slot is empty
-            if (card.num == 13 && that.cards.length == 0) {
-                return true; 
-            }
-
-            // Slot's card has matching value but different color
-            if (that.last.num - 1 == card.num && that.last.color != card.color) {
-                return true;
-            } else {
-                return false;
-            }
+        // Drop condition
+        dropCondition: {
+            suit: 'alternate',
+            order: 'desc'
         }
     });
 

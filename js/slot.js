@@ -62,7 +62,7 @@ define(['class'], function(Class) {
 
             // Pick cards depending on size
             for (var i = 1; i <= size; i++) {
-                var card = that.cards[Math.floor((Math.random() * that.cards.length))];
+                var card = that.cards[Math.floor((Math.random() * that.cardCount()))];
                 that._removeCard(card);
                 cards.push(card);
             };
@@ -143,7 +143,7 @@ define(['class'], function(Class) {
 
             // Pick cards based on size
             if (reverse == true) {
-                var length = that.cards.length - 1;
+                var length = that.cardCount() - 1;
                 for (var i = length; i > length - size; i--) {
                     var card = that.cards[i]
                     if (card != undefined) cards.push(card);
@@ -203,7 +203,7 @@ define(['class'], function(Class) {
             var that = this;
 
             // Compute browe size
-            var browse_size = that.cards.length % that.browse_size;
+            var browse_size = that.cardCount() % that.browse_size;
             if (browse_size == 0) { browse_size = that.browse_size; }
 
             // Pick cards from slot
@@ -225,7 +225,7 @@ define(['class'], function(Class) {
             var that = this;
 
             // Pick cards from slot
-            var cards = that.browse_to.getCards(that.browse_to.cards.length, true);
+            var cards = that.browse_to.getCards(that.browse_to.cardCount(), true);
 
             // Flip cards and uncascade
             for (var i = 0; i < cards.length; i++) {
@@ -241,7 +241,7 @@ define(['class'], function(Class) {
         // Shuffle cards
         shuffle: function(callback) {
             var that = this;
-            var cur_index = that.cards.length, temp_value, rand_index ;
+            var cur_index = that.cardCount(), temp_value, rand_index ;
 
             // While there remain elements to shuffle
             while (0 !== cur_index) {
@@ -273,10 +273,16 @@ define(['class'], function(Class) {
             that.el.off();
 
             // Iterate each cards and unbind event
-            for (var i = 0; i < that.cards.length; i++) {
+            for (var i = 0; i < that.cardCount(); i++) {
                 var card = that.cards[i];
                 card.el.off();
             };
+        },
+
+        // Get card count
+        cardCount: function() {
+            var that = this;
+            return that.cards.length;
         },
 
         // Add card to slot
@@ -287,13 +293,13 @@ define(['class'], function(Class) {
             card.el.off();
 
             // Update card info
-            card.index = that.cards.length;
+            card.index = that.cardCount();
             card.slot = that;
             card.last = true;
             that.last = card;
 
             // Update last card
-            var lastcard = that.cards[that.cards.length - 1];
+            var lastcard = that.cards[that.cardCount() - 1];
             if (lastcard != undefined) {
                 lastcard.last = false;
             }
@@ -302,7 +308,7 @@ define(['class'], function(Class) {
             that.cards.push(card);
 
             // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+            that.height = ((that.cardCount() - 1) * that.cascade.top) + that.height;
 
             // Move card to slot
             card.move(that, callback);
@@ -318,7 +324,7 @@ define(['class'], function(Class) {
             }
 
             // Update card indexes
-            for (var i = card.index; i < that.cards.length; i++) {
+            for (var i = card.index; i < that.cardCount(); i++) {
                 var next_card = that.cards[i + 1];
                 if (next_card != undefined) {
                     next_card.index -= 1;
@@ -329,14 +335,14 @@ define(['class'], function(Class) {
             that.cards.splice(card.index, 1);
 
             // Update last position
-            var last_card = that.cards[that.cards.length - 1];
+            var last_card = that.cards[that.cardCount() - 1];
             if (last_card != undefined) {
                 last_card.last = true;
                 that.last = last_card;
             }
 
             // Update height
-            that.height = ((that.cards.length - 1) * that.cascade.top) + that.height;
+            that.height = ((that.cardCount() - 1) * that.cascade.top) + that.height;
         },
 
         // Cascade cards to max
@@ -347,18 +353,18 @@ define(['class'], function(Class) {
             if (that.cascade.max == 0) return
 
             // Get card length
-            if (that.cards.length > that.cascade.max) {
+            if (that.cardCount() > that.cascade.max) {
                 var count = that.cascade.max;
                 var length = that.cascade.max;
             } else {
-                var count = that.cards.length;
-                var length = that.cards.length;
+                var count = that.cardCount();
+                var length = that.cardCount();
             }
 
             // Recascade browse cards
             for (var i = 0; i < length; i++) {
                 count--;
-                var card = that.cards[that.cards.length - 1 - i];
+                var card = that.cards[that.cardCount() - 1 - i];
                 var adjust_left = count * that.cascade.left;
                 var adjust_top = count * that.cascade.top;
                 card.offset.left = that.offset.left + adjust_left;
@@ -390,7 +396,7 @@ define(['class'], function(Class) {
             var adjust_top = that.batch.length * that.cascade.top;
 
             // Uncascade other cards
-            for (var i = that.cards.length - 1; i >= 0; i--) {
+            for (var i = that.cardCount() - 1; i >= 0; i--) {
                 var card = that.cards[i];
                 card.offset.left = card.offset.left - adjust_left;
                 card.offset.top = card.offset.top - adjust_top;
@@ -411,6 +417,91 @@ define(['class'], function(Class) {
                     }, 'fast');
                 }
             };
+        },
+
+        _applySwitch: function(card, condition) {
+            var that = this;
+
+            // If drop is not setup for this slot
+            if (condition == undefined) return false;
+
+            // Default result to false
+            var result = false;
+
+            // Check for suit conditions
+            switch(condition.suit) {
+                case 'same':
+
+                    // Check order conditions
+                    switch(condition.order) {
+                        case 'asc': 
+                            if (card.num - 1 == that.cardCount() && card.suit == that.last.suit) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                        default:
+                            if (card.num == 13 && that.cardCount() == 0) {
+                                result = true;
+                            }
+                            if (that.last.num - 1 == card.num && card.suit == that.last.suit) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                    }
+                break;
+                case 'checkin':
+
+                    // Check order conditions
+                    switch(condition.order) {
+                        case 'asc': 
+                            if (card.num - 1 == that.cardCount() && card.suit == that.checkin) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                        default:
+                            if (card.num == 13 && that.cardCount() == 0) {
+                                result = true;
+                            }
+                            if (that.last.num - 1 == card.num && card.suit == that.checkin) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                    }
+                break;
+                default:
+
+                    // Check order conditions
+                    switch(condition.order) {
+                        case 'asc': 
+                            if (card.num - 1 == that.cardCount() && card.suit == that.checkin) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                        default:
+                            if (card.num == 13 && that.cardCount() == 0) {
+                                result = true;
+                            }
+                            if (that.last.num - 1 == card.num && that.last.color != card.color) {
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        break;
+                    }
+                break;
+            }
+
+            return result;
         },
 
         // Compute slot positions
@@ -441,8 +532,8 @@ define(['class'], function(Class) {
             }
 
             // Compute data
-            var card = that.cards[that.cards.length - 1];
-            var zindex = that.offset.left + that.cards.length;
+            var card = that.cards[that.cardCount() - 1];
+            var zindex = that.offset.left + that.cardCount();
             var timeout = (card.batch_count * anim.ease) * 2;
             var interval = anim.interval;
             var speed = anim.speed;
@@ -459,16 +550,16 @@ define(['class'], function(Class) {
         // Compute cascade data
         _computeCascade: function() {
             var that = this;
-            var card = that.cards[that.cards.length - 1];
-            var adjust_left = (that.cards.length - 1) * that.cascade.left;
-            var adjust_top = (that.cards.length - 1) * that.cascade.top;
+            var card = that.cards[that.cardCount() - 1];
+            var adjust_left = (that.cardCount() - 1) * that.cascade.left;
+            var adjust_top = (that.cardCount() - 1) * that.cascade.top;
 
-            if (that.cascade.left && that.cascade.max > 0 && that.cards.length > 1) {
+            if (that.cascade.left && that.cascade.max > 0 && that.cardCount() > 1) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_left = (card.batch_count - cut) * that.cascade.left ;
             }
 
-            if (that.cascade.top && that.cascade.max > 0 && that.cards.length > 1) {
+            if (that.cascade.top && that.cascade.max > 0 && that.cardCount() > 1) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_top = (card.batch_count - cut) * that.cascade.top ;
             }
