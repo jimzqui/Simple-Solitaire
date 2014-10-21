@@ -399,28 +399,38 @@ define(['class'], function(Class) {
         _undoReset: function(move) {
             var that = this;
 
-            // Create container
-            var cards = [];
-
-            // Retrieve cards back
+            // Flip all cards
             for (var i = 0; i < move.actor.length; i++) {
-                var slot = move.actor[i].slot;
-                var card = slot.cards[slot.cardCount() - 1];
+                var card = move.actor[i];
                 card.flip(0.15);
-                slot.removeCards(card);
-                cards.push(card);
             };
 
+            // Remove cards from slot
+            var slot = move.actor[0].slot;
+            slot.removeCards(move.actor);
+
             // Transfer cards to origin
-            move.origin.addCards(cards.reverse());
+            move.origin.animate = true;
+            move.origin.addCards(move.actor.reverse());
         },
 
         // Undo browse cards
         _undoBrowse: function(move) {
             var that = this;
 
-            // Move back browsed cards
-            move.origin.unbrowseCards();
+            // Flip all cards
+            for (var i = 0; i < move.actor.length; i++) {
+                var card = move.actor[i];
+                card.flip(0.15);
+            };
+
+            // Remove cards from slot
+            var slot = move.actor[0].slot;
+            slot.removeCards(move.actor);
+
+            // Transfer cards to origin
+            move.origin.animate = true;
+            move.origin.addCards(move.actor.reverse());
         },
 
         // Undo card checkin
