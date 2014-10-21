@@ -676,16 +676,6 @@ define(['class'], function(Class) {
                 cursor: 'pointer'
             });
 
-            // Style inner
-            that.inner.css({
-                backgroundImage: 'url(' + that.canvas.themes_dir + 'slots.png)',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: '0 0',
-                height: that.height,
-                width: that.width,
-                float: 'left'
-            });
-
             // Render slot events
             that._slotEvents();
         },

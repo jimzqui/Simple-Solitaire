@@ -42,6 +42,9 @@ define(['class'], function(Class) {
                 that.cardmap = cardmap;
             });
 
+            // Load theme
+            that._loadTheme();
+
             // Create canvas
             that._create();
             that._events();
@@ -281,30 +284,18 @@ define(['class'], function(Class) {
         // Set browse slot
         setBrowse: function(obj) {
             var that = this;
-            var map = [1, 0];
-            var pos_x = map[0] * that.tile.width;
-            var pos_y = map[1] * that.tile.height;
             that.slots[obj.to].browse_size = obj.size;
             that.slots[obj.from].browse_to = that.slots[obj.to];
             that.slots[obj.to].browse_from = that.slots[obj.from];
-            that.slots[obj.from].inner.css({
-                backgroundPosition: '-' + pos_x + 'px -' + pos_y + 'px'
-            });
+            that.slots[obj.from].inner.addClass('slot-Browse');
         },
 
         // Set checkin slots
         setCheckin: function(obj) {
             var that = this;
-            var count = 2;
             $.each(obj, function(suit, name) {
-                var map = [count, 0];
-                var pos_x = map[0] * that.tile.width;
-                var pos_y = map[1] * that.tile.height;
                 that.slots[name].checkin = suit;
-                that.slots[name].inner.css({
-                    backgroundPosition: '-' + pos_x + 'px -' + pos_y + 'px'
-                });
-                count++;
+                that.slots[name].inner.addClass('slot-' + suit);
             });
         },
 
@@ -472,6 +463,41 @@ define(['class'], function(Class) {
                 $('body').on(event, elem, function(e) {
                     that[action](e);
                 });
+            });
+        },
+
+        // Load theme css
+        _loadTheme: function() {
+            var that = this;
+
+            if (!document.getElementById('jqcard-theme')) {
+                var head  = document.getElementsByTagName('head')[0];
+                var link  = document.createElement('link');
+                link.id   = 'jqcard-theme';
+                link.rel  = 'stylesheet';
+                link.type = 'text/css';
+                link.href = that.themes_dir + 'style.css';
+                head.appendChild(link);
+            }
+        },
+
+        // Load intro template
+        loadIntro: function() {
+            var that = this;
+
+            // Load intro template
+            $.get(that.themes_dir + 'templates/intro.html', function(data) {
+                $('body').append(data);
+            });
+        },
+
+        // Load system template
+        loadSystem: function() {
+            var that = this;
+
+            // Load system template
+            $.get(that.themes_dir + 'templates/system.html', function(data) {
+                $('body').append(data);
             });
         },
 
