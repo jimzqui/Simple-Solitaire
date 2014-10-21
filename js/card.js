@@ -16,8 +16,9 @@ define(['class'], function(Class) {
 
             // Default settings
             var defaults = {
-                width: 71,
-                height: 96
+                num: '1',
+                suit: 'joker',
+                map: [3, 13]
             };
 
             // Construct settings
@@ -63,7 +64,7 @@ define(['class'], function(Class) {
 
             // Place card
             else {
-                that.el.css({ zIndex: anim.zindex });
+                that.el.animate({ zIndex: anim.zindex }, 0);
                 that.zindex = anim.zindex;
                 that.el.css(that.offset);
                 if(callback) callback(that);
@@ -341,13 +342,17 @@ define(['class'], function(Class) {
         _create: function() {
             var that = this;
 
+            // Set height and width
+            that.width = that.canvas.tile.width;
+            that.height = that.canvas.tile.height;
+
             // Set card info
-            switch(that.name) {
-                case 'Ace': that.value = 1; that.num = 1; break;
-                case 'Jack': that.value = 10; that.num = 11; break;
-                case 'Queen': that.value = 10; that.num = 12; break;
-                case 'King': that.value = 10; that.num = 13; break;
-                default: that.value = that.name; that.num = that.name;
+            switch(that.num) {
+                case 1: that.value = 1; that.name = 'Ace'; break;
+                case 11: that.value = 10; that.name = 'Jack'; break;
+                case 12: that.value = 10; that.name = 'Queen'; break;
+                case 13: that.value = 10; that.name = 'King'; break;
+                default: that.value = that.name; that.name = that.num;
             }
 
             // Set card color
@@ -363,10 +368,9 @@ define(['class'], function(Class) {
 
             // Create card
             var html = '<div class="card"><div class="flipper">' +
-            '<div class="faceup"><img src="cards/facedown.png" /></div>' +
-            '<div class="facedown"><img src="cards/' + that.slug + '.png" /></div>' +
-            '</div><div class="cover"></div></div>';
-            that.el = $(html).appendTo('#solitaire');
+            '<div class="faceup"><span></span></div>' +
+            '<div class="facedown"><span></span></div></div></div>';
+            that.el = $(html).appendTo(that.canvas.el);
             that.face = 'facedown';
 
             // Style element
@@ -395,29 +399,37 @@ define(['class'], function(Class) {
 
             // Style faceup
             that.el.find('.faceup').css({
+                transform: 'rotateY(180deg)',
                 zIndex: 2,
-                transform: 'rotateY(0deg)'
             });
 
             // Style facedown
             that.el.find('.facedown').css({
-                transform: 'rotateY(180deg)'
+                transform: 'rotateY(0deg)'
             });
 
-            // Style card img
-            that.el.find('img').css({
-                width: '100%',
-                height: '100%'
+            // Compute background positions
+            var faceup_x = that.faceup_map[0] * that.width;
+            var faceup_y = that.faceup_map[1] * that.height;
+            var facedown_x = that.facedown_map[0] * that.width;
+            var facedown_y = that.facedown_map[1] * that.height;
+
+            // Style faceup image
+            that.el.find('.faceup span').css({
+                float: 'left',
+                width: that.width,
+                height: that.height,
+                backgroundImage: 'url(' + that.canvas.cards_dir + 'cards.png)',
+                backgroundPosition: '-' + faceup_x + 'px -' + faceup_y + 'px',
             });
 
-            // Style card img
-            that.el.find('.cover').css({
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                zIndex: 1
+            // Style facedown image
+            that.el.find('.facedown span').css({
+                float: 'left',
+                width: that.width,
+                height: that.height,
+                backgroundImage: 'url(' + that.canvas.cards_dir + 'cards.png)',
+                backgroundPosition: '-' + facedown_x + 'px -' + facedown_y + 'px',
             });
         }
     });

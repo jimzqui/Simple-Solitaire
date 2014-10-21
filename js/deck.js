@@ -26,10 +26,7 @@ define(['slot'], function(Slot) {
                     speed: 500,
                     ease: 20
                 },
-                icon: true,
                 animate: false,
-                width: 71,
-                height: 96,
                 cards: []
             };
 
@@ -39,17 +36,6 @@ define(['slot'], function(Slot) {
             // Extend parent settings
             that._super(settings);
             return that;
-        },
-
-        // Events
-        events: {
-            'click this': 'reset'
-        },
-
-        // Reset cards
-        reset: function() {
-            var that = this;
-            that.canvas.resetCards();
         }
     });
 

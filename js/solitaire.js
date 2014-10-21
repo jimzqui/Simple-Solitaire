@@ -16,9 +16,16 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
 
             // Default settings
             var defaults = {
+                tile: {
+                    size: '7x5',
+                    width: 71,
+                    height: 96,
+                    x_space: 30,
+                    y_space: 30
+                },
                 el: 'solitaire',
-                width: 677,
-                height: 600
+                cards_dir: 'cards/default/',
+                themes_dir: 'themes/default/',
             };
 
             // Construct final settings
@@ -31,7 +38,9 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
 
         // Events
         events: {
-            'click #btn-undo': 'undoMove',
+            'click #btn-start': 'start',
+            'click #btn-restart': 'restart',
+            'click #btn-undo': 'undoMove'
         },
 
         // Win condition
@@ -45,26 +54,33 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
         // Render canvas
         render: function() {
             var that = this;
+        },
 
-            // Create slots
-            that.renderSlots({
-                'Deck': { slot: Deck, tile: '3-3' },
-                'Stack': { slot: Stack, tile: '0-0' },
-                'Browse': { slot: Browse, tile: '1-0' },
-                'Aces': { slot: Aces, tile: ['3-0', '4-0', '5-0', '6-0'] },
-                'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
-            });
+        // Start canvas
+        start: function() {
+            var that = this;
 
-            // Render cards
-            that.renderCards({
-                'Deck': { create: Card },
-                'Stack': { pick: 24, from: 'Deck' }, 
-                'Column': { pick: [1, 2, 3, 4, 5, 6, 7], from: 'Deck' }
+            // Hide intro
+            $('#intro').fadeOut('fast', function() {
+
+                // Create slots
+                that.renderSlots({
+                    'Stack': { slot: Stack, tile: '0-0' },
+                    'Browse': { slot: Browse, tile: '1-0' },
+                    'Aces': { slot: Aces, tile: ['3-0', '4-0', '5-0', '6-0'] },
+                    'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
+                });
+
+                // Render cards
+                that.renderCards({
+                    'Stack': { create: Card },
+                    'Column': { pick: [1, 2, 3, 4, 5, 6, 7], from: 'Stack' }
+                });
             });
         },
 
-        // After render of cards
-        afterRender: function() {
+        // After start
+        afterStart: function() {
             var that = this;
 
             // Flip last cards in column
@@ -85,8 +101,8 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
                 'Diamonds': 'Aces3'
             });
 
-            // Display system buttons
-            $('.btn-sys').fadeIn();
+            // Display system btns
+            $('#system-btns').fadeIn();
         }
     });
 

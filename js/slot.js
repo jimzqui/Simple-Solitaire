@@ -30,10 +30,7 @@ define(['class'], function(Class) {
                     speed: 500,
                     ease: 20
                 },
-                icon: false,
                 animate: true,
-                width: 71,
-                height: 96,
                 cards: []
             };
 
@@ -190,17 +187,26 @@ define(['class'], function(Class) {
 
                     if (i == browsed.length - 1) {
                         card.flip(0.15);
-                        that.browsing = false;
                     } else {
                         card.flip(0.15);
                     }
                 };
+
+                // Set to unbrowse
+                that.browsing = false;
             });
         },
 
         // The reverse of browse
         unbrowseCards: function() {
             var that = this;
+
+            // If still animating, return
+            if (that.unbrowsing == true) return;
+            that.unbrowsing = true;
+
+            // Set animate to true
+            that.animate = true;
 
             // Compute browe size
             var browse_size = that.cardCount() % that.browse_size;
@@ -217,12 +223,19 @@ define(['class'], function(Class) {
             };
 
             // Place cards to stack
-            that.addCards(cards);
+            that.addCards(cards, function() {
+
+                // Set to unbrowse
+                that.unbrowsing = false;
+            });
         },
 
         // Reset browesed cards
         resetBrowsed: function() {
             var that = this;
+
+            // Set animate to true
+            that.animate = true;
 
             // Pick cards from slot
             var cards = that.browse_to.getCards(that.browse_to.cardCount(), true);
@@ -234,35 +247,16 @@ define(['class'], function(Class) {
                 card.flip(0.15);
             };
 
+            // Register move
+            that.canvas.registerMove({
+                action: 'resetCards',
+                type: 'cards',
+                actor: cards,
+                origin: cards[0].slot
+            });
+
             // Place cards to stack
             that.addCards(cards);
-        },
-
-        // Shuffle cards
-        shuffle: function(callback) {
-            var that = this;
-            var cur_index = that.cardCount(), temp_value, rand_index ;
-
-            // While there remain elements to shuffle
-            while (0 !== cur_index) {
-
-                // Pick a remaining element
-                rand_index = Math.floor(Math.random() * cur_index);
-                cur_index -= 1;
-
-                // And swap it with the current element
-                temp_value = that.cards[cur_index];
-                that.cards[cur_index] = that.cards[rand_index];
-                that.cards[rand_index] = temp_value;
-
-                // Update zindex
-                that.cards[cur_index].el.css({
-                    zIndex: cur_index * -1
-                });
-            }
-
-            // Callback after shuffle
-            if (callback) callback();
         },
 
         // Unbind all events
@@ -504,8 +498,8 @@ define(['class'], function(Class) {
         // Compute slot positions
         _computeOffset: function() {
             var that = this;
-            var dist_left = 30;
-            var dist_top = 50;
+            var dist_left = that.canvas.tile.x_space;
+            var dist_top = that.canvas.tile.y_space;
 
             // Compute data
             var pos_left = (that.position.left * that.width) + (that.position.left * dist_left);
@@ -551,23 +545,27 @@ define(['class'], function(Class) {
             var adjust_left = (that.cardCount() - 1) * that.cascade.left;
             var adjust_top = (that.cardCount() - 1) * that.cascade.top;
 
-            if (that.cascade.left && that.cascade.max > 0 && that.cardCount() > 1) {
+            if (that.cascade.left > 0 && that.cascade.max > 0 && that.cardCount() > that.cascade.max) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_left = (card.batch_count - cut) * that.cascade.left ;
             }
 
-            if (that.cascade.top && that.cascade.max > 0 && that.cardCount() > 1) {
+            if (that.cascade.top > 0 && that.cascade.max > 0 && that.cardCount() > that.cascade.max) {
                 var cut = that.batch.length - that.cascade.max;
                 adjust_top = (card.batch_count - cut) * that.cascade.top ;
             }
 
-            // If data is NaN
-            if (!adjust_left) adjust_left = 0;
-            if (!adjust_top) adjust_top = 0;
+            // Compute final offset
+            var offset_left = that.offset.left + adjust_left;
+            var offset_top = that.offset.top + adjust_top;
+
+            // Make sure cards dont go over the slot offset
+            if (offset_left < that.offset.left) offset_left = that.offset.left;
+            if (offset_top < that.offset.top) offset_top = that.offset.top;
             
             return {
-                left: that.offset.left + adjust_left,
-                top: that.offset.top + adjust_top
+                left: offset_left,
+                top: offset_top
             };
         },
 
@@ -656,6 +654,10 @@ define(['class'], function(Class) {
         _create: function() {
             var that = this;
 
+            // Set height and width
+            that.width = that.canvas.tile.width;
+            that.height = that.canvas.tile.height;
+
             // Create slot
             var html = '<div class="slot"><span></span></div>';
             that.el = $(html).appendTo(that.canvas.el);
@@ -676,22 +678,13 @@ define(['class'], function(Class) {
 
             // Style inner
             that.inner.css({
-                border: '2px solid #555',
-                float: 'left',
-                opacity: '0.8',
-                borderRadius: 5,
-                height: that.height - 4,
-                width: that.width - 4
+                backgroundImage: 'url(' + that.canvas.themes_dir + 'slots.png)',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: '0 0',
+                height: that.height,
+                width: that.width,
+                float: 'left'
             });
-
-            // Add icon
-            if (that.icon == true) {
-                that.inner.css({
-                    background: 'url(img/' + that.name + '.png) no-repeat scroll',
-                    backgroundPosition: 'center center',
-                    backgroundSize: 50,
-                });
-            }
 
             // Render slot events
             that._slotEvents();

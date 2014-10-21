@@ -98,30 +98,92 @@ textarea {
    ========================================================================== */
 
 body {
-    background: #00b574;
-}
-
-#solitaire {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    overflow: hidden;
 }
 
-.btn-sys {
-    display: none;
+#intro {
+    width: 300px;
+    height: 50px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -60px 0 0 -150px;
+}
+
+#intro h1 {
+    background: url(../img/solitaire.png);
+    width: 300px;
+    height: 27px;
+    float: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: 3000px;
+}
+
+.btn-green {
+    background: url(../img/black-trans.png) repeat;
+    border: 1px solid #999;
+    color: #ddd;
+    cursor: pointer;
+    width: 100px;
     z-index: 1;
 }
 
-#btn-undo {
+.btn-green:hover {
+    background: url(../img/black-trans.png) repeat;
+    color: #fff;
+}
+
+#btn-start {
     left: 50%;
-    margin-left: -34px;
-    margin-top: 255px;
+    margin: 0 0 0 -50px;
+    position: relative;
+}
+
+#system-btns {
+    background: url(../img/black-trans.png) repeat;
+    border: 1px solid #888;
+    bottom: 0;
+    display: none;
+    height: 40px;
+    left: 50%;
     position: absolute;
-    top: 50%;
-    width: 65px;
+    z-index: 1;
+    border-radius: 5px 5px 0 0;
+    margin: 0 0 0 -337px;
+    width: 676px;
+}
+
+.btn-sys {
+    color: #ddd;
+    float: left;
+    font-size: 14px;
+    margin: 0 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.btn-sys:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+#jq {
+    background: url(../img/jq.png) no-repeat scroll 0 0 / 100px auto;
+    float: right;
+    height: 27px;
+    margin: 9px 10px 0 0;
+    overflow: hidden;
+    text-indent: 3000px;
+    white-space: nowrap;
+    width: 100px;
 }
 
 
