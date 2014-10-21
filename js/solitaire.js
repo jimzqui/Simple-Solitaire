@@ -24,8 +24,8 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
                     y_space: 30
                 },
                 el: 'solitaire',
-                cards_dir: 'cards/default/',
-                themes_dir: 'themes/default/',
+                cards_dir: 'assets/cards/default/',
+                themes_dir: 'assets/themes/default/',
             };
 
             // Construct final settings

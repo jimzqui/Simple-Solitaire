@@ -23,8 +23,8 @@ define(['class'], function(Class) {
                     x_space: 30,
                     y_space: 30
                 },
-                cards_dir: 'cards/default/',
-                themes_dir: 'themes/default/',
+                cards_dir: 'assets/cards/default/',
+                themes_dir: 'assets/themes/default/',
                 moves: [],
                 slots: {}
             };
