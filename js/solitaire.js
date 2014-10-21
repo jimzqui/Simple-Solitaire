@@ -56,7 +56,7 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
             var that = this;
 
             // Display intro
-            that.loadIntro();
+            that.loadTemplate('intro');
         },
 
         // Start canvas
@@ -105,7 +105,7 @@ define(['canvas', 'deck', 'stack', 'browse', 'column', 'aces', 'card'], function
             });
 
             // Display system btns
-            that.loadSystem();
+            that.loadTemplate('system');
         }
     });
 

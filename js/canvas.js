@@ -367,6 +367,16 @@ define(['class'], function(Class) {
             that.moves.pop(); 
         },
 
+        // Load template
+        loadTemplate: function(name, data) {
+            var that = this;
+
+            // Load system template
+            $.get(that.themes_dir + 'templates/' + name + '.html', function(html) {
+                $('body').append(html, data);
+            });
+        },
+
         // Undo switch cards
         _undoSwitch: function(move) {
             var that = this;
@@ -481,24 +491,37 @@ define(['class'], function(Class) {
             }
         },
 
-        // Load intro template
-        loadIntro: function() {
+        // Simple JavaScript Templating
+        // John Resig - http://ejohn.org/ - MIT Licensed
+        _template: function(str, data) {
             var that = this;
+            that._tempcache = {};
 
-            // Load intro template
-            $.get(that.themes_dir + 'templates/intro.html', function(data) {
-                $('body').append(data);
-            });
-        },
+            // Figure out if we're getting a template, or if we need to
+            // load the template - and be sure to cache the result.
+            var fn = !/\W/.test(str) ?
+            that._tempcache[str] = that._tempcache[str] ||
+            that._template(document.getElementById(str).innerHTML) :
 
-        // Load system template
-        loadSystem: function() {
-            var that = this;
+            // Generate a reusable function that will serve as a template
+            // generator (and which will be cached).
+            new Function("obj", "var p=[],print=function(){p.push.apply(p,arguments);};" +
 
-            // Load system template
-            $.get(that.themes_dir + 'templates/system.html', function(data) {
-                $('body').append(data);
-            });
+            // Introduce the data as local variables using with(){}
+            "with(obj){p.push('" +
+
+            // Convert the template into pure JavaScript
+            str.replace(/[\r\t\n]/g, " ")
+            .split("<%").join("\t")
+            .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+            .replace(/\t=(.*?)%>/g, "',$1,'")
+            .split("\t").join("');")
+            .split("%>").join("p.push('")
+            .split("\r").join("\\'")
+            + "');}return p.join('');");
+
+            // Provide some basic currying to the user
+            return data ? fn( data ) : fn;
         },
 
         // Create canvas
