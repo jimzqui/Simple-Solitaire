@@ -5,50 +5,36 @@
  */
 
 // Load dependencies
-define(['slot'], function(Slot) {
+define(['quard'], function(Quard) {
 
-    // Extend Column to Slot
-    var Column = Slot.extend({
+    // Extend Column to Quard.slot
+    var Column = Quard.slot.extend({
 
-        // Initialize
-        init: function(options) {
-            var that = this;
-
-            // Default settings
-            var defaults = {
-                cascade: {
-                    left: 0,
-                    top: 20,
-                    max: 0
-                },
-                anim: {
-                    interval: 150,
-                    speed: 500,
-                    ease: 20
-                },
-                altanim: {
-                    interval: 0,
-                    speed: 200,
-                    ease: 0
-                },
-                animate: true,
-                cards: []
-            };
-
-            // Construct settings
-            var settings = $.extend({}, defaults, options);
-
-            // Extend parent settings
-            that._super(settings);
-            return that;
+        // Settings
+        settings: {
+            cascade: {
+                left: 0,
+                top: 20,
+                max: 0
+            },
+            anim: {
+                interval: 150,
+                speed: 500,
+                swing: 20
+            },
+            altanim: {
+                interval: 0,
+                speed: 200,
+                swing: 0
+            },
+            animate: true
         },
 
-        // Events
-        events: {
-            'click card[face=facedown,last=true]': 'card.open',
-            'dblclick card[last=true]': 'card.checkin',
-            'mousedown card[face=faceup]': 'card.grab',
-            'mouseup card[face=faceup]': 'card.return'
+        // Drop events
+        dropEvents: {
+            'click card[face=facedown,last=true]': 'open',
+            'dblclick card[last=true]': 'checkin',
+            'mousedown card[face=faceup]': 'grab'
         },
 
         // Drop condition
@@ -56,6 +42,7 @@ define(['slot'], function(Slot) {
             suit: 'alternate',
             order: 'desc'
         }
+
     });
 
     // Return class

@@ -5,45 +5,32 @@
  */
 
 // Load dependencies
-define(['slot'], function(Slot) {
+define(['quard'], function(Quard) {
 
-    // Extend Browse to Slot
-    var Browse = Slot.extend({
+    // Extend Browse to Quard.slot
+    var Browse = Quard.slot.extend({
 
-        // Initialize
-        init: function(options) {
-            var that = this;
-
-            // Default settings
-            var defaults = {
-                cascade: {
-                    left: 20,
-                    top: 0,
-                    max: 3
-                },
-                anim: {
-                    interval: 0,
-                    speed: 200,
-                    ease: 0
-                },
-                animate: true,
-                cards: []
-            };
-
-            // Construct settings
-            var settings = $.extend({}, defaults, options);
-
-            // Extend parent settings
-            that._super(settings);
-            return that;
+        // Settings
+        settings: {
+            cascade: {
+                left: 20,
+                top: 0,
+                max: 3
+            },
+            anim: {
+                interval: 0,
+                speed: 200,
+                swing: 0
+            },
+            animate: true
         },
 
-        // Events
-        events: {
-            'dblclick card[last=true]': 'card.checkin',
-            'mousedown card[last=true]': 'card.grab',
-            'mouseup card[last=true]': 'card.return'
+        // Drop events
+        dropEvents: {
+            'dblclick card[last=true]': 'checkin',
+            'mousedown card[last=true]': 'grab'
         }
+
     });
 
     // Return class

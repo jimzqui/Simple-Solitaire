@@ -6,7 +6,13 @@
 
 // Set configs
 require.config({
-	noGlobal: true
+	baseUrl: 'js',
+	paths: {
+		'jquery': 'vendor/jquery.min',
+		'quard': 'vendor/quard'
+	},
+	noGlobal: true,
+	urlArgs: "bust=" + Math.random()
 });
 
 var App;

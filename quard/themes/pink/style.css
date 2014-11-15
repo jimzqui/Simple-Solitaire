@@ -1,0 +1,267 @@
+/* ==========================================================================
+    Intro
+   ========================================================================== */
+
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
+}
+
+#intro {
+    width: 300px;
+    height: 50px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -60px 0 0 -150px;
+}
+
+#intro h1 {
+    background: url('img/solitaire.png');
+    width: 300px;
+    height: 27px;
+    float: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: 3000px;
+}
+
+#intro .btn {
+    left: 50%;
+    margin: 0 0 0 -50px;
+    position: relative;
+}
+
+.btn-green {
+    background: url('img/black-trans.png') repeat;
+    border: 1px solid #999;
+    color: #ddd;
+    cursor: pointer;
+    width: 100px;
+    z-index: 1;
+}
+
+.btn-green:hover {
+    background: url('img/black-trans.png') repeat;
+    color: #fff;
+}
+
+
+/* ==========================================================================
+    System
+   ========================================================================== */
+
+#system {
+    background: url('img/black-trans.png') repeat;
+    border: 1px solid #888;
+    bottom: 0;
+    height: 40px;
+    left: 50%;
+    position: absolute;
+    z-index: 1;
+    border-radius: 5px 5px 0 0;
+    margin: 0 0 0 -337px;
+    width: 676px;
+}
+
+.btn-sys {
+    color: #ddd;
+    float: left;
+    font-size: 14px;
+    margin: 0 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.btn-sys:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+#timer {
+    float: right;
+    margin: 10px 15px 0 0;
+    font-size: 15px;
+    color: #fff;
+}
+
+#themespane {
+    left: 0;
+    bottom: 50px;
+    display: none;
+}
+
+.pane {
+    background: url("img/black-trans.png") repeat scroll 0 0;
+    border: 1px solid #888;
+    border-radius: 5px;
+    bottom: 60px;
+    left: 0;
+    position: absolute;
+    width: 265px;
+    z-index: 1;
+    padding: 15px;
+}
+
+.pane-content {
+    position: relative;
+    z-index: 2;
+}
+
+.pane-arrow {
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #888;
+    bottom: -8px;
+    height: 0;
+    left: 22px;
+    margin-left: -4px;
+    position: absolute;
+    width: 0;
+}
+
+.pane-arrow span {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #65325b;
+    height: 0;
+    left: -6px;
+    position: absolute;
+    top: -8px;
+    width: 0;
+}
+
+.pane ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pane ul li {
+    display: block;
+    margin: 5px 0;
+    cursor: pointer;
+    color: #ddd;
+}
+
+.pane ul li:hover, .pane ul li.current {
+    color: #fff;
+}
+
+.pane ul li i {
+    background-size: 25px;
+    border: 1px solid #888;
+    float: left;
+    height: 25px;
+    margin: 0 15px 0 0;
+    width: 25px;
+}
+
+.pane ul li:hover i, .pane ul li.current i {
+    border: 1px solid #eaeaea;
+}
+
+.default-theme i {
+    background: url('../default/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+.blue-theme i {
+    background: url('../blue/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+.red-theme i {
+    background: url('../red/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+.pink-theme i {
+    background: url('../pink/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+.wildwest-theme i {
+    background: url('../wildwest/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+.wood-theme i {
+    background: url('../wood/bg.jpg') repeat scroll 0 0 transparent;
+}
+
+
+/* ==========================================================================
+    Slots
+   ========================================================================== */
+
+.slot span {
+    background-image: url('slots.png');
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    float: left;
+    height: 96px;
+    width: 71px;
+}
+
+.slot span.slot-Browse {
+    background-position: -71px 0;
+}
+
+.slot span.slot-Spades {
+    background-position: -142px 0;
+}
+
+.slot span.slot-Hearts {
+    background-position: -213px 0;
+}
+
+.slot span.slot-Clubs {
+    background-position: -284px 0;
+}
+
+.slot span.slot-Diamonds {
+    background-position: -355px 0;
+}
+
+
+/* ==========================================================================
+    Win
+   ========================================================================== */
+
+#win {
+    background: url("img/black-trans.png") repeat scroll 0 0;
+    border-bottom: 2px solid #555;
+    border-top: 2px solid #555;
+    color: #fff;
+    left: 50%;
+    margin: -100px 0 0 -160px;
+    padding: 15px 70px;
+    position: absolute;
+    top: 50%;
+    width: 320px;
+}
+
+#win h3 {
+    text-align: center;
+    color: #e1e1e1;
+}
+
+#win .row {
+    border-top: 1px solid #555;
+    padding: 10px 0;
+}
+
+#win .block {
+    background: url("img/black-trans.png") repeat scroll 0 0;
+    margin-bottom: 15px;
+    padding: 10px;
+    text-align: center;
+}
+
+#win .block .btn-restart {
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+}
