@@ -27,7 +27,7 @@ define(['quard'], function(Quard) {
 
         // Drop events
         dropEvents: {
-            'dblclick card[last=true]': 'checkin',
+            'click card[last=true]': 'checkIn',
             'mousedown card[last=true]': 'grab'
         }
 

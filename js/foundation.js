@@ -1,6 +1,6 @@
 /**
- * JQcards - Aces
- * aces.js
+ * JQcards - Foundation
+ * foundation.js
  * (c) 2014, Jimbo Quijano
  */
 
@@ -8,7 +8,7 @@
 define(['quard'], function(Quard) {
 
     // Extend Stack to Quard.slot
-    var Aces = Quard.slot.extend({
+    var Foundation = Quard.slot.extend({
 
         // Settings
         settings: {
@@ -25,6 +25,9 @@ define(['quard'], function(Quard) {
             animate: true
         },
 
+        // Set check suits
+        checkSuits: ['Spades', 'Hearts', 'Clubs', 'Diamonds'],
+
         // Drop events
         dropEvents: {
             'mousedown card[face=faceup]': 'grab'
@@ -32,12 +35,12 @@ define(['quard'], function(Quard) {
 
         // Drop condition
         dropCondition: {
-            suit: 'checkin',
+            suit: 'checkIn',
             order: 'asc'
         }
 
     });
 
     // Return class
-    return Aces;
+    return Foundation;
 });

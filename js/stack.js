@@ -22,12 +22,18 @@ define(['quard'], function(Quard) {
                 speed: 500,
                 swing: 20
             },
-            altanim: {
+            animAlt: {
                 interval: 0,
                 speed: 200,
                 swing: 0
             },
             animate: true
+        },
+
+        // Set browse
+        browse: {
+            slot: 'Browse',
+            size: 3
         },
 
         // Drop events

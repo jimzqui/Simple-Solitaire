@@ -208,6 +208,7 @@
                             canvas: that,
                             name: name + i,
                             group: name,
+                            index: i,
                             position: {
                                 left: settings.tile[i].split('-')[0],
                                 top: settings.tile[i].split('-')[1]
@@ -216,7 +217,7 @@
 
                         // Call event for clicking slot
                         that.slots[name + i].el.on('click', function() {
-                            if ($.isFunction(that.slotClicked) == true) {
+                            if ($.isFunction(that.slotClicked) == true && that.rendered == true) {
                                 that.slotClicked(that.slots[name + i]);
                             }
                         });
@@ -234,7 +235,7 @@
 
                     // Call event for clicking slot
                     that.slots[name].el.on('click', function() {
-                        if ($.isFunction(that.slotClicked) == true) {
+                        if ($.isFunction(that.slotClicked) == true && that.rendered == true) {
                             that.slotClicked(that.slots[name]);
                         }
                     });
@@ -300,7 +301,7 @@
                         that.rendered = true;
 
                         // Call event after cards are rendered
-                        if ($.isFunction(that.cardsRendered) == true) {
+                        if ($.isFunction(that.cardsRendered) == true && that.rendered == true) {
                             that.cardsRendered();
                         }
                     } else {
@@ -318,7 +319,7 @@
             });
         },
 
-        // Reset cards
+        // Reset slots and cards
         resetCards: function(callback) {
             var that = this;
 
@@ -350,55 +351,6 @@
             that.rendered = false;
             that.cards = {};
             that.moves = [];
-        },
-
-        // Set browse slot
-        setBrowse: function(obj) {
-            var that = this;
-            that.slots[obj.to].browse_size = obj.size;
-            that.slots[obj.from].browse_to = that.slots[obj.to];
-            that.slots[obj.to].browse_from = that.slots[obj.from];
-            that.slots[obj.from].inner.addClass('slot-Browse');
-
-            // Reset browse when empty
-            that.slots[obj.from].el.click(function() {
-                if (that.slots[obj.from].cardCount() == 0) {
-                    that.slots[obj.from].resetBrowse();
-                }
-            });
-        },
-
-        // Set checkin slots
-        setCheckin: function(obj) {
-            var that = this;
-            $.each(obj, function(suit, name) {
-                that.slots[name].checkin = suit;
-                that.slots[name].inner.addClass('slot-' + suit);
-            });
-        },
-
-        // Flip every last cards of group
-        flipLast: function(group, callback) {
-            var that = this;
-            var count = 0;
-
-            // Iterate slots and find the group
-            $.each(that.slots, function(name, slot) {
-                if (slot.group == group) {
-                    var timeout = count * slot.anim.interval;
-                    (function(timeout, slot, count) {
-                        setTimeout(function() {
-                            if (count == 6) {
-                                slot.last.flip();
-                                if (callback) callback();
-                            } else {
-                                slot.last.flip();
-                            }
-                        }, timeout);
-                    })(timeout, slot, count);
-                    count++;
-                }
-            });
         },
 
         // Change anim settings of group
@@ -441,12 +393,17 @@
                 case 'switch': that._undoSwitch(move); break;
                 case 'browse': that._undoBrowse(move); break;
                 case 'reset': that._undoReset(move); break;
-                case 'checkin': that._undoCheckin(move); break;
+                case 'checkIn': that._undoCheckIn(move); break;
                 case 'open': that._undoOpen(move); break;
             }
 
             // Remove last move
-            that.moves.pop(); 
+            that.moves.pop();
+
+            // Call event for undoing of move
+            if ($.isFunction(that.moveUndid) == true && that.rendered == true) {
+                that.moveUndid(move);
+            }
         },
 
         // Retrieve a template
@@ -691,10 +648,10 @@
         _undoReset: function(move) {
             var that = this;
 
-            // Flip all cards
+            // Open cards
             for (var i = 0; i < move.actors.length; i++) {
                 var card = move.actors[i];
-                card.flip(0.15);
+                card.open(0.15);
             };
 
             // Remove cards from slot
@@ -710,10 +667,10 @@
         _undoBrowse: function(move) {
             var that = this;
 
-            // Flip all cards
+            // Close cards
             for (var i = 0; i < move.actors.length; i++) {
                 var card = move.actors[i];
-                card.flip(0.15);
+                card.close(0.15);
             };
 
             // Remove cards from slot
@@ -725,8 +682,8 @@
             move.origin.addCards(move.actors.reverse());
         },
 
-        // Undo card checkin
-        _undoCheckin: function(move) {
+        // Undo card checkIn
+        _undoCheckIn: function(move) {
             var that = this;
 
             // Retrieve card back
@@ -854,6 +811,33 @@
                 width: that.width,
                 cursor: 'pointer'
             });
+
+            // Style inner
+            that.inner.css({
+                backgroundImage: 'url(' + that.canvas.themes.dist + that.canvas.themes.current + '/slots.png)',
+                backgroundPosition: '0 0',
+                backgroundRepeat: 'no-repeat',
+                float: 'left',
+                height: that.height,
+                width: that.width
+            });
+
+            // If slot is stack type
+            if (that.browse != undefined) {
+                that.inner.css({
+                    backgroundPosition: '-' + that.width + 'px 0'
+                });
+            }
+
+            // If slot is foundation type
+            if (that.checkSuits != undefined) {
+                that.checkSuit = that.checkSuits[that.index];
+                var adjust_left = (that.index + 2) * that.width;
+
+                that.inner.css({
+                    backgroundPosition: '-' + adjust_left + 'px 0'
+                });
+            }
 
             return that;
         },
@@ -987,8 +971,22 @@
             // Set batch cards
             that.batch = cards;
 
+            // Set origin of cards
+            var origin = cards[0].slot;
+
             // Uncascade cards
             that._maxUncascade();
+
+            // Cascade cards
+            if (origin != undefined) {
+                if (that.checkSuits != undefined) {
+                    setTimeout(function() {
+                        origin._maxCascade();
+                    }, that.anim.speed);
+                } else {
+                    origin._maxCascade();
+                }
+            }
 
             // Iterate each card and add
             for (var i = 0; i < cards.length; i++) {
@@ -1002,6 +1000,16 @@
                             delete card.batch_count;
                             delete that.batch;
                             if (callback) callback();
+                        }, function() {
+                            // Call event for increasing slot cards
+                            if ($.isFunction(that.canvas.slotIncreased) == true && that.canvas.rendered == true) {
+                                that.canvas.slotIncreased(that, cards);
+                            }
+
+                            // Call event for decreasing slot cards
+                            if ($.isFunction(that.canvas.slotDecreased) == true && that.canvas.rendered == true) {
+                                that.canvas.slotDecreased(origin, cards);
+                            }
                         });
                     } else {
                         that._addCard(card);
@@ -1026,9 +1034,6 @@
                 var card = cards[i];
                 that._removeCard(card);
             };
-
-            // Cascade cards
-            that._maxCascade();
         },
 
         // Get cards
@@ -1073,20 +1078,21 @@
             that.browsing = true;
 
             // Pick cards from slot
-            var browsed = that.getCards(that.browse_to.browse_size, true);
+            var browse_slot = that.canvas.slots[that.browse.slot];
+            var browsed = that.getCards(that.browse.size, true);
             var origin = browsed[0].slot;
 
             // Place cards to browse
-            that.browse_to.addCards(browsed, function() {
+            browse_slot.addCards(browsed, function() {
 
-                // Flip browsed cards
+                // Open browsed cards
                 for (var i = 0; i < browsed.length; i++) {
                     var card = browsed[i];
 
                     if (i == browsed.length - 1) {
-                        card.flip(0.15);
+                        card.open(0.15);
                     } else {
-                        card.flip(0.15);
+                        card.open(0.15);
                     }
                 };
 
@@ -1094,7 +1100,7 @@
                 that.browsing = false;
 
                 // Call drop event
-                if ($.isFunction(that.canvas.cardDropped) == true) {
+                if ($.isFunction(that.canvas.cardDropped) == true && that.canvas.rendered == true) {
                     that.canvas.cardDropped('browse', browsed, origin);
                 }
 
@@ -1104,30 +1110,31 @@
         },
 
         // Reset browsed cards
-        resetBrowse: function() {
+        unbrowseCards: function() {
             var that = this;
 
             // Set animate to true
             that.animate = true;
 
             // Pick cards from slot
-            var cards = that.browse_to.getCards(that.browse_to.cardCount(), true);
+            var browse_slot = that.canvas.slots[that.browse.slot];
+            var cards = browse_slot.getCards(browse_slot.cardCount(), true);
 
             if (cards.length == 0) return false;
             var origin = cards[0].slot;
 
-            // Flip cards and uncascade
+            // Close cards and uncascade
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
-                card.el.css({ left: that.browse_to.offset.left });
-                card.flip(0.15);
+                card.el.css({ left: browse_slot.offset.left });
+                card.close(0.15);
             };
 
             // Place cards to stack
             that.addCards(cards, function() {
 
                 // Call drop event
-                if ($.isFunction(that.canvas.cardDropped) == true) {
+                if ($.isFunction(that.canvas.cardDropped) == true && that.canvas.rendered == true) {
                     that.canvas.cardDropped('reset', cards, origin);
                 }
 
@@ -1157,7 +1164,7 @@
         },
 
         // Add card to slot
-        _addCard: function(card, callback) {
+        _addCard: function(card, callback, callback2) {
             var that = this;
 
             // Unbind all
@@ -1182,7 +1189,7 @@
             that.height = ((that.cardCount() - 1) * that.cascade.top) + that.height;
 
             // Move card to slot
-            card.move(that, callback);
+            card.move(that, callback, callback2);
         },
 
         // Remove card from slot
@@ -1250,12 +1257,12 @@
                         break;
                     }
                 break;
-                case 'checkin':
+                case 'checkIn':
 
                     // Check order conditions
                     switch(condition.order) {
                         case 'asc': 
-                            if (card.num - 1 == that.cardCount() && card.suit == that.checkin) {
+                            if (card.num - 1 == that.cardCount() && card.suit == that.checkSuit) {
                                 result = true;
                             } else {
                                 result = false;
@@ -1264,7 +1271,7 @@
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            } else if (that.last.num - 1 == card.num && card.suit == that.checkin) {
+                            } else if (that.last.num - 1 == card.num && card.suit == that.checkSuit) {
                                 result = true;
                             } else {
                                 result = false;
@@ -1277,7 +1284,7 @@
                     // Check order conditions
                     switch(condition.order) {
                         case 'asc': 
-                            if (card.num - 1 == that.cardCount() && card.suit == that.checkin) {
+                            if (card.num - 1 == that.cardCount() && card.suit == that.checkSuit) {
                                 result = true;
                             } else {
                                 result = false;
@@ -1320,8 +1327,8 @@
             var that = this;
 
             // If alternate anim is present and slot is rendered
-            if (that.altanim != undefined && that.canvas.rendered == true) {
-                var anim = that.altanim;
+            if (that.animAlt != undefined && that.canvas.rendered == true) {
+                var anim = that.animAlt;
             } else {
                 var anim = that.anim;
             }
@@ -1486,7 +1493,7 @@
                 // Bind event to card
                 card.el.on(event, function(e) {
                     if (event == 'click') {
-                        if ($.isFunction(that.canvas.cardClicked) == true) {
+                        if ($.isFunction(that.canvas.cardClicked) == true && that.canvas.rendered == true) {
                             that.canvas.cardClicked(card);
                         }
                     }
@@ -1635,7 +1642,7 @@
         },
 
         // Move card to slot
-        move: function(slot, callback) {
+        move: function(slot, callback, callback2) {
             var that = this;
 
             // Compute anim data
@@ -1652,6 +1659,7 @@
                     that.el.animate(that.offset, anim.speed, function() {
                         that.el.animate({ zIndex: anim.zindex }, 0);
                         that.zindex = anim.zindex;
+                        if(callback2) callback2(that);
                     });
                 }, anim.timeout);
 
@@ -1668,6 +1676,7 @@
                 that.zindex = anim.zindex;
                 that.el.css(that.offset);
                 if(callback) callback(that);
+                if(callback2) callback2(that);
                 slot._cardEvents(that);
             }
         },
@@ -1676,63 +1685,46 @@
         open: function(speed) {
             var that = this;
 
-            // Default speed to 0.3
-            if (speed == undefined) {
-                speed = 0.3;
-            }
-
             // Flip card
-            that.face = 'faceup';
-            that.el.find('.flipper').css({
-                transition: 'all ' + speed + 's ease 0s',
-                transformStyle: 'preserve-3d',
-                transform: 'rotateY(180deg)'
-            });
-
-            // Call flip event
-            if ($.isFunction(that.canvas.cardFlipped) == true) {
-                that.canvas.cardFlipped('open', that, that.slot);
-            }
+            that.flip(speed, 'open');
         },
 
         // Close card
         close: function(speed) {
             var that = this;
 
-            // Default speed to 0.3
-            if (speed == undefined) {
-                speed = 0.3;
-            }
-
             // Flip card
-            that.face = 'facedown';
-            that.el.find('.flipper').css({
-                transition: 'all ' + speed + 's ease 0s',
-                transformStyle: 'preserve-3d',
-                transform: 'rotateY(0deg)'
-            });
-
-            // Call flip event
-            if ($.isFunction(that.canvas.cardFlipped) == true) {
-                that.canvas.cardFlipped('close', that, that.slot);
-            }
+            that.flip(speed, 'close');
         },
 
         // Flip card
-        flip: function(speed) {
+        flip: function(speed, type) {
             var that = this;
+
+            // Return if card came from grab
+            if (that.grabbed == true) return;
 
             // Default speed to 0.3
             if (speed == undefined) {
                 speed = 0.3;
             }
 
-            if (that.face == 'faceup') {
+            if (type == 'close') {
                 that.face = 'facedown';
-                rotate = '0deg';
-            } else {
+                var rotate = '0deg';
+            } else if (type == 'open') {
                 that.face = 'faceup';
-                rotate = '180deg';
+                var rotate = '180deg';
+            } else {
+                if (that.face == 'faceup') {
+                    that.face = 'facedown';
+                    var rotate = '0deg';
+                    var type = 'close';
+                } else {
+                    that.face = 'faceup';
+                    var rotate = '180deg';
+                    var type = 'open';
+                }
             }
 
             // Flip card
@@ -1741,17 +1733,25 @@
                 transformStyle: 'preserve-3d',
                 transform: 'rotateY(' + rotate + ')'
             });
+
+            // Call flip event
+            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
+                that.canvas.cardFlipped(type, that);
+            }
         },
 
-        // Checkin card to ace pile
-        checkin: function() {
+        // CheckIn card to ace pile
+        checkIn: function() {
             var that = this;
 
-            // Get the correct slot to checkin
+            // Return if card came from grab
+            if (that.grabbed == true) return;
+
+            // Get the correct slot to checkIn
             $.each(that.canvas.slots, function(name, slot) {
 
                 // Check if card is allowed to switch
-                if (slot._applyDrop(that, slot.dropCondition) == true && slot.checkin != undefined) {
+                if (slot._applyDrop(that, slot.dropCondition) == true && slot.checkSuit != undefined) {
                     var card = that.slot.cards[that.index];
                     var origin = card.slot;
                     that.slot.removeCards(card);
@@ -1761,8 +1761,8 @@
                     slot.addCards(card, function() {
 
                         // Call drop event
-                        if ($.isFunction(that.canvas.cardDropped) == true) {
-                            that.canvas.cardDropped('checkin', card, origin);
+                        if ($.isFunction(that.canvas.cardDropped) == true && that.canvas.rendered == true) {
+                            that.canvas.cardDropped('checkIn', card, origin);
                         }
 
                         // Check for win
@@ -1801,7 +1801,7 @@
             });
 
             // Call grab event
-            if ($.isFunction(that.canvas.cardGrabbed) == true) {
+            if ($.isFunction(that.canvas.cardGrabbed) == true && that.canvas.rendered == true) {
                 that.canvas.cardGrabbed(that);
             }
         },
@@ -1845,6 +1845,7 @@
 
             // Return if not grabbed
             if (that.grabbed != true) return;
+            that.grabbed = false;
 
             // Check any collision for slots
             $.each(that.canvas.slots, function(name, slot) {
@@ -1857,7 +1858,7 @@
                             slot.collide = null;
 
                             // Call drop event
-                            if ($.isFunction(that.canvas.cardDropped) == true) {
+                            if ($.isFunction(that.canvas.cardDropped) == true && that.canvas.rendered == true) {
                                 that.canvas.cardDropped('switch', cards, origin);
                             }
 
@@ -1879,10 +1880,9 @@
                         top: card_active.offset.top,
                         zIndex: card_active.zindex
                     }, 'fast', function() {
-                        card_active.grabbed = false;
 
                         // Call return event
-                        if ($.isFunction(that.canvas.cardReturned) == true) {
+                        if ($.isFunction(that.canvas.cardReturned) == true && that.canvas.rendered == true) {
                             that.canvas.cardReturned(that);
                         }
                     });
@@ -1951,7 +1951,7 @@
                     // Pick cards from slot
                     var cards = slot.collide.getCards(slot.collide.cardCount() - that.index, true);
 
-                    // Callback after checking
+                    // Callback after checkIn
                     if (callback) callback(cards.reverse());
 
                     return true;

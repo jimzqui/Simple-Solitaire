@@ -5,7 +5,7 @@
  */
 
 // Load dependencies
-define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, Stack, Browse, Aces, Column, Deck) {
+define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Quard, Stack, Browse, Foundation, Column, Deck) {
 
     // Create new Solitaire Class
     var Solitaire = Quard.canvas.extend({
@@ -48,7 +48,7 @@ define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, S
 
         // Win condition
         winCondition: {
-            'Aces': 'full faceup'
+            'Foundation': 'full faceup'
         },
 
         // Start game
@@ -66,6 +66,7 @@ define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, S
 
             // Hide system btns
             $('#system').fadeOut('fast', function() {
+                $(this).remove();
 
                 // Hide columns
                 $.each(that.slots, function(name, slot) {
@@ -98,7 +99,7 @@ define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, S
                     'Deck': { slot: Deck, tile: '3-3' },
                     'Stack': { slot: Stack, tile: '0-0' },
                     'Browse': { slot: Browse, tile: '1-0' },
-                    'Aces': { slot: Aces, tile: ['3-0', '4-0', '5-0', '6-0'] },
+                    'Foundation': { slot: Foundation, tile: ['3-0', '4-0', '5-0', '6-0'] },
                     'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
                 });
 
@@ -145,29 +146,25 @@ define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, S
         // After cards are placed
         cardsRendered: function() {
             var that = this;
+            var count = 0;
 
-            // Flip last cards in column
-            that.flipLast('Column');
-
-            // Setup browse slot
-            that.setBrowse({ 
-                from: 'Stack', 
-                to: 'Browse', 
-                size: 3
-            });
-
-            // Setup checkin slots
-            that.setCheckin({
-                'Spades': 'Aces0',
-                'Hearts': 'Aces1',
-                'Clubs': 'Aces2',
-                'Diamonds': 'Aces3'
+            // Open last cards in column
+            $.each(that.slots, function(name, slot) {
+                if (slot.group == 'Column') {
+                    var timeout = count * slot.anim.interval;
+                    (function(timeout, slot, count) {
+                        setTimeout(function() {
+                            slot.last.open();
+                        }, timeout);
+                    })(timeout, slot, count);
+                    count++;
+                }
             });
 
             // Display system btns
             var html = that.getTemplate('system');
 
-            if ($('#timer').length == 0) {
+            if ($('#system').length == 0) {
                 $('body').append(html);
             }
 
@@ -183,13 +180,37 @@ define(['quard', 'stack', 'browse', 'aces', 'column', 'deck'], function(Quard, S
             that.registerMove(action, actors, origin);
         },
 
-        // Card dropped event
-        cardFlipped: function(action, actors, origin) {
+        // Slot clicked
+        slotClicked: function(slot) {
             var that = this;
 
-            // Register move
-            if (action = 'open') {
-                that.registerMove(action, actors, origin);
+            // On click, reset stack if empty
+            if (slot.name = 'Stack' && slot.cardCount() == 0) {
+                slot.unbrowseCards();
+            }
+        },
+
+        // Slot decreased
+        slotDecreased: function(slot, cards) {
+            var that = this;
+
+            // Open last card of columns
+            if (slot.group == 'Column') {
+                slot.last.open();
+            }
+        },
+
+        // Move undid
+        moveUndid: function(move) {
+            var that = this;
+
+            // Close prev last card of columns
+            if (move.action == 'switch' || move.action == 'checkIn') {
+                if (move.origin.group == 'Column') {
+                    var card = (move.actors[0] == undefined) ? move.actors : move.actors[0];
+                    var prev_last = move.origin.cards[card.index - 1];
+                    prev_last.close();
+                }
             }
         },
 

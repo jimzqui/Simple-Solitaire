@@ -194,40 +194,6 @@ body {
 
 
 /* ==========================================================================
-    Slots
-   ========================================================================== */
-
-.slot span {
-    background-image: url('slots.png');
-    background-position: 0 0;
-    background-repeat: no-repeat;
-    float: left;
-    height: 96px;
-    width: 71px;
-}
-
-.slot span.slot-Browse {
-    background-position: -71px 0;
-}
-
-.slot span.slot-Spades {
-    background-position: -142px 0;
-}
-
-.slot span.slot-Hearts {
-    background-position: -213px 0;
-}
-
-.slot span.slot-Clubs {
-    background-position: -284px 0;
-}
-
-.slot span.slot-Diamonds {
-    background-position: -355px 0;
-}
-
-
-/* ==========================================================================
     Win
    ========================================================================== */
 

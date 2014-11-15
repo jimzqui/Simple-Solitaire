@@ -22,7 +22,7 @@ define(['quard'], function(Quard) {
                 speed: 500,
                 swing: 20
             },
-            altanim: {
+            animAlt: {
                 interval: 0,
                 speed: 200,
                 swing: 0
@@ -33,7 +33,7 @@ define(['quard'], function(Quard) {
         // Drop events
         dropEvents: {
             'click card[face=facedown,last=true]': 'open',
-            'dblclick card[last=true]': 'checkin',
+            'click card[last=true]': 'checkIn',
             'mousedown card[face=faceup]': 'grab'
         },
 
