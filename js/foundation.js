@@ -30,12 +30,13 @@ define(['quard'], function(Quard) {
 
         // Drop events
         dropEvents: {
+            'click card[last=true]': 'switch',
             'mousedown card[face=faceup]': 'grab'
         },
 
         // Drop condition
         dropCondition: {
-            suit: 'checkIn',
+            suit: 'foundation',
             order: 'asc'
         }
 

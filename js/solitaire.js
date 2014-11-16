@@ -154,7 +154,9 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                     var timeout = count * slot.anim.interval;
                     (function(timeout, slot, count) {
                         setTimeout(function() {
-                            slot.last.open();
+                            if (slot.last != null) {
+                                slot.last.open();
+                            }
                         }, timeout);
                     })(timeout, slot, count);
                     count++;
@@ -196,7 +198,9 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
 
             // Open last card of columns
             if (slot.group == 'Column') {
-                slot.last.open();
+                if (slot.last != null) {
+                    slot.last.open();
+                }
             }
         },
 
@@ -209,7 +213,9 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                 if (move.origin.group == 'Column') {
                     var card = (move.actors[0] == undefined) ? move.actors : move.actors[0];
                     var prev_last = move.origin.cards[card.index - 1];
-                    prev_last.close();
+                    if (prev_last != undefined) {
+                        prev_last.close();
+                    }
                 }
             }
         },

@@ -33,7 +33,7 @@ define(['quard'], function(Quard) {
         // Set browse
         browse: {
             slot: 'Browse',
-            size: 3
+            size: 1
         },
 
         // Drop events
