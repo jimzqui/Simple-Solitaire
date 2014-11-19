@@ -2104,7 +2104,7 @@
             };
 
             // Release card on mouseup
-            that.el.mouseup(function(e) {
+            that.el.on('mouseup', function(e) {
                 that._undrag();
             });
 
@@ -2125,9 +2125,12 @@
             var that = this;
 
             // Move card according to mouse offset
-            that.canvas.el.mousemove(function(e) {
-                that.grabbed = true;
+            that.canvas.el.on('mousemove', function(e) {
+                // Chrome fix: avoid firing mousemove on mousedown
+                if (that.e.pageX == e.pageX && that.e.pageY == e.pageY) return;
 
+                // Set card as grabbed
+                that.grabbed = true;
                 var offset = {
                     left: e.pageX - x,
                     top: e.pageY - y,
@@ -2148,8 +2151,8 @@
             var droppped = false;
 
             // Unbind mousemove and mouseup
-            that.canvas.el.unbind('mousemove');
-            that.el.unbind('mouseup');
+            that.canvas.el.off('mousemove');
+            that.el.off('mouseup');
 
             // Return if not grabbed
             if (that.grabbed != true) return;
