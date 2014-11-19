@@ -43,7 +43,8 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             'click .btn-start': 'start',
             'click .btn-restart': 'restart',
             'click .btn-undo': 'undoLast',
-            'click .btn-themes': 'themesPane'
+            'click .btn-themes': 'themesPane',
+            'click .theme-item': 'themesUpdate'
         },
 
         // Win condition
@@ -255,17 +256,18 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                     $('#themespane').fadeIn();
                 });
             }
+        },
 
-            // Change theme on item click
-            $('.theme-item').unbind('click');
-            $('.theme-item').click(function() {
-                if ($(this).is('.current')) return;
-                that.changeTheme($(this).data('theme'));
+        // Update theme
+        themesUpdate: function(el) {
+            var that = this;
 
-                // Update current item
-                $('.theme-item').removeClass('current');
-                $(this).addClass('current');
-            });
+            if (el.is('.current')) return;
+            that.changeTheme(el.data('theme'));
+
+            // Update current item
+            $('.theme-item').removeClass('current');
+            el.addClass('current');
         }
     });
 

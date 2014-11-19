@@ -621,6 +621,9 @@
         openPanel: function(options, callback) {
             var that = this;
 
+            // Return if still animating
+            if (that._panelAnimating == true) return;
+
             // Construct final settings
             that._panelSettings = $.extend({}, {
                 cut: $(document).height() / 2,
@@ -679,6 +682,8 @@
             });
 
             // Animate and open panel
+            that._panelAnimating = true;
+
             panel_top.removeClass('panel-closed');
             panel_top.animate({ top: that._panelSettings.size * -1 }, 
                 that._panelSettings.animate, function() {
@@ -688,6 +693,7 @@
             panel_btm.removeClass('panel-closed');
             panel_btm.animate({ top: top_height + that._panelSettings.size }, 
                 that._panelSettings.animate, function() {
+                that._panelAnimating = false;
                 if (callback) callback();
             });
 
@@ -702,6 +708,13 @@
         // Close and remove panel
         closePanel: function(callback) {
             var that = this;
+
+            // Return if still animating
+            if (that._panelAnimating == true) return;
+
+            // Return if panel is already removed
+            if (that._panel == undefined) return;
+
             var panel_top = that._panel.find('.panel-top');
             var panel_btm = that._panel.find('.panel-btm');
             var height = panel_btm.offset().top;
@@ -716,7 +729,9 @@
                 boxShadow: 'none',
             });
 
-            // Animate and open panel
+            // Animate and close panel
+            that._panelAnimating = true;
+
             panel_top.animate({ top: 0 }, 
                 that._panelSettings.animate, function() {
                 $(this).addClass('panel-closed');
@@ -727,13 +742,11 @@
                 $(this).addClass('panel-closed');
 
                 setTimeout(function() {
-                    if (callback) callback();
-                }, 200);
-
-                setTimeout(function() {
+                    that._panelAnimating = false;
                     that._panel.remove();
                     delete that._panel;
-                }, 1000);
+                    if (callback) callback();
+                }, 200);
             });
 
             // Move canvas back
@@ -935,7 +948,7 @@
 
                 // Bind event to elem
                 $('body').on(event, elem, function(e) {
-                    that[action](e);
+                    that[action]($(this));
                 });
             });
         },
