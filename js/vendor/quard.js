@@ -225,34 +225,28 @@
             
             // Call event for clicking slot
             $.each(that.slots, function(name, slot) {
-                var timeout = count * 100;
+                count++;
 
                 slot.el.css({ 
-                    top: slot.offset.top - $(document).height(),
-                    display: 'block' 
+                    left: slot.offset.left + $(document).width()
                 });
 
-                (function(timeout, slot, count) {
-                    setTimeout(function() {
-                        if (count == Object.keys(that.slots).length - 1) {
-                            slot.el.animate({
-                                top: slot.offset.top,
-                            }, 1000, function() {
+                if (count == Object.keys(that.slots).length) {
+                    slot.el.animate({
+                        left: slot.offset.left,
+                    }, 1000, function() {
 
-                                // Call event after slots are rendered
-                                if ($.isFunction(that.slotsRendered) == true) {
-                                    that.slotsRendered();
-                                }
-                            });
-                        } else {
-                            slot.el.animate({
-                                top: slot.offset.top,
-                                display: 'block'
-                            }, 1000);
+                        // Call event after slots are rendered
+                        if ($.isFunction(that.slotsRendered) == true) {
+                            that.slotsRendered();
                         }
-                    }, timeout);
-                })(timeout, slot, count);
-                count++;
+                    });
+                } else {
+                    slot.el.animate({
+                        left: slot.offset.left,
+                        display: 'block'
+                    }, 1000);
+                }
 
                 slot.el.on('click', function() {
                     if ($.isFunction(that.slotClicked) == true && that.rendered == true) {
