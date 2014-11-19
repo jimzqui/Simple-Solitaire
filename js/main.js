@@ -15,11 +15,11 @@ require.config({
 	urlArgs: "bust=" + Math.random()
 });
 
-var App;
+var Game;
 
 // Load dependencies
-require(['solitaire'], function(Solitaire) {
+require(['klondike'], function(Klondike) {
 
-	// Create new app
-	App = new Solitaire();
+	// Create new game
+	Game = new Klondike();
 });

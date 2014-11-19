@@ -18,7 +18,7 @@ body {
     position: absolute;
     left: 50%;
     top: 50%;
-    margin: -60px 0 0 -150px;
+    margin: -55px 0 0 -150px;
 }
 
 #intro h1 {
@@ -50,6 +50,57 @@ body {
     background: url('img/black-trans.png') repeat;
     border: 1px solid #fff;
     color: #fff;
+}
+
+
+/* ==========================================================================
+    Panel
+   ========================================================================== */
+
+#quard-loader {
+    background: url('img/black-trans.png') repeat;
+    height: 10px;
+    left: 0;
+    margin-top: -10px;
+    position: absolute;
+    top: 50%;
+    width: 0;
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+}
+
+#panel-window {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+#panel-window .panel-inner {
+    background: #000;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0.3;
+}
+
+#panel-window .panel-btm {
+    border-top: 1px solid #aaa;
+}
+
+#panel-window .panel-top {
+    border-bottom: 1px solid #aaa;
+}
+
+#panel-window .panel-btm.panel-closed {
+    border-top: none;
+}
+
+#panel-window .panel-top.panel-closed {
+    border-bottom: none;
 }
 
 

@@ -119,47 +119,41 @@
                 that[index] = value;
             });
 
-            // Load files and templates
-            that._loadFiles(function() {
-                
-                // Compute canvas width and height
-                var size_x = that.tile.size.split('x')[0];
-                var size_y = that.tile.size.split('x')[1];
-                that.width = (size_x * that.tile.width) + ((size_x - 1) * that.tile.x_space);
-                that.height = (size_y * that.tile.height) + ((size_y - 1) * that.tile.y_space);
+            // Compute canvas width and height
+            var size_x = that.tile.size.split('x')[0];
+            var size_y = that.tile.size.split('x')[1];
+            that.width = (size_x * that.tile.width) + ((size_x - 1) * that.tile.x_space);
+            that.height = (size_y * that.tile.height) + ((size_y - 1) * that.tile.y_space);
 
-                // Create canvas
-                var html = '<div id="' + that.el + '"></div>';
-                that.el = $(html).appendTo('body');
+            // Create canvas
+            var html = '<div id="' + that.el + '"></div>';
+            that.el = $(html).appendTo('body');
 
-                // Add background
-                $('body').css({
-                    background: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg) repeat',
-                    backgroundPosition: 'center 0'
-                });
-
-                // Style canvas
-                that.el.css({
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    width: that.width,
-                    height: that.height,
-                    marginLeft: (that.width / 2) * -1,
-                    marginTop: (that.height / 2) * -1
-                });
-
-                // Canvas offset
-                that.offset = that.el.offset();
-
-                // Render events
-                that._applyEvents();
-
-                // Call game start event
-                if ($.isFunction(that.gameStart) == true) {
-                    that.gameStart();
-                }
+            // Add background
+            $('body').css({
+                background: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg) repeat',
+                backgroundPosition: 'center 0'
             });
+
+            // Style canvas
+            that.el.css({
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: that.width,
+                height: that.height,
+                marginLeft: (that.width / 2) * -1,
+                marginTop: (that.height / 2) * -1
+            });
+
+            // Canvas offset
+            that.offset = that.el.offset();
+
+            // Render events
+            that._applyEvents();
+
+            // Load files and templates
+            that._loadFiles();
 
             return that;
         },
@@ -189,6 +183,7 @@
         // Create slots
         renderSlots: function(obj) {
             var that = this;
+            var count = 0;
 
             // Save settings for laters
             that.slotSettings = obj;
@@ -230,6 +225,35 @@
             
             // Call event for clicking slot
             $.each(that.slots, function(name, slot) {
+                var timeout = count * 100;
+
+                slot.el.css({ 
+                    top: slot.offset.top - $(document).height(),
+                    display: 'block' 
+                });
+
+                (function(timeout, slot, count) {
+                    setTimeout(function() {
+                        if (count == Object.keys(that.slots).length - 1) {
+                            slot.el.animate({
+                                top: slot.offset.top,
+                            }, 1000, function() {
+
+                                // Call event after slots are rendered
+                                if ($.isFunction(that.slotsRendered) == true) {
+                                    that.slotsRendered();
+                                }
+                            });
+                        } else {
+                            slot.el.animate({
+                                top: slot.offset.top,
+                                display: 'block'
+                            }, 1000);
+                        }
+                    }, timeout);
+                })(timeout, slot, count);
+                count++;
+
                 slot.el.on('click', function() {
                     if ($.isFunction(that.slotClicked) == true && that.rendered == true) {
                         that.slotClicked(slot);
@@ -375,7 +399,7 @@
         },
 
         // Undo last move
-        undoMove: function() {
+        undoLast: function() {
             var that = this;
 
             // Return if no moves registered
@@ -383,6 +407,30 @@
 
             // Get last move
             var move = that.moves[that.moves.length - 1];
+
+            switch(move.action) {
+                case 'switch': that._undoSwitch(move); break;
+                case 'checkIn': that._undoCheckIn(move); break;
+                case 'browse': that._undoBrowse(move); break;
+                case 'reset': that._undoReset(move); break;
+                case 'open': that._undoOpen(move); break;
+            }
+
+            // Remove last move
+            that.moves.pop();
+
+            // Call event for undoing of move
+            if ($.isFunction(that.moveUndid) == true && that.rendered == true) {
+                that.moveUndid(move);
+            }
+        },
+
+        // Undo a move
+        undoMove: function(move) {
+            var that = this;
+
+            // Return if no move is invalid
+            if (move == undefined) return;
 
             switch(move.action) {
                 case 'switch': that._undoSwitch(move); break;
@@ -544,7 +592,7 @@
             $.ajaxSetup({ cache: that.filecache });
 
             // Update theme css source
-            $('#themecss').attr('href', that.themes.dist + that.themes.current + '/style.css' + bust)
+            $('#quard-themecss').attr('href', that.themes.dist + that.themes.current + '/style.css' + bust)
 
             // Update background
             $('body').css({
@@ -567,16 +615,105 @@
             };
         },
 
-        // Load files and templates
-        _loadFiles: function(callback) {
+        // Add and open panel
+        openPanel: function(callback) {
             var that = this;
-            that._loadcount = 0;
 
-            // Size of templates plus the css file
-            var size = that.templates.list.length + 1;
+            // If panel is not present, add one
+            if (that._panel == undefined) {
+                var html = that.getTemplate('panel');
+                that._panel = $(html).appendTo('body');
+                var panel_top = that._panel.find('.panel-top');
+                var panel_btm = that._panel.find('.panel-btm');
+                var panel_inner = that._panel.find('.panel-inner');
+            }
 
-            // Default callback to empty function
-            if (callback == undefined) callback = function() {};
+            // Add background to top and btm
+            var style = $('body').attr('style');
+            var width = $(document).width();
+            var height = $(document).height() / 2;
+            panel_top.attr('style', style);
+            panel_btm.attr('style', style);
+
+            // Style top panel
+            panel_top.css({
+                position: 'absolute',
+                boxShadow: '0 15px 25px -20px #000',
+                width: width,
+                height: height,
+                top: 0,
+                left: 0
+            });
+
+            // Style btm panel
+            panel_btm.css({
+                backgroundPosition: 'center -' + height + 'px',
+                boxShadow: '0 -15px 25px -20px #000',
+                position: 'absolute',
+                width: width,
+                height: height,
+                top: height,
+                left: 0
+            });
+
+            // Animate and open panel
+            panel_top.removeClass('panel-closed');
+            panel_top.animate({ top: -100 }, 250, function() {
+                $(this).removeClass('panel-opened');
+            });
+
+            panel_btm.removeClass('panel-closed');
+            panel_btm.animate({ top: height + 100 }, 250, function() {
+                if (callback) callback();
+            });
+        },
+
+        // Close and remove panel
+        closePanel: function(callback) {
+            var that = this;
+            var panel_top = that._panel.find('.panel-top');
+            var panel_btm = that._panel.find('.panel-btm');
+            var width = $(document).width();
+            var height = $(document).height() / 2;
+
+            // Style top panel
+            panel_top.css({
+                boxShadow: 'none',
+            });
+
+            // Style btm panel
+            panel_btm.css({
+                boxShadow: 'none',
+            });
+
+            // Animate and open panel
+            panel_top.animate({ top: 0 }, 250, function() {
+                $(this).addClass('panel-closed');
+            });
+
+            panel_btm.animate({ top: height - 50 }, 250, function() {
+                $(this).addClass('panel-closed');
+
+                setTimeout(function() {
+                    if (callback) callback();
+                }, 200);
+
+                setTimeout(function() {
+                    that._panel.remove();
+                    delete that._panel;
+                }, 1000);
+            });
+        },
+
+        // Load files and templates
+        _loadFiles: function() {
+            var that = this;
+            that._loadCount = 0;
+
+            // Size of templates and themes
+            var template_size = that.templates.list.length + 1;
+            var theme_size = that.themes.list.length * 2;
+            that._loadSize = template_size + theme_size;
 
             // Set cache
             var bust = (that.filecache == false) ? '?bust=' + Math.random() : '';
@@ -589,35 +726,78 @@
                 that._templates[template] = {};
 
                 // Get template
-                (function(template, callback) {
+                (function(template) {
                     $.get(that.templates.dist + template + '.html', function(html) {
                         that._templates[template].html = html;
-                        that._loadcount++;
-                        if (that._loadcount == size) callback();
+                        that._fileLoaded();
                     });
-                })(template, callback);
+                })(template);
             };
 
             // Load theme css
             var head  = document.getElementsByTagName('head')[0];
+            var body  = document.getElementsByTagName('body')[0];
             var link  = document.createElement('link');
             link.rel  = 'stylesheet';
             link.type = 'text/css';
-            link.id = 'themecss';
+            link.id = 'quard-themecss';
             link.href = that.themes.dist + that.themes.current + '/style.css' + bust;
             head.appendChild(link);
             link.onload = function() {
-                that._loadcount++;
-                if (that._loadcount == size) callback();
+                that._fileLoaded();
             }
 
             // Preload theme background and slots images
+            var preload = document.createElement('div');
+            preload.id = 'quard-preload';
+            body.appendChild(preload);
+            $('#quard-preload').hide();
+
             for (var i = 0; i < that.themes.list.length; i++) {
                 var theme = that.themes.list[i];
+
+                // Load bg
                 var bg = new Image();
                 bg.src = that.themes.dist + theme + '/bg.jpg';
-                bg.src = that.themes.dist + theme + '/slots.png';
+                preload.appendChild(bg);
+                bg.onload = function() {
+                    that._fileLoaded();
+                }
+
+                // Load slots
+                var slots = new Image();
+                slots.src = that.themes.dist + theme + '/slots.png';
+                preload.appendChild(slots);
+                slots.onload = function() {
+                    that._fileLoaded();
+                }
             };
+        },
+
+        // If a file is loaded
+        _fileLoaded: function() {
+            var that = this;
+            that._loadCount++;
+            var percentage = that._loadCount / that._loadSize * 100;
+
+            if (that._loadCount == 1) {
+                $('body').append('<div id="quard-loader"></div>');
+                $('#quard-loader').css({ width: percentage + '%' });
+            }
+
+            if (that._loadCount == that._loadSize) {
+                $('#quard-preload').remove();
+            }
+
+            // Animate loader
+            $('#quard-loader').animate({
+                width: percentage + '%'
+            }, 'fast', function() {
+                if (percentage == 100) {
+                    $(this).remove();
+                    that.intro();
+                }
+            });
         },
 
         // Undo switch cards
@@ -982,17 +1162,6 @@
             // Uncascade cards
             that._maxUncascade();
 
-            // Cascade cards
-            if (origin != undefined) {
-                if (that.checkSuits != undefined) {
-                    setTimeout(function() {
-                        origin._maxCascade();
-                    }, that.anim.speed / 2);
-                } else {
-                    origin._maxCascade();
-                }
-            }
-
             // Iterate each card and add
             for (var i = 0; i < cards.length; i++) {
                 var card = cards[i];
@@ -1039,6 +1208,9 @@
                 var card = cards[i];
                 that._removeCard(card);
             };
+
+            // Cascade cards
+            that._maxCascade();
         },
 
         // Get cards
@@ -1583,11 +1755,11 @@
 
             // Set card info
             switch(that.num) {
-                case 1: that.value = 1; that.name = 'Ace'; break;
-                case 11: that.value = 10; that.name = 'Jack'; break;
-                case 12: that.value = 10; that.name = 'Queen'; break;
-                case 13: that.value = 10; that.name = 'King'; break;
-                default: that.value = that.name; that.name = that.num;
+                case '1': that.value = 1; that.name = 'Ace'; break;
+                case '11': that.value = 10; that.name = 'Jack'; break;
+                case '12': that.value = 10; that.name = 'Queen'; break;
+                case '13': that.value = 10; that.name = 'King'; break;
+                default: that.value = that.num; that.name = that.num;
             }
 
             // Set card color

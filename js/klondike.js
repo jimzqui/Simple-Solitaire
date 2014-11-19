@@ -1,14 +1,14 @@
 /**
- * JQcards - Solitaire
- * solitaire.js
+ * JQcards - Klondike
+ * klondike.js
  * (c) 2014, Jimbo Quijano
  */
 
 // Load dependencies
 define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Quard, Stack, Browse, Foundation, Column, Deck) {
 
-    // Create new Solitaire Class
-    var Solitaire = Quard.canvas.extend({
+    // Create new Klondike Class
+    var Klondike = Quard.canvas.extend({
 
         // Settings
         settings: {
@@ -19,7 +19,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                 x_space: 30,
                 y_space: 30
             },
-            el: 'solitaire'
+            el: 'klondike'
         },
 
         // File cache
@@ -28,7 +28,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         // Templates
         templates: {
             dist: 'quard/templates/',
-            list: ['intro', 'system', 'win']
+            list: ['intro', 'system', 'win', 'panel']
         },
 
         // Themes
@@ -42,22 +42,13 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         events: {
             'click .btn-start': 'start',
             'click .btn-restart': 'restart',
-            'click .btn-undo': 'undoMove',
+            'click .btn-undo': 'undoLast',
             'click .btn-themes': 'themesPane'
         },
 
         // Win condition
         winCondition: {
             'Foundation': 'full faceup'
-        },
-
-        // Start game
-        gameStart: function() {
-            var that = this;
-
-            // Show intro template
-            var html = that.getTemplate('intro');
-            $('body').append(html);
         },
 
         // Game ends
@@ -86,31 +77,37 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             });
         },
 
+        // Load intro
+        intro: function() {
+            var that = this;
+
+            // Show intro template
+            that.openPanel(function() {
+                var html = that.getTemplate('intro');
+                $('body').append(html);
+            });
+        },
+
         // Start canvas
         start: function() {
             var that = this;
 
-            // Fadeout intro and start rendering stuffs
+            // Start rendering stuffs
             $('#intro').fadeOut('fast', function() {
                 $(this).remove();
 
-                // Create slots
-                that.renderSlots({
-                    'Deck': { slot: Deck, tile: '3-3' },
-                    'Stack': { slot: Stack, tile: '0-0' },
-                    'Browse': { slot: Browse, tile: '1-0' },
-                    'Foundation': { slot: Foundation, tile: ['3-0', '4-0', '5-0', '6-0'] },
-                    'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
-                });
+                // Close panel
+                that.closePanel(function() {
 
-                // Render cards
-                that.renderCards('Deck', {
-                    'Stack': 24,
-                    'Column': [1, 2, 3, 4, 5, 6, 7]
+                    // Create slots
+                    that.renderSlots({
+                        'Deck': { slot: Deck, tile: '3-3' },
+                        'Stack': { slot: Stack, tile: '0-0' },
+                        'Browse': { slot: Browse, tile: '1-0' },
+                        'Foundation': { slot: Foundation, tile: ['3-0', '4-0', '5-0', '6-0'] },
+                        'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
+                    });
                 });
-
-                // Hide deck slot
-                that.slots['Deck'].el.hide();
             });
         },
 
@@ -141,6 +138,20 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                 that.resetCards();
                 that.stopTimer();
             });
+        },
+
+        // After slots are created
+        slotsRendered: function() {
+            var that = this;
+
+            // Render cards
+            that.renderCards('Deck', {
+                'Stack': 24,
+                'Column': [1, 2, 3, 4, 5, 6, 7]
+            });
+
+            // Hide deck slot
+            that.slots['Deck'].el.hide();
         },
 
         // After cards are placed
@@ -244,5 +255,5 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
     });
 
     // Return class
-    return Solitaire;
+    return Klondike;
 });
