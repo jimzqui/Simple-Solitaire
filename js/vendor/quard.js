@@ -695,7 +695,7 @@
             if (that.rendered == true) {
                 that.el.animate({
                     top: that.offset.top - that._panelSettings.size
-                });
+                }, that._panelSettings.animate);
             }
         },
 
@@ -740,7 +740,7 @@
             if (that.rendered == true) {
                 that.el.animate({
                     top: that.offset.top
-                });
+                }, that._panelSettings.animate);
             }
         },
 
