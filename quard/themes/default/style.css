@@ -144,49 +144,24 @@ body {
 }
 
 #themespane {
-    left: 0;
-    bottom: 50px;
+    bottom: 75px;
     display: none;
+    left: 0;
 }
 
 .pane {
-    background: url("img/black-trans.png") repeat scroll 0 0;
-    border: 1px solid #aaa;
     border-radius: 5px;
-    bottom: 60px;
+    bottom: 73px;
     left: 0;
-    position: absolute;
-    width: 265px;
-    z-index: 1;
     padding: 15px;
+    position: absolute;
+    width: 675px;
+    z-index: 1;
 }
 
 .pane-content {
     position: relative;
     z-index: 2;
-}
-
-.pane-arrow {
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid #aaa;
-    bottom: -8px;
-    height: 0;
-    left: 22px;
-    margin-left: -4px;
-    position: absolute;
-    width: 0;
-}
-
-.pane-arrow span {
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 6px solid #2f623a;
-    height: 0;
-    left: -6px;
-    position: absolute;
-    top: -8px;
-    width: 0;
 }
 
 .pane ul {
@@ -197,22 +172,24 @@ body {
 
 .pane ul li {
     display: block;
-    margin: 5px 0;
+    padding: 10px;
     cursor: pointer;
     color: #ddd;
+    opacity: 0.7;
 }
 
 .pane ul li:hover, .pane ul li.current {
     color: #fff;
+    opacity: 1;
 }
 
 .pane ul li i {
-    background-size: 25px;
+    background-size: 50px;
     border: 1px solid #aaa;
     float: left;
-    height: 25px;
-    margin: 0 15px 0 0;
-    width: 25px;
+    height: 50px;
+    margin: 0 10px 0 0;
+    width: 50px;
 }
 
 .pane ul li:hover i, .pane ul li.current i {

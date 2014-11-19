@@ -138,8 +138,9 @@
             // Style canvas
             that.el.css({
                 position: 'absolute',
-                top: '50%',
-                left: '50%',
+                top: $(document).height() / 2,
+                left: $(document).width() / 2,
+                zIndex: '1',
                 width: that.width,
                 height: that.height,
                 marginLeft: (that.width / 2) * -1,
@@ -147,7 +148,10 @@
             });
 
             // Canvas offset
-            that.offset = that.el.offset();
+            that.offset = {
+                top: $(document).height() / 2,
+                left: $(document).width() / 2 
+            };
 
             // Render events
             that._applyEvents();
@@ -594,6 +598,10 @@
                 backgroundPosition: 'center 0'
             });
 
+            $('.panel-top, .panel-btm').css({
+                backgroundImage: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg)'
+            });
+
             // Reload all templates
             that._templates = {};
             for (var i = 0; i < that.templates.list.length; i++) {
@@ -610,8 +618,15 @@
         },
 
         // Add and open panel
-        openPanel: function(callback) {
+        openPanel: function(options, callback) {
             var that = this;
+
+            // Construct final settings
+            that._panelSettings = $.extend({}, {
+                cut: $(document).height() / 2,
+                size: 100,
+                animate: 250
+            }, options);
 
             // If panel is not present, add one
             if (that._panel == undefined) {
@@ -625,41 +640,61 @@
             // Add background to top and btm
             var style = $('body').attr('style');
             var width = $(document).width();
-            var height = $(document).height() / 2;
+            var top_height = that._panelSettings.cut;
+            var btm_height = $(document).height() - top_height;
             panel_top.attr('style', style);
             panel_btm.attr('style', style);
+
+            // Style panel body
+            that._panel.css({
+                width: $(document).width(),
+                height: $(document).height(),
+                overflow: 'hidden',
+                position: 'absolute',
+                left: 0,
+                top: 0
+            });
 
             // Style top panel
             panel_top.css({
                 position: 'absolute',
                 boxShadow: '0 15px 25px -20px #000',
                 width: width,
-                height: height,
+                height: top_height,
                 top: 0,
                 left: 0
             });
 
             // Style btm panel
             panel_btm.css({
-                backgroundPosition: 'center -' + height + 'px',
+                backgroundPosition: 'center -' + top_height + 'px',
                 boxShadow: '0 -15px 25px -20px #000',
                 position: 'absolute',
                 width: width,
-                height: height,
-                top: height,
+                height: btm_height,
+                top: top_height,
                 left: 0
             });
 
             // Animate and open panel
             panel_top.removeClass('panel-closed');
-            panel_top.animate({ top: -100 }, 250, function() {
+            panel_top.animate({ top: that._panelSettings.size * -1 }, 
+                that._panelSettings.animate, function() {
                 $(this).removeClass('panel-opened');
             });
 
             panel_btm.removeClass('panel-closed');
-            panel_btm.animate({ top: height + 100 }, 250, function() {
+            panel_btm.animate({ top: top_height + that._panelSettings.size }, 
+                that._panelSettings.animate, function() {
                 if (callback) callback();
             });
+
+            // Move canvas up
+            if (that.rendered == true) {
+                that.el.animate({
+                    top: that.offset.top - that._panelSettings.size
+                });
+            }
         },
 
         // Close and remove panel
@@ -667,8 +702,7 @@
             var that = this;
             var panel_top = that._panel.find('.panel-top');
             var panel_btm = that._panel.find('.panel-btm');
-            var width = $(document).width();
-            var height = $(document).height() / 2;
+            var height = panel_btm.offset().top;
 
             // Style top panel
             panel_top.css({
@@ -681,11 +715,13 @@
             });
 
             // Animate and open panel
-            panel_top.animate({ top: 0 }, 250, function() {
+            panel_top.animate({ top: 0 }, 
+                that._panelSettings.animate, function() {
                 $(this).addClass('panel-closed');
             });
 
-            panel_btm.animate({ top: height - 50 }, 250, function() {
+            panel_btm.animate({ top: panel_btm.offset().top - that._panelSettings.size }, 
+                that._panelSettings.animate, function() {
                 $(this).addClass('panel-closed');
 
                 setTimeout(function() {
@@ -697,6 +733,13 @@
                     delete that._panel;
                 }, 1000);
             });
+
+            // Move canvas back
+            if (that.rendered == true) {
+                that.el.animate({
+                    top: that.offset.top
+                });
+            }
         },
 
         // Load files and templates

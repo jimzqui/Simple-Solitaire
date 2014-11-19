@@ -82,7 +82,11 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             var that = this;
 
             // Show intro template
-            that.openPanel(function() {
+            that.openPanel({
+                cut: $(document).height() / 2,
+                size: 100,
+                animate: 250
+            }, function() {
                 var html = that.getTemplate('intro');
                 $('body').append(html);
             });
@@ -237,12 +241,21 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
 
             // Hide/display pane
             if ($('#themespane').is(':visible')) {
-                $('#themespane').fadeOut();
+                $('#themespane').fadeOut('fast', function() {
+                     that.closePanel();
+                });
             } else {
-                $('#themespane').fadeIn();
+                that.openPanel({
+                    cut: ($(document).height() / 4) * 3,
+                    size: 100,
+                    animate: 250
+                }, function() {
+                    $('#themespane').fadeIn();
+                });
             }
 
             // Change theme on item click
+            $('.theme-item').unbind('click');
             $('.theme-item').click(function() {
                 if ($(this).is('.current')) return;
                 that.changeTheme($(this).data('theme'));
