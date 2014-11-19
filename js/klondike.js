@@ -59,12 +59,13 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             $('#system').fadeOut('fast', function() {
                 $(this).remove();
 
-                // Hide columns
+                // Hide all slots
                 $.each(that.slots, function(name, slot) {
-                    if (slot.group == 'Column') {
-                        slot.el.hide();
-                    }
+                    slot.el.hide();
                 });
+
+                // Destroy all cards
+                that.destroyCards();
 
                 // Load win template
                 var html = that.getTemplate('win', {
@@ -119,12 +120,13 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         restart: function() {
             var that = this;
 
-            // Show columns again
+            // Show slots again
             $.each(that.slots, function(name, slot) {
-                if (slot.group == 'Column') {
-                    slot.el.show();
-                }
+                slot.el.show();
             });
+
+            // Hide deck slot
+            that.slots['Deck'].el.hide();
 
             // Hide and remove win template
             if ($('#win').length == 0) {

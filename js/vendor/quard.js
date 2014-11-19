@@ -632,10 +632,12 @@
             if (that._panel == undefined) {
                 var html = that.getTemplate('panel');
                 that._panel = $(html).appendTo('body');
-                var panel_top = that._panel.find('.panel-top');
-                var panel_btm = that._panel.find('.panel-btm');
-                var panel_inner = that._panel.find('.panel-inner');
             }
+
+            // Get top and btm panels
+            var panel_top = that._panel.find('.panel-top');
+            var panel_btm = that._panel.find('.panel-btm');
+            var panel_inner = that._panel.find('.panel-inner');
 
             // Add background to top and btm
             var style = $('body').attr('style');
