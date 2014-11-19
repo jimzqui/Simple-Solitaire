@@ -650,6 +650,9 @@
             panel_top.attr('style', style);
             panel_btm.attr('style', style);
 
+            // Style all pane class
+            $('.pane').css({ top: top_height - (that._panelSettings.size) });
+
             // Style panel body
             that._panel.css({
                 width: $(document).width(),

@@ -143,20 +143,15 @@ body {
     color: #fff;
 }
 
-#themespane {
-    bottom: 75px;
-    display: none;
-    left: 0;
-}
-
 .pane {
+    display: none;
     border-radius: 5px;
-    bottom: 73px;
-    left: 0;
-    padding: 15px;
+    left: 50%;
+    padding: 30px;
     position: absolute;
     width: 675px;
     z-index: 1;
+    margin-left: -335px;
 }
 
 .pane-content {
@@ -236,6 +231,7 @@ body {
     position: absolute;
     top: 50%;
     width: 320px;
+    z-index: 2;
 }
 
 #win h3 {
