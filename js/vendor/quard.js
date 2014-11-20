@@ -140,11 +140,11 @@
                 position: 'absolute',
                 top: $(document).height() / 2,
                 left: $(document).width() / 2,
-                zIndex: '1',
                 width: that.width,
                 height: that.height,
                 marginLeft: (that.width / 2) * -1,
-                marginTop: (that.height / 2) * -1
+                marginTop: (that.height / 2) * -1,
+                zIndex: 2
             });
 
             // Canvas offset
@@ -158,6 +158,13 @@
 
             // Load files and templates
             that._loadFiles();
+
+            // Create new panel
+            that.panel = new Quard.panel({
+                size: 100,
+                animate: 250,
+                canvas: that
+            });
 
             return that;
         },
@@ -232,13 +239,13 @@
                 count++;
 
                 slot.el.css({ 
-                    left: slot.offset.left + $(document).width()
+                    top: slot.offset.top - $(document).height()
                 });
 
                 if (count == Object.keys(that.slots).length) {
                     slot.el.animate({
-                        left: slot.offset.left,
-                    }, 1000, function() {
+                        top: slot.offset.top,
+                    }, 500, function() {
 
                         // Call event after slots are rendered
                         if ($.isFunction(that.slotsRendered) == true) {
@@ -247,9 +254,8 @@
                     });
                 } else {
                     slot.el.animate({
-                        left: slot.offset.left,
-                        display: 'block'
-                    }, 1000);
+                        top: slot.offset.top
+                    }, 500);
                 }
 
                 slot.el.on('click', function() {
@@ -552,15 +558,45 @@
         },
 
         // Start timer
-        startTimer: function(el) {
+        startTimer: function(selector) {
             var that = this;
+            that._timerEl = $(selector);
 
             function timer() {
                 if (that._timerElapse == undefined) { that._timerElapse = 0;}
                 that._timerElapse += 1000;
 
                 // Display time
-                $(el).html(that._constructTime(that._timerElapse));
+                that._timerEl.html(that._constructTime(that._timerElapse));
+            }
+
+            // Timer interval
+            that._timerInt = setInterval(timer, 1000);
+        },
+
+        // Pause timer
+        pauseTimer: function() {
+            var that = this;
+            var elapse = that._timerElapse;
+
+            // Clear timer
+            clearInterval(that._timerInt);
+
+            // Final time
+            return that._constructTime(elapse);
+        },
+
+        // Unpause timer
+        unpauseTimer: function() {
+            var that = this;
+            if (that._timerEl == undefined) return;
+
+            function timer() {
+                if (that._timerElapse == undefined) { that._timerElapse = 0;}
+                that._timerElapse += 1000;
+
+                // Display time
+                that._timerEl.html(that._constructTime(that._timerElapse));
             }
 
             // Timer interval
@@ -615,149 +651,6 @@
                     });
                 })(template);
             };
-        },
-
-        // Add and open panel
-        openPanel: function(options, callback) {
-            var that = this;
-
-            // Return if still animating
-            if (that._panelAnimating == true) return;
-
-            // Construct final settings
-            that._panelSettings = $.extend({}, {
-                cut: $(document).height() / 2,
-                size: 100,
-                animate: 250
-            }, options);
-
-            // If panel is not present, add one
-            if (that._panel == undefined) {
-                var html = that.getTemplate('panel');
-                that._panel = $(html).appendTo('body');
-            }
-
-            // Get top and btm panels
-            var panel_top = that._panel.find('.panel-top');
-            var panel_btm = that._panel.find('.panel-btm');
-            var panel_inner = that._panel.find('.panel-inner');
-
-            // Add background to top and btm
-            var style = $('body').attr('style');
-            var width = $(document).width();
-            var top_height = that._panelSettings.cut;
-            var btm_height = $(document).height() - top_height;
-            panel_top.attr('style', style);
-            panel_btm.attr('style', style);
-
-            // Style all pane class
-            $('.pane').css({ top: top_height - (that._panelSettings.size) });
-
-            // Style panel body
-            that._panel.css({
-                width: $(document).width(),
-                height: $(document).height(),
-                overflow: 'hidden',
-                position: 'absolute',
-                left: 0,
-                top: 0
-            });
-
-            // Style top panel
-            panel_top.css({
-                position: 'absolute',
-                boxShadow: '0 15px 25px -20px #000',
-                width: width,
-                height: top_height,
-                top: 0,
-                left: 0
-            });
-
-            // Style btm panel
-            panel_btm.css({
-                backgroundPosition: 'center -' + top_height + 'px',
-                boxShadow: '0 -15px 25px -20px #000',
-                position: 'absolute',
-                width: width,
-                height: btm_height,
-                top: top_height,
-                left: 0
-            });
-
-            // Animate and open panel
-            that._panelAnimating = true;
-
-            panel_top.removeClass('panel-closed');
-            panel_top.animate({ top: that._panelSettings.size * -1 }, 
-                that._panelSettings.animate, function() {
-                $(this).removeClass('panel-opened');
-            });
-
-            panel_btm.removeClass('panel-closed');
-            panel_btm.animate({ top: top_height + that._panelSettings.size }, 
-                that._panelSettings.animate, function() {
-                that._panelAnimating = false;
-                if (callback) callback();
-            });
-
-            // Move canvas up
-            if (that.rendered == true) {
-                that.el.animate({
-                    top: that.offset.top - that._panelSettings.size
-                }, that._panelSettings.animate);
-            }
-        },
-
-        // Close and remove panel
-        closePanel: function(callback) {
-            var that = this;
-
-            // Return if still animating
-            if (that._panelAnimating == true) return;
-
-            // Return if panel is already removed
-            if (that._panel == undefined) return;
-
-            var panel_top = that._panel.find('.panel-top');
-            var panel_btm = that._panel.find('.panel-btm');
-            var height = panel_btm.offset().top;
-
-            // Style top panel
-            panel_top.css({
-                boxShadow: 'none',
-            });
-
-            // Style btm panel
-            panel_btm.css({
-                boxShadow: 'none',
-            });
-
-            // Animate and close panel
-            that._panelAnimating = true;
-
-            panel_top.animate({ top: 0 }, 
-                that._panelSettings.animate, function() {
-                $(this).addClass('panel-closed');
-            });
-
-            panel_btm.animate({ top: panel_btm.offset().top - that._panelSettings.size }, 
-                that._panelSettings.animate, function() {
-                $(this).addClass('panel-closed');
-
-                setTimeout(function() {
-                    that._panelAnimating = false;
-                    that._panel.remove();
-                    delete that._panel;
-                    if (callback) callback();
-                }, 200);
-            });
-
-            // Move canvas back
-            if (that.rendered == true) {
-                that.el.animate({
-                    top: that.offset.top
-                }, that._panelSettings.animate);
-            }
         },
 
         // Load files and templates
@@ -836,8 +729,17 @@
             var percentage = that._loadCount / that._loadSize * 100;
 
             if (that._loadCount == 1) {
-                $('body').append('<div id="quard-loader"></div>');
-                $('#quard-loader').css({ width: percentage + '%' });
+                var loader = $('<div id="quard-loader"></div>').appendTo('body');
+                $('#quard-loader').css({
+                    width: percentage + '%',
+                    width: 0,
+                    height: 10,
+                    left: 0,
+                    marginTop: '-10px',
+                    position: 'absolute',
+                    top: '50%',
+                    zIndex: 9
+                });
             }
 
             if (that._loadCount == that._loadSize) {
@@ -2268,6 +2170,214 @@
 
             // Uncollide
             slot.collide = null;
+        }
+    });
+
+    // Quard Panel Class
+    Quard.panel = Quard.class.extend({
+
+        // Settings
+        settings: {
+            height: 100,
+            animate: 250,
+            cut: $(document).height() / 2
+        },
+
+        // Initialize
+        init: function(options) {
+            var that = this;
+
+            // Construct final settings
+            var settings = $.extend({}, that.settings, options);
+
+            // Map settings to root
+            $.each(settings, function(index, value) {
+                that[index] = value;
+            });
+
+            // Construct panel
+            var html = '<div class="panel-window">' +
+            '<div class="panel-inner"></div>' +
+            '<div class="panel-top"></div>' +
+            '<div class="panel-btm"></div>' +
+            '<div class="panel-content"></div></div>';
+            that.el = $(html).appendTo('body');
+
+            // Get top and btm panels
+            var panel_top = that.el.find('.panel-top');
+            var panel_btm = that.el.find('.panel-btm');
+            var panel_inner = that.el.find('.panel-inner');
+            var panel_content = that.el.find('.panel-content');
+            that.el.addClass('panel-closed');
+
+            // Add background to top and btm
+            var style = $('body').attr('style');
+            panel_top.attr('style', style);
+            panel_btm.attr('style', style);
+
+            // Style panel body
+            that.el.css({
+                width: $(document).width(),
+                height: $(document).height(),
+                overflow: 'hidden',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                zIndex: 1
+            });
+
+            // Style panel inner
+            panel_inner.css({
+                position: 'absolute',
+                background: '#000',
+                width: '100%',
+                height: '100%',
+                left: 0,
+                top: 0,
+                opacity: 0.3
+            });
+
+            // Style panel content
+            panel_content.css({ 
+                width: that.canvas.width,
+                height: that.height * 2,
+                top: that.cut - (that.height),
+                left: that.canvas.offset.left / 2,
+                position: 'absolute',
+                zIndex: 1
+            });
+
+            // Style top panel
+            panel_top.css({
+                position: 'absolute',
+                width: $(document).width(),
+                height: that.cut,
+                top: 0,
+                left: 0,
+                zIndex: 2
+            });
+
+            // Style btm panel
+            panel_btm.css({
+                backgroundPosition: 'center -' + that.cut + 'px',
+                position: 'absolute',
+                width: $(document).width(),
+                height: $(document).height() - that.cut,
+                top: that.cut,
+                left: 0,
+                zIndex: 2
+            });
+
+            return that;
+        },
+
+        // Add content
+        content: function(content) {
+            var that = this;
+            var panel_content = that.el.find('.panel-content');
+
+            // Insert content to panel
+            var content = $(content).appendTo(panel_content.empty());
+            content.show();
+        },
+
+        // Open panel
+        open: function(callback) {
+            var that = this;
+
+            // Return if still animating
+            if (that.animating == true) return;
+
+            // Return is already opened
+            if (that.status == 'opened') {
+                if (callback) callback();
+                return;
+            }
+
+            // Get top and btm panels
+            var panel_top = that.el.find('.panel-top');
+            var panel_btm = that.el.find('.panel-btm');
+            var panel_inner = that.el.find('.panel-inner');
+            var panel_content = that.el.find('.panel-content');
+            var fade = (that.canvas.rendered == true) ? 'fast' : 0;
+
+            // If canvas is not yet rendered
+            that.canvas.el.fadeOut(fade, function() {
+
+                // Add box shadows
+                panel_top.css({ boxShadow: '0 15px 25px -20px #000' });
+                panel_btm.css({ boxShadow: '0 -15px 25px -20px #000' });
+
+                // Animate and open panel
+                that.animating = true;
+                that.el.removeClass('panel-closed');
+                panel_top.animate({ top: that.height * -1 }, 
+                    that.animate, function() {
+                    that.animating = false;
+                    that.status = 'opened';
+                    that.el.addClass('panel-opened');
+                });
+
+                panel_btm.animate({ top: that.cut + that.height }, 
+                    that.animate, function() {
+                    if (callback) callback();
+                });
+            });
+        },
+
+        // Close panel
+        close: function(callback) {
+            var that = this;
+
+            // Return if still animating
+            if (that.animating == true) return;
+
+            // Return is already closed
+            if (that.status == 'closed') {
+                if (callback) callback();
+                return;
+            }
+
+            // Get top and btm panels
+            var panel_top = that.el.find('.panel-top');
+            var panel_btm = that.el.find('.panel-btm');
+            var panel_inner = that.el.find('.panel-inner');
+            var panel_content = that.el.find('.panel-content');
+
+            // Style top panel
+            panel_top.css({
+                boxShadow: 'none'
+            });
+
+            // Style btm panel
+            panel_btm.css({
+                boxShadow: 'none'
+            });
+
+            // Animate and close panel
+            that.animating = true;
+            that.el.removeClass('panel-opened');
+            panel_top.animate({ top: 0 }, 
+                that.animate, function() {
+                that.animating = false;
+                that.status = 'closed';
+                that.el.addClass('panel-closed');
+            });
+
+            panel_btm.animate({ top: panel_btm.offset().top - that.height }, 
+                that.animate, function() {
+
+                // Display canvas back
+                that.canvas.el.fadeIn('fast', function() {
+                    if (callback) callback();
+                });
+            });
+        },
+
+        // Destroy panel
+        destroy: function() {
+            var that = this;
+            that.el.remove();
         }
     });
 

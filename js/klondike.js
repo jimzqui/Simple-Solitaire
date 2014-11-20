@@ -28,7 +28,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         // Templates
         templates: {
             dist: 'quard/templates/',
-            list: ['intro', 'system', 'win', 'panel']
+            list: ['intro', 'system', 'win', 'themes']
         },
 
         // Themes
@@ -58,24 +58,17 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
 
             // Hide system btns
             $('#system').fadeOut('fast', function() {
-                $(this).remove();
 
-                // Hide all slots
-                $.each(that.slots, function(name, slot) {
-                    slot.el.hide();
-                });
-
-                // Destroy all cards
+                // Destroy cards
                 that.destroyCards();
 
-                // Load win template
+                // Display win in panel
                 var html = that.getTemplate('win', {
                     time: time,
                     moves: moves
                 });
-
-                // Display win template
-                $('body').append(html);
+                that.panel.content(html);
+                that.panel.open();
             });
         },
 
@@ -83,37 +76,32 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         intro: function() {
             var that = this;
 
-            // Show intro template
-            that.openPanel({
-                cut: $(document).height() / 2,
-                size: 100,
-                animate: 250
-            }, function() {
-                var html = that.getTemplate('intro');
-                $('body').append(html);
-            });
+            // Display intro in panel
+            var html = that.getTemplate('intro');
+            that.panel.content(html);
+            that.panel.open();
         },
 
         // Start canvas
         start: function() {
             var that = this;
 
-            // Start rendering stuffs
-            $('#intro').fadeOut('fast', function() {
-                $(this).remove();
+            // Close panel
+            that.panel.close(function() {
 
-                // Close panel
-                that.closePanel(function() {
-
-                    // Create slots
-                    that.renderSlots({
-                        'Deck': { slot: Deck, tile: '3-3' },
-                        'Stack': { slot: Stack, tile: '0-0' },
-                        'Browse': { slot: Browse, tile: '1-0' },
-                        'Foundation': { slot: Foundation, tile: ['3-0', '4-0', '5-0', '6-0'] },
-                        'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
-                    });
+                // Create slots
+                that.renderSlots({
+                    'Deck': { slot: Deck, tile: '3-3' },
+                    'Stack': { slot: Stack, tile: '0-0' },
+                    'Browse': { slot: Browse, tile: '1-0' },
+                    'Foundation': { slot: Foundation, tile: ['3-0', '4-0', '5-0', '6-0'] },
+                    'Column': { slot: Column, tile: ['0-1', '1-1', '2-1', '3-1', '4-1', '5-1', '6-1'] }
                 });
+
+                // Display system template
+                var html = that.getTemplate('system');
+                var block = $(html).appendTo('body');
+                block.animate({ bottom: 0 });
             });
         },
 
@@ -121,29 +109,11 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         restart: function() {
             var that = this;
 
-            // Show slots again
-            $.each(that.slots, function(name, slot) {
-                slot.el.show();
-            });
-
-            // Hide deck slot
-            that.slots['Deck'].el.hide();
-
-            // Hide and remove win template
-            if ($('#win').length == 0) {
-
-                // Reset cards
+            // Close panel
+            that.panel.close(function() {
                 that.resetCards();
                 that.stopTimer();
-                return;
-            }
-
-            $('#win').fadeOut('fast', function() {
-                $(this).remove();
-
-                // Reset cards
-                that.resetCards();
-                that.stopTimer();
+                $('#system').fadeIn('fast');
             });
         },
 
@@ -181,12 +151,9 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                 }
             });
 
-            // Display system btns
-            var html = that.getTemplate('system');
-
-            if ($('#system').length == 0) {
-                $('body').append(html);
-            }
+            // Display themes in panel
+            var html = that.getTemplate('themes');
+            that.panel.content(html);
 
             // Start timer
             that.startTimer('#timer');
@@ -242,19 +209,13 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
         themesPane: function() {
             var that = this;
 
-            // Hide/display pane
-            if ($('#themespane').is(':visible')) {
-                $('#themespane').fadeOut('fast', function() {
-                     that.closePanel();
-                });
+            // Open/close panel
+            if (that.panel.status == 'opened') {
+                that.panel.close();
+                that.unpauseTimer();
             } else {
-                that.openPanel({
-                    cut: ($(document).height() / 4) * 3,
-                    size: 100,
-                    animate: 250
-                }, function() {
-                    $('#themespane').fadeIn();
-                });
+                that.panel.open();
+                that.pauseTimer();
             }
         },
 

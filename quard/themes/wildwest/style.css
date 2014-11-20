@@ -59,47 +59,23 @@ body {
 
 #quard-loader {
     background: url('img/black-trans.png') repeat;
-    height: 10px;
-    left: 0;
-    margin-top: -10px;
-    position: absolute;
-    top: 50%;
-    width: 0;
     border-top: 1px solid #aaa;
     border-bottom: 1px solid #aaa;
 }
 
-#panel-window {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
-#panel-window .panel-inner {
-    background: #000;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0.3;
-}
-
-#panel-window .panel-btm {
+.panel-btm {
     border-top: 1px solid #aaa;
 }
 
-#panel-window .panel-top {
+.panel-top {
     border-bottom: 1px solid #aaa;
 }
 
-#panel-window .panel-btm.panel-closed {
+.panel-closed .panel-btm {
     border-top: none;
 }
 
-#panel-window .panel-top.panel-closed {
+.panel-closed .panel-top {
     border-bottom: none;
 }
 
@@ -111,7 +87,7 @@ body {
 #system {
     background: url('img/black-trans.png') repeat;
     border: 1px solid #aaa;
-    bottom: 0;
+    bottom: -40px;
     height: 40px;
     left: 50%;
     position: absolute;
@@ -143,29 +119,22 @@ body {
     color: #fff;
 }
 
-.pane {
-    display: none;
-    border-radius: 5px;
-    left: 50%;
+#themespane {
     padding: 30px;
-    position: absolute;
-    width: 675px;
-    z-index: 1;
-    margin-left: -335px;
 }
 
-.pane-content {
+#themespane .pane-content {
     position: relative;
     z-index: 2;
 }
 
-.pane ul {
+#themespane ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.pane ul li {
+#themespane ul li {
     display: block;
     padding: 10px;
     cursor: pointer;
@@ -173,12 +142,12 @@ body {
     opacity: 0.7;
 }
 
-.pane ul li:hover, .pane ul li.current {
+#themespane ul li:hover, #themespane ul li.current {
     color: #fff;
     opacity: 1;
 }
 
-.pane ul li i {
+#themespane ul li i {
     background-size: 50px;
     border: 1px solid #aaa;
     float: left;
@@ -187,7 +156,7 @@ body {
     width: 50px;
 }
 
-.pane ul li:hover i, .pane ul li.current i {
+#themespane ul li:hover i, #themespane ul li.current i {
     border: 1px solid #eaeaea;
 }
 
@@ -221,13 +190,10 @@ body {
    ========================================================================== */
 
 #win {
-    background: url("img/black-trans.png") repeat scroll 0 0;
-    border-bottom: 2px solid #aaa;
-    border-top: 2px solid #aaa;
     color: #fff;
     left: 50%;
     margin: -100px 0 0 -160px;
-    padding: 15px 70px;
+    padding: 0 70px;
     position: absolute;
     top: 50%;
     width: 320px;
@@ -242,17 +208,32 @@ body {
 #win .row {
     border-top: 1px solid #aaa;
     padding: 10px 0;
+    margin: 0 5px;
 }
 
-#win .block {
+#win .btn-restart {
     background: url("img/black-trans.png") repeat scroll 0 0;
+    border-radius: 3px;
+    border: 1px solid #aaa;
     margin-bottom: 15px;
-    padding: 10px;
+    padding: 8px;
     text-align: center;
-}
-
-#win .block .btn-restart {
-    color: #fff;
+    display: block;
+    color: #ddd;
     cursor: pointer;
     text-decoration: none;
+}
+
+#win .btn-restart:hover {
+    border: 1px solid #fff;
+    color: #fff;
+    border: 1px solid #fff;
+}
+
+.nomargin {
+    margin: 0 !important;
+}
+
+.nopadding {
+    padding: 0 !important;
 }
