@@ -102,6 +102,7 @@
                 x_space: 30,
                 y_space: 30
             },
+            body: 'body',
             el: 'canvas'
         },
 
@@ -127,10 +128,10 @@
 
             // Create canvas
             var html = '<div id="' + that.el + '"></div>';
-            that.el = $(html).appendTo('body');
+            that.el = $(html).appendTo(that.body);
 
             // Add background
-            $('body').css({
+            $(that.body).css({
                 background: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg) repeat',
                 backgroundPosition: 'center 0'
             });
@@ -629,7 +630,7 @@
             $('#quard-themecss').attr('href', that.themes.dist + that.themes.current + '/style.css' + bust)
 
             // Update background
-            $('body').css({
+            $(that.body).css({
                 background: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg) repeat',
                 backgroundPosition: 'center 0'
             });
@@ -684,7 +685,7 @@
 
             // Load theme css
             var head  = document.getElementsByTagName('head')[0];
-            var body  = document.getElementsByTagName('body')[0];
+            var body  = document.getElementsByTagName(that.body)[0];
             var link  = document.createElement('link');
             link.rel  = 'stylesheet';
             link.type = 'text/css';
@@ -729,7 +730,7 @@
             var percentage = that._loadCount / that._loadSize * 100;
 
             if (that._loadCount == 1) {
-                var loader = $('<div id="quard-loader"></div>').appendTo('body');
+                var loader = $('<div id="quard-loader"></div>').appendTo(that.body);
                 $('#quard-loader').css({
                     width: percentage + '%',
                     width: 0,
@@ -747,7 +748,7 @@
             }
 
             // Animate loader
-            $('#quard-loader').animate({
+            $('#quard-loader').stop().animate({
                 width: percentage + '%'
             }, 'fast', function() {
                 if (percentage == 100) {
@@ -852,7 +853,7 @@
                 var action = value;
 
                 // Bind event to elem
-                $('body').on(event, elem, function(e) {
+                $(that.body).on(event, elem, function(e) {
                     that[action]($(this));
                 });
             });
@@ -1143,7 +1144,10 @@
                             }
                         });
                     } else {
-                        that._addCard(card);
+                        that._addCard(card, function() {
+                            delete card.batch_count;
+                            delete that.batch;
+                        });
                     }
                 })(i, card, callback);
             };
@@ -1856,6 +1860,11 @@
 
             // Flip card
             that.flip(speed, 'open');
+
+            // Call flip event
+            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
+                that.canvas.cardFlipped('open', that);
+            }
         },
 
         // Close card
@@ -1864,6 +1873,11 @@
 
             // Flip card
             that.flip(speed, 'close');
+
+            // Call flip event
+            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
+                that.canvas.cardFlipped('close', that);
+            }
         },
 
         // Flip card
@@ -1902,29 +1916,27 @@
                 transformStyle: 'preserve-3d',
                 transform: 'rotateY(' + rotate + ')'
             });
-
-            // Call flip event
-            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
-                that.canvas.cardFlipped(type, that);
-            }
         },
 
         // CheckIn card
-        checkIn: function(from_collide) {
+        checkIn: function(from_drag) {
             var that = this;
             var switched = false;
 
-            // Avoid running both switch and checkIn
-            if (that.canvas.switching == true) return;
+            // Check if card was just returned
+            if (that.returnedCheckin == true) {
+                delete that.returnedCheckin;
+                return false;
+            }
 
-            // Check for auto checkIn after return
-            if (that._autoCheckIn == false) return that._autoCheckIn = true;
+            // Avoid running both switch and checkIn
+            if (that.canvas.switching == true) return false;
 
             // Get the correct slot to checkIn
             $.each(that.canvas.slots, function(name, slot) {
 
                 // Column collided
-                if (slot.collide != null || from_collide == undefined) {
+                if (slot.collide != null || from_drag == undefined) {
 
                     // Check if card is allowed to switch
                     if (slot._applyDrop(that) == true && slot.checkSuits != undefined) {
@@ -1961,21 +1973,24 @@
         },
 
         // Switch card
-        switch: function(from_collide) {
+        switch: function(from_drag) {
             var that = this;
             var switched = false;
 
-            // Avoid running both switch and checkIn
-            if (that.canvas.switching == true) return;
+            // Check if card was just returned
+            if (that.returnedSwitch == true) {
+                delete that.returnedSwitch;
+                return false;
+            }
 
-            // Check for auto switch after return
-            if (that._autoSwitch == false) return that._autoSwitch = true;
+            // Avoid running both switch and checkIn
+            if (that.canvas.switching == true) return false;
 
             // Get the correct slot to switch
             $.each(that.canvas.slots, function(name, slot) {
 
                 // Column collided
-                if (slot.collide != null || from_collide == undefined) {
+                if (slot.collide != null || from_drag == undefined) {
 
                     // Card is allowed to switch
                     if (slot._applyDrop(that) == true && slot.checkSuits == undefined) {
@@ -2014,8 +2029,8 @@
         // Return card
         return: function() {
             var that = this;
-            that._autoSwitch = false;
-            that._autoCheckIn = false;
+            that.returnedSwitch = true;
+            that.returnedCheckin = true;
 
             // Iterate all cards in same slot
             for (var j = that.index; j < that.slot.cardCount(); j++) {
@@ -2201,7 +2216,7 @@
             '<div class="panel-top"></div>' +
             '<div class="panel-btm"></div>' +
             '<div class="panel-content"></div></div>';
-            that.el = $(html).appendTo('body');
+            that.el = $(html).appendTo(that.canvas.body);
 
             // Get top and btm panels
             var panel_top = that.el.find('.panel-top');
@@ -2211,7 +2226,7 @@
             that.el.addClass('panel-closed');
 
             // Add background to top and btm
-            var style = $('body').attr('style');
+            var style = $(that.canvas.body).attr('style');
             panel_top.attr('style', style);
             panel_btm.attr('style', style);
 

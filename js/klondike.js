@@ -19,6 +19,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
                 x_space: 30,
                 y_space: 30
             },
+            body: 'body',
             el: 'klondike'
         },
 
@@ -100,7 +101,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
 
                 // Display system template
                 var html = that.getTemplate('system');
-                var block = $(html).appendTo('body');
+                var block = $(html).appendTo(that.body);
                 block.animate({ bottom: 0 });
             });
         },
@@ -183,8 +184,8 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
 
             // Open last card of columns
             if (slot.group == 'Column') {
-                if (slot.last != null) {
-                    slot.last.open();
+                if (slot.last != null && slot.last.face == 'facedown') {
+                    slot.last.flip();
                 }
             }
         },
