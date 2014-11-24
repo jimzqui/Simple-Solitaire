@@ -1669,6 +1669,8 @@
                         };
                     }
 
+                    if (card.grabbed == true) return;
+
                     var actions = action.split(',');
                     for (var i = 0; i < actions.length; i++) {
                         card.e = e;
@@ -1923,12 +1925,6 @@
             var that = this;
             var switched = false;
 
-            // Check if card was just returned
-            if (that.returnedCheckin == true) {
-                delete that.returnedCheckin;
-                return false;
-            }
-
             // Avoid running both switch and checkIn
             if (that.canvas.switching == true) return false;
 
@@ -1977,12 +1973,6 @@
             var that = this;
             var switched = false;
 
-            // Check if card was just returned
-            if (that.returnedSwitch == true) {
-                delete that.returnedSwitch;
-                return false;
-            }
-
             // Avoid running both switch and checkIn
             if (that.canvas.switching == true) return false;
 
@@ -2029,8 +2019,6 @@
         // Return card
         return: function() {
             var that = this;
-            that.returnedSwitch = true;
-            that.returnedCheckin = true;
 
             // Iterate all cards in same slot
             for (var j = that.index; j < that.slot.cardCount(); j++) {
@@ -2120,7 +2108,6 @@
         // Return card after grab
         _undrag: function() {
             var that = this;
-            var droppped = false;
 
             // Unbind mousemove and mouseup
             that.canvas.el.off('mousemove');
@@ -2130,11 +2117,11 @@
             if (that.grabbed != true) return;
 
             // Drop card
-            droppped = that.switch(true);
-            droppped = that.checkIn(true);
+            var switched = that.switch(true);
+            var checked = that.checkIn(true);
 
             // Return all cards
-            if (droppped != true) {
+            if (switched == false && checked == false) {
                 that.return();
             }
         },
