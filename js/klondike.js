@@ -198,9 +198,10 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             if (move.action == 'switch' || move.action == 'checkIn') {
                 if (move.origin.group == 'Column') {
                     var card = (move.actors[0] == undefined) ? move.actors : move.actors[0];
-                    var prev_last = move.origin.cards[card.index - 1];
-                    if (prev_last != undefined) {
-                        prev_last.close();
+                    var last = move.origin.cards[card.index - 1];
+                    var faceup = move.origin.countFace('faceup') - move.actors.length;
+                    if (last != undefined && faceup == 1) {
+                        last.close();
                     }
                 }
             }

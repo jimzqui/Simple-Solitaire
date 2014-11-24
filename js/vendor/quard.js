@@ -1277,6 +1277,22 @@
             });
         },
 
+        // Count faces
+        countFace: function(face) {
+            var that = this;
+            var count = 0;
+
+            // Close cards and uncascade
+            for (var i = 0; i < that.cards.length; i++) {
+                var card = that.cards[i];
+                if (card.face == face) {
+                    count++;
+                }
+            };
+
+            return count;
+        },
+
         // Unbind all events
         unbind: function() {
             var that = this;
