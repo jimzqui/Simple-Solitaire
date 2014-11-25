@@ -154,18 +154,24 @@
                 left: $(document).width() / 2 
             };
 
-            // Render events
-            that._applyEvents();
+            // Load current bg
+            var bg = new Image();
+            bg.src = that.themes.dist + that.themes.current + '/bg.jpg';
+            bg.onload = function() {
 
-            // Load files and templates
-            that._loadFiles();
+                // Render events
+                that._applyEvents();
 
-            // Create new panel
-            that.panel = new Quard.panel({
-                size: 100,
-                animate: 250,
-                canvas: that
-            });
+                // Load files and templates
+                that._loadFiles();
+
+                // Create new panel
+                that.panel = new Quard.panel({
+                    size: 100,
+                    animate: 250,
+                    canvas: that
+                });
+            };
 
             return that;
         },
@@ -694,7 +700,7 @@
             head.appendChild(link);
             link.onload = function() {
                 that._fileLoaded();
-            }
+            };
 
             // Preload theme background and slots images
             var preload = document.createElement('div');
@@ -711,7 +717,7 @@
                 preload.appendChild(bg);
                 bg.onload = function() {
                     that._fileLoaded();
-                }
+                };
 
                 // Load slots
                 var slots = new Image();
@@ -719,7 +725,7 @@
                 preload.appendChild(slots);
                 slots.onload = function() {
                     that._fileLoaded();
-                }
+                };
             };
         },
 
@@ -732,7 +738,6 @@
             if (that._loadCount == 1) {
                 var loader = $('<div id="quard-loader"></div>').appendTo(that.body);
                 $('#quard-loader').css({
-                    width: percentage + '%',
                     width: 0,
                     height: 10,
                     left: 0,
@@ -743,16 +748,13 @@
                 });
             }
 
-            if (that._loadCount == that._loadSize) {
-                $('#quard-preload').remove();
-            }
-
             // Animate loader
             $('#quard-loader').stop().animate({
                 width: percentage + '%'
             }, 'fast', function() {
                 if (percentage == 100) {
-                    $(this).remove();
+                    $('#quard-preload').remove();
+                    $('#quard-loader').remove();
                     that.intro();
                 }
             });
@@ -2041,18 +2043,20 @@
                 var card_active = that.slot.cards[j];
 
                 // Animate back to offset
-                card_active.el.animate({
-                    left: card_active.offset.left,
-                    top: card_active.offset.top,
-                    zIndex: card_active.zindex
-                }, 'fast', function() {
-                    card_active.grabbed = false;
+                (function(card_active) {
+                    card_active.el.animate({
+                        left: card_active.offset.left,
+                        top: card_active.offset.top,
+                        zIndex: card_active.zindex
+                    }, 'fast', function() {
+                        card_active.grabbed = false;
 
-                    // Call return event
-                    if ($.isFunction(that.canvas.cardReturned) == true && that.canvas.rendered == true) {
-                        that.canvas.cardReturned(that);
-                    }
-                });
+                        // Call return event
+                        if ($.isFunction(that.canvas.cardReturned) == true && that.canvas.rendered == true) {
+                            that.canvas.cardReturned(that);
+                        }
+                    });
+                })(card_active);
             };
         },
 
