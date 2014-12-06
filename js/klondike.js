@@ -5,7 +5,7 @@
  */
 
 // Load dependencies
-define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Quard, Stack, Browse, Foundation, Column, Deck) {
+define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck', 'bicycle'], function(Quard, Stack, Browse, Foundation, Column, Deck, Bicycle) {
 
     // Create new Klondike Class
     var Klondike = Quard.canvas.extend({
@@ -123,7 +123,7 @@ define(['quard', 'stack', 'browse', 'foundation', 'column', 'deck'], function(Qu
             var that = this;
 
             // Render cards
-            that.renderCards('Deck', {
+            that.renderCards(Bicycle, {
                 'Stack': 24,
                 'Column': [1, 2, 3, 4, 5, 6, 7]
             });

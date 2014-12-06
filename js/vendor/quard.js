@@ -274,34 +274,35 @@
         },
 
         // Render cards
-        renderCards: function(from, obj) {
+        renderCards: function(mapclass, obj) {
             var that = this;
             var orders = {};
 
             // Save settings for laters
             that._renderCache = {
-                from: from,
+                mapclass: mapclass,
                 obj: obj
             };
 
-            // Create cards
-            that.slots[from].createCards();
+            // Create new cardmap
+            var cardmap = new mapclass();
+            that.createCards(cardmap);
 
             // Create/transfer cards in slots
             $.each(obj, function(slot_name, pick_size) {
-                if (orders[from] == undefined) {
-                    orders[from] = [];
+                if (orders[cardmap.slot] == undefined) {
+                    orders[cardmap.slot] = [];
                 }
 
                 if (pick_size instanceof Array) {
                     for (var i = 0; i < pick_size.length; i++) {
-                        orders[from].push({
+                        orders[cardmap.slot].push({
                             name: slot_name + i,
                             size: pick_size[i]
                         });
                     };
                 } else {
-                    orders[from].push({
+                    orders[cardmap.slot].push({
                         name: slot_name,
                         size: pick_size
                     });
@@ -310,6 +311,72 @@
 
             // Transfer cards
             that.placeCards(orders);
+        },
+
+        // Create cards
+        createCards: function(cardmap) {
+            var that = this;
+            var cards = [];
+            var maps = [];
+            var started = false;
+
+            // Return if slot is not present
+            if (cardmap.slot == undefined) return;
+            var slot = that.slots[cardmap.slot];
+
+            // Create cards based on cards map
+            for (var i = 0; i < cardmap.map.length; i++) {
+                var row = cardmap.map[i];
+                for (var j = 0; j < row.length; j++) {
+                    var map = row[j];
+                    var num = map.split(' ')[0];
+                    var suit = map.split(' ')[1];
+
+                    // Start pushing cards when start map shows
+                    if (cardmap.render.start == map || started == true) {
+                        started = true;
+                        maps.push({
+                            num: num,
+                            suit: suit,
+                            map: [j, i]
+                        });
+                    }
+
+                    // Stop pushing cards when stop map show
+                    if (cardmap.render.end == map) {
+                        started = false;
+                    }
+
+                    // Get facedown map
+                    if (cardmap.render.back == map) {
+                        var facedown_map = [j, i];
+                    }
+                };
+            };
+
+            // Create cards based on cards map
+            that.cards = {};
+            for (var k = 0; k < maps.length; k++) {
+                var cardobj = maps[k];
+                var card = new Quard.card({
+                    canvas: that,
+                    num: cardobj.num,
+                    suit: cardobj.suit,
+                    faceup_map: cardobj.map,
+                    facedown_map: facedown_map,
+                    cardmap: cardmap
+                });
+
+                cards.push(card);
+                that.cards[card.slug] = card;
+            };
+
+            // Double shuffle cards
+            var cards = slot.shuffleCards(slot.shuffleCards(cards));
+
+            // Place cards
+            slot.animate = false;
+            slot.addCards(cards);
         },
 
         // Transfer and place cards to slots
@@ -357,7 +424,7 @@
             that.destroyCards();
 
             // Rerender cards
-            that.renderCards(that._renderCache.from, that._renderCache.obj);
+            that.renderCards(that._renderCache.mapclass, that._renderCache.obj);
         },
 
         // Destroy all cards
@@ -989,71 +1056,6 @@
 
         // Drop condition
         dropCondition: {},
-
-        // Create cards
-        createCards: function() {
-            var that = this;
-            var cards = [];
-            var maps = [];
-            var started = false;
-
-            // Return if slot dont have cardmap
-            if (that.cardmap == undefined) return;
-
-            // Create cards based on cards map
-            for (var i = 0; i < that.cardmap.map.length; i++) {
-                var row = that.cardmap.map[i];
-                for (var j = 0; j < row.length; j++) {
-                    var map = row[j];
-                    var num = map.split(' ')[0];
-                    var suit = map.split(' ')[1];
-
-                    // Start pushing cards when start map shows
-                    if (that.cardmap.render.start == map || started == true) {
-                        started = true;
-                        maps.push({
-                            num: num,
-                            suit: suit,
-                            map: [j, i]
-                        });
-                    }
-
-                    // Stop pushing cards when stop map show
-                    if (that.cardmap.render.end == map) {
-                        started = false;
-                    }
-
-                    // Get facedown map
-                    if (that.cardmap.render.back == map) {
-                        var facedown_map = [j, i];
-                    }
-                };
-            };
-
-            // Create cards based on cards map
-            that.canvas.cards = {};
-            for (var k = 0; k < maps.length; k++) {
-                var cardobj = maps[k];
-                var card = new that.cardclass({
-                    canvas: that.canvas,
-                    num: cardobj.num,
-                    suit: cardobj.suit,
-                    faceup_map: cardobj.map,
-                    facedown_map: facedown_map,
-                    sprite: that.cardmap.sprite
-                });
-
-                cards.push(card);
-                that.canvas.cards[card.slug] = card;
-            };
-
-            // Double shuffle cards
-            var cards = that.shuffleCards(that.shuffleCards(cards));
-
-            // Place cards
-            that.animate = false;
-            that.addCards(cards);
-        },
 
         // Shuffle cards
         shuffleCards: function(cards) {
@@ -1708,6 +1710,46 @@
         }
     });
 
+    // Quard Cardmap Class
+    Quard.cardmap = Quard.class.extend({
+
+        // Map
+        map: [
+            ['1 Spades', '1 Hearts', '1 Clubs', '1 Diamonds'],
+            ['2 Spades', '2 Hearts', '2 Clubs', '2 Diamonds'],
+            ['3 Spades', '3 Hearts', '3 Clubs', '3 Diamonds'],
+            ['4 Spades', '4 Hearts', '4 Clubs', '4 Diamonds'],
+            ['5 Spades', '5 Hearts', '5 Clubs', '5 Diamonds'],
+            ['6 Spades', '6 Hearts', '6 Clubs', '6 Diamonds'],
+            ['7 Spades', '7 Hearts', '7 Clubs', '7 Diamonds'],
+            ['8 Spades', '8 Hearts', '8 Clubs', '8 Diamonds'],
+            ['9 Spades', '9 Hearts', '9 Clubs', '9 Diamonds'],
+            ['10 Spades', '10 Hearts', '10 Clubs', '10 Diamonds'],
+            ['11 Spades', '11 Hearts', '11 Clubs', '11 Diamonds'],
+            ['12 Spades', '12 Hearts', '12 Clubs', '12 Diamonds'],
+            ['13 Spades', '13 Hearts', '13 Clubs', '13 Diamonds'],
+            ['red facedown', 'blue facedown', 'joker 1', 'joker 2']
+        ],
+
+        // Render
+        render: {
+            start: '1 Spades',
+            end: '13 Diamonds',
+            back: 'red facedown'
+        },
+
+        // Skins
+        skins: {
+            current: 'default',
+            dist: 'quard/cardsprites/',
+            list: ['default']
+        },
+
+        // Initial slot
+        slot: 'Deck'
+        
+    });
+
     // Quard Card Class
     Quard.card = Quard.class.extend({
 
@@ -1818,7 +1860,7 @@
                 float: 'left',
                 width: that.width,
                 height: that.height,
-                backgroundImage: 'url(' + that.sprite + ')',
+                backgroundImage: 'url(' + that.cardmap.skins.dist + that.cardmap.skins.current + '.png)',
                 backgroundPosition: '-' + faceup_x + 'px -' + faceup_y + 'px',
             });
 
@@ -1827,7 +1869,7 @@
                 float: 'left',
                 width: that.width,
                 height: that.height,
-                backgroundImage: 'url(' + that.sprite + ')',
+                backgroundImage: 'url(' + that.cardmap.skins.dist + that.cardmap.skins.current + '.png)',
                 backgroundPosition: '-' + facedown_x + 'px -' + facedown_y + 'px',
             });
 
