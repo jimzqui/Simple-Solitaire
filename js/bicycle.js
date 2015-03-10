@@ -28,12 +28,14 @@ define(['quard'], function(Quard) {
             ['red facedown', 'blue facedown', 'joker 1', 'joker 2']
         ],
 
-        // Render
-        render: {
-            start: '1 Spades',
-            end: '13 Diamonds',
-            back: 'red facedown'
+        // Faceup
+        faceup: {
+            x: '0-3',
+            y: '0-12'
         },
+
+        // Facedown
+        facedown: '0-13',
 
         // Skins
         skins: {

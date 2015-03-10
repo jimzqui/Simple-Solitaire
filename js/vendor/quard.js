@@ -285,24 +285,25 @@
             };
 
             // Create new cardmap
-            var cardmap = new mapclass();
-            that.createCards(cardmap);
+            that.cardmap = new mapclass({
+                canvas: that
+            });
 
             // Create/transfer cards in slots
             $.each(obj, function(slot_name, pick_size) {
-                if (orders[cardmap.slot] == undefined) {
-                    orders[cardmap.slot] = [];
+                if (orders[that.cardmap.slot] == undefined) {
+                    orders[that.cardmap.slot] = [];
                 }
 
                 if (pick_size instanceof Array) {
                     for (var i = 0; i < pick_size.length; i++) {
-                        orders[cardmap.slot].push({
+                        orders[that.cardmap.slot].push({
                             name: slot_name + i,
                             size: pick_size[i]
                         });
                     };
                 } else {
-                    orders[cardmap.slot].push({
+                    orders[that.cardmap.slot].push({
                         name: slot_name,
                         size: pick_size
                     });
@@ -311,72 +312,6 @@
 
             // Transfer cards
             that.placeCards(orders);
-        },
-
-        // Create cards
-        createCards: function(cardmap) {
-            var that = this;
-            var cards = [];
-            var maps = [];
-            var started = false;
-
-            // Return if slot is not present
-            if (cardmap.slot == undefined) return;
-            var slot = that.slots[cardmap.slot];
-
-            // Create cards based on cards map
-            for (var i = 0; i < cardmap.map.length; i++) {
-                var row = cardmap.map[i];
-                for (var j = 0; j < row.length; j++) {
-                    var map = row[j];
-                    var num = map.split(' ')[0];
-                    var suit = map.split(' ')[1];
-
-                    // Start pushing cards when start map shows
-                    if (cardmap.render.start == map || started == true) {
-                        started = true;
-                        maps.push({
-                            num: num,
-                            suit: suit,
-                            map: [j, i]
-                        });
-                    }
-
-                    // Stop pushing cards when stop map show
-                    if (cardmap.render.end == map) {
-                        started = false;
-                    }
-
-                    // Get facedown map
-                    if (cardmap.render.back == map) {
-                        var facedown_map = [j, i];
-                    }
-                };
-            };
-
-            // Create cards based on cards map
-            that.cards = {};
-            for (var k = 0; k < maps.length; k++) {
-                var cardobj = maps[k];
-                var card = new Quard.card({
-                    canvas: that,
-                    num: cardobj.num,
-                    suit: cardobj.suit,
-                    faceup_map: cardobj.map,
-                    facedown_map: facedown_map,
-                    cardmap: cardmap
-                });
-
-                cards.push(card);
-                that.cards[card.slug] = card;
-            };
-
-            // Double shuffle cards
-            var cards = slot.shuffleCards(slot.shuffleCards(cards));
-
-            // Place cards
-            slot.animate = false;
-            slot.addCards(cards);
         },
 
         // Transfer and place cards to slots
@@ -711,20 +646,22 @@
             $('.panel-top, .panel-btm').css({
                 backgroundImage: 'url(' + that.themes.dist + that.themes.current + '/bg.jpg)'
             });
+        },
 
-            // Reload all templates
-            that._templates = {};
-            for (var i = 0; i < that.templates.list.length; i++) {
-                var template = that.templates.list[i];
-                that._templates[template] = {};
+        // Change card
+        changeCard: function(card) {
+            var that = this;
+            that.cardmap.skins.current = card;
+            
+            // Update faceup image
+            that.el.find('.faceup span').css({
+                backgroundImage: 'url(' + that.cardmap.skins.dist + that.cardmap.skins.current + '.png)'
+            });
 
-                // Get template
-                (function(template) {
-                    $.get(that.templates.dist + template + '.html', function(html) {
-                        that._templates[template].html = html;
-                    });
-                })(template);
-            };
+            // Update facedown image
+            that.el.find('.facedown span').css({
+                backgroundImage: 'url(' + that.cardmap.skins.dist + that.cardmap.skins.current + '.png)'
+            });
         },
 
         // Load files and templates
@@ -1368,14 +1305,9 @@
 
             // Update last position
             var last_card = that.cards[that.cardCount() - 1];
+            that.last = last_card;
             if (last_card != undefined) {
                 last_card.last = true;
-                that.last = last_card;
-            }
-
-            // Remove last if slot is empty
-            if (that.cardCount() == 0) {
-                that.last = null;
             }
 
             // Update height
@@ -1397,7 +1329,7 @@
                 case 'same':
                     switch(that.dropCondition.order) {
                         case 'asc': 
-                            if (that.last == null) {
+                            if (that.last == undefined) {
                                 return false;
                             } else if (card.num - 1 == that.cardCount() && card.suit == that.last.suit) {
                                 result = true;
@@ -1408,7 +1340,7 @@
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            } else if (that.last == null) {
+                            } else if (that.last == undefined) {
                                 return false;
                             } else if (that.last.num - 1 == card.num && card.suit == that.last.suit) {
                                 result = true;
@@ -1430,7 +1362,7 @@
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            } else if (that.last == null) {
+                            } else if (that.last == undefined) {
                                 return false;
                             } else if (that.last.num - 1 == card.num && card.suit == that.checkSuit) {
                                 result = true;
@@ -1443,7 +1375,7 @@
                 case 'alternate':
                     switch(that.dropCondition.order) {
                         case 'asc': 
-                            if (that.last == null) {
+                            if (that.last == undefined) {
                                 return false;
                             } else if (card.num - 1 == that.cardCount() && card.suit == that.checkSuit) {
                                 result = true;
@@ -1454,7 +1386,7 @@
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            } else if (that.last == null) {
+                            } else if (that.last == undefined) {
                                 return false;
                             } else if (that.last.num - 1 == card.num && that.last.color != card.color) {
                                 result = true;
@@ -1467,7 +1399,7 @@
                 default:
                     switch(that.dropCondition.order) {
                         case 'asc': 
-                            if (that.last == null) {
+                            if (that.last == undefined) {
                                 return false;
                             } else if (card.num - 1 == that.cardCount() && card.suit == that.checkSuit) {
                                 result = true;
@@ -1478,7 +1410,7 @@
                         default:
                             if (card.num == 13 && that.cardCount() == 0) {
                                 result = true;
-                            } else if (that.last == null) {
+                            } else if (that.last == undefined) {
                                 return false;
                             } else if (that.last.num - 1 == card.num && that.last.color != card.color) {
                                 result = true;
@@ -1713,6 +1645,75 @@
     // Quard Cardmap Class
     Quard.cardmap = Quard.class.extend({
 
+        // Initialize
+        init: function(options) {
+            var that = this;
+
+            // Construct final settings
+            var settings = $.extend({}, options);
+
+            // Map settings to root
+            $.each(settings, function(index, value) {
+                that[index] = value;
+            });
+
+            // Return if slot is not present
+            if (that.slot == undefined) return;
+            var slot = that.canvas.slots[that.slot];
+            var render_x = that.faceup.x.split('-');
+            var render_y = that.faceup.y.split('-');
+            var cards = [];
+            var maps = [];
+
+            // Create cards based on cards map
+            for (var i = 0; i < that.map.length; i++) {
+
+                // Render the specified rows
+                if (i >= render_y[0] && i <= render_y[1]) {
+                    var row = that.map[i];
+
+                    // Render the specified columns
+                    for (var j = 0; j < row.length; j++) {
+                        if (j >= render_x[0] && j <= render_x[1]) {
+                            var map = row[j];
+                            var num = map.split(' ')[0];
+                            var suit = map.split(' ')[1];
+
+                            // Push map
+                            maps.push({
+                                num: num,
+                                suit: suit,
+                                map: [j, i]
+                            });
+                        }
+                    };
+                }
+            };
+
+            // Create cards based on cards map
+            that.canvas.cards = {};
+            for (var k = 0; k < maps.length; k++) {
+                var cardobj = maps[k];
+                var card = new Quard.card({
+                    num: cardobj.num,
+                    suit: cardobj.suit,
+                    faceup_map: cardobj.map,
+                    facedown_map: that.facedown.split('-'),
+                    cardmap: that
+                });
+
+                cards.push(card);
+                that.canvas.cards[card.slug] = card;
+            };
+
+            // Double shuffle cards
+            var cards = slot.shuffleCards(slot.shuffleCards(cards));
+
+            // Place cards
+            slot.animate = false;
+            slot.addCards(cards);
+        },
+
         // Map
         map: [
             ['1 Spades', '1 Hearts', '1 Clubs', '1 Diamonds'],
@@ -1731,12 +1732,14 @@
             ['red facedown', 'blue facedown', 'joker 1', 'joker 2']
         ],
 
-        // Render
-        render: {
-            start: '1 Spades',
-            end: '13 Diamonds',
-            back: 'red facedown'
+        // Faceup
+        faceup: {
+            x: '0-3',
+            y: '0-12'
         },
+
+        // Facedown
+        facedown: '0-13',
 
         // Skins
         skins: {
@@ -1773,8 +1776,8 @@
             });
 
             // Set height and width
-            that.width = that.canvas.tile.width;
-            that.height = that.canvas.tile.height;
+            that.width = that.cardmap.canvas.tile.width;
+            that.height = that.cardmap.canvas.tile.height;
 
             // Set card info
             switch(that.num) {
@@ -1801,7 +1804,7 @@
             '<div class="faceup"><span></span></div>' +
             '<div class="facedown"><span></span></div></div>' +
             '<div class="cover"></div></div>';
-            that.el = $(html).appendTo(that.canvas.el);
+            that.el = $(html).appendTo(that.cardmap.canvas.el);
             that.face = 'facedown';
 
             // Style element
@@ -1924,8 +1927,8 @@
             that.flip(speed, 'open');
 
             // Call flip event
-            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
-                that.canvas.cardFlipped('open', that);
+            if ($.isFunction(that.cardmap.canvas.cardFlipped) == true && that.cardmap.canvas.rendered == true) {
+                that.cardmap.canvas.cardFlipped('open', that);
             }
         },
 
@@ -1937,8 +1940,8 @@
             that.flip(speed, 'close');
 
             // Call flip event
-            if ($.isFunction(that.canvas.cardFlipped) == true && that.canvas.rendered == true) {
-                that.canvas.cardFlipped('close', that);
+            if ($.isFunction(that.cardmap.canvas.cardFlipped) == true && that.cardmap.canvas.rendered == true) {
+                that.cardmap.canvas.cardFlipped('close', that);
             }
         },
 
@@ -1986,10 +1989,10 @@
             var switched = false;
 
             // Avoid running both switch and checkIn
-            if (that.canvas.switching == true) return false;
+            if (that.cardmap.canvas.switching == true) return false;
 
             // Get the correct slot to checkIn
-            $.each(that.canvas.slots, function(name, slot) {
+            $.each(that.cardmap.canvas.slots, function(name, slot) {
 
                 // Column collided
                 if (slot.collide != null || from_drag == undefined) {
@@ -2005,13 +2008,13 @@
                         var cards = origin.getCards(origin.cardCount() - that.index, true);
 
                         // Transfer cards
-                        that.canvas.switching = true;
+                        that.cardmap.canvas.switching = true;
                         slot.addCards(cards.reverse(), function() {
-                            that.canvas.switching = false;
+                            that.cardmap.canvas.switching = false;
                             slot.collide = null;
 
                             // Move successful, check for win
-                            that.canvas._oneMove('checkIn', cards, origin);
+                            that.cardmap.canvas._oneMove('checkIn', cards, origin);
                         });
 
                         // Ungrab cards
@@ -2034,10 +2037,10 @@
             var switched = false;
 
             // Avoid running both switch and checkIn
-            if (that.canvas.switching == true) return false;
+            if (that.cardmap.canvas.switching == true) return false;
 
             // Get the correct slot to switch
-            $.each(that.canvas.slots, function(name, slot) {
+            $.each(that.cardmap.canvas.slots, function(name, slot) {
 
                 // Column collided
                 if (slot.collide != null || from_drag == undefined) {
@@ -2053,13 +2056,13 @@
                         var cards = origin.getCards(origin.cardCount() - that.index, true);
 
                         // Transfer cards
-                        that.canvas.switching = true;
+                        that.cardmap.canvas.switching = true;
                         slot.addCards(cards.reverse(), function() {
-                            that.canvas.switching = false;
+                            that.cardmap.canvas.switching = false;
                             slot.collide = null;
 
                             // Move successful, check for win
-                            that.canvas._oneMove('switch', cards, origin);
+                            that.cardmap.canvas._oneMove('switch', cards, origin);
                         });
 
                         // Ungrab cards
@@ -2094,8 +2097,8 @@
                         card_active.grabbed = false;
 
                         // Call return event
-                        if ($.isFunction(that.canvas.cardReturned) == true && that.canvas.rendered == true) {
-                            that.canvas.cardReturned(that);
+                        if ($.isFunction(that.cardmap.canvas.cardReturned) == true && that.cardmap.canvas.rendered == true) {
+                            that.cardmap.canvas.cardReturned(that);
                         }
                     });
                 })(card_active);
@@ -2112,7 +2115,7 @@
 
             // Drag card and get collision data for slots
             that._drag(x, y, function(offset) {
-                $.each(that.canvas.slots, function(name, slot) {
+                $.each(that.cardmap.canvas.slots, function(name, slot) {
                     that._setCollision(slot, offset);
                 });
             });
@@ -2131,8 +2134,8 @@
             });
 
             // Call grab event
-            if ($.isFunction(that.canvas.cardGrabbed) == true && that.canvas.rendered == true) {
-                that.canvas.cardGrabbed(that);
+            if ($.isFunction(that.cardmap.canvas.cardGrabbed) == true && that.cardmap.canvas.rendered == true) {
+                that.cardmap.canvas.cardGrabbed(that);
             }
         },
 
@@ -2147,7 +2150,7 @@
             var that = this;
 
             // Move card according to mouse offset
-            that.canvas.el.on('mousemove', function(e) {
+            that.cardmap.canvas.el.on('mousemove', function(e) {
                 // Chrome fix: avoid firing mousemove on mousedown
                 if (that.e.pageX == e.pageX && that.e.pageY == e.pageY) return;
 
@@ -2172,7 +2175,7 @@
             var that = this;
 
             // Unbind mousemove and mouseup
-            that.canvas.el.off('mousemove');
+            that.cardmap.canvas.el.off('mousemove');
             that.el.off('mouseup');
 
             // Return if not grabbed
