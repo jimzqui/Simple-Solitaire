@@ -1,5 +1,5 @@
 /**
- * JQcards - Bicycle
+ * Quard - Bicycle
  * deck.js
  * (c) 2014, Jimbo Quijano
  */

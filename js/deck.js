@@ -1,5 +1,5 @@
 /**
- * JQcards - Deck
+ * Quard - Deck
  * deck.js
  * (c) 2014, Jimbo Quijano
  */

@@ -1,5 +1,5 @@
 /**
- * JQcards - Stack
+ * Quard - Stack
  * stack.js
  * (c) 2014, Jimbo Quijano
  */

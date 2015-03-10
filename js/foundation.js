@@ -1,5 +1,5 @@
 /**
- * JQcards - Foundation
+ * Quard - Foundation
  * foundation.js
  * (c) 2014, Jimbo Quijano
  */

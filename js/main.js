@@ -1,5 +1,5 @@
 /**
- * JQcards - Main
+ * Quard - Main
  * main.js
  * (c) 2014, Jimbo Quijano
  */

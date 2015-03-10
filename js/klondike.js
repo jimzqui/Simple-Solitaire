@@ -1,5 +1,5 @@
 /**
- * JQcards - Klondike
+ * Quard - Klondike
  * klondike.js
  * (c) 2014, Jimbo Quijano
  */
