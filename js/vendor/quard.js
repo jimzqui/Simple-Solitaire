@@ -2309,8 +2309,9 @@
                 width: that.canvas.width,
                 height: that.height * 2,
                 top: that.cut - (that.height),
-                left: that.canvas.offset.left / 2,
+                left: '50%',
                 position: 'absolute',
+                marginLeft: that.canvas.width / 2 * -1,
                 zIndex: 1
             });
 

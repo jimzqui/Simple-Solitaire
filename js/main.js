@@ -15,8 +15,6 @@ require.config({
 	urlArgs: "bust=" + Math.random()
 });
 
-var Game;
-
 // Load dependencies
 require(['klondike'], function(Klondike) {
 
